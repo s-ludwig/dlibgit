@@ -52,7 +52,7 @@ edit `/etc/ld.so.conf` or run:
 - `fetch` doesn't currently work due to some bugs in network\fetch.d.
 - Replace `path\to` with a valid path for index-pack.
 
-Some libgit functions work with either form of slashes on win32, but you should prefer using forward slashes.
+On win32 some libgit functions work with either form of slashes, but you should prefer using forward slashes.
 
 ## Usage tips
 As a convenience you can import `git2.all` or `git2._` to import all modules at once.
