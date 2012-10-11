@@ -1,0 +1,35 @@
+module build;
+
+import std.exception;
+import std.range;
+import std.path;
+import std.process;
+import std.string;
+import std.stdio;
+
+version(Windows)
+{
+    enum string libArg = r"bin\libgit2.dll.lib";
+    enum string binPath = r"bin\";
+    enum string exeExt = ".exe";
+}
+else
+{
+    enum string libArg = "-L-lgit2";
+    enum string binPath = "bin/";
+    enum string exeExt;
+}
+
+void main(string[] args)
+{
+    args.popFront();
+    enforce(!args.empty, "Error: Pass a .d file to compile.");
+    string arg = args.front;
+    
+    string proj = arg.stripExtension.baseName;
+    string outFile = format("%s%s%s", binPath, proj, exeExt);
+    
+    string cmd = format("rdmd --force --build-only -m32 %s -Isrc -of%s %s", libArg, outFile, arg);
+    system(cmd);
+}
+
