@@ -7,7 +7,7 @@ extern(C):
 
 auto GIT_SUBMODULE_STATUS_IS_UNMODIFIED(T)(T S)
 {
-    return (((S) & ~(GIT_SUBMODULE_STATUS_IN_HEAD | GIT_SUBMODULE_STATUS_IN_INDEX | GIT_SUBMODULE_STATUS_IN_CONFIG | GIT_SUBMODULE_STATUS_IN_WD)) == 0);
+    return (((S) & ~(git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_HEAD | git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_INDEX | git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_CONFIG | git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_WD)) == 0);
 }
 
 enum git_submodule_update_t
