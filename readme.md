@@ -28,7 +28,7 @@ edit `/etc/ld.so.conf` or run:
 [DMD]: http://dlang.org/download.html
 
 ## Building and running samples
-diff sample:
+**diff** sample:
 
     $ rdmd build.d samples/diff/diff.d
     $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
@@ -36,12 +36,12 @@ diff sample:
 - This will diff the first two commits in **dlibgit**.
 - You could pass an absolute path, e.g. `C:/some/git/repo/.git`
 
-showindex sample:
+**showindex** sample:
 
     $ rdmd build.d samples/showindex/showindex.d
     $ bin\showindex.exe .git
 
-git client sample:
+**git client** sample:
 
     $ rdmd build.d samples/network/git.d
     $ bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
