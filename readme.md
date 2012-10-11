@@ -2,7 +2,8 @@
 
 ## Requirements
 [DMD] 2.060+.
-GDC support will be added soon.
+GDC can be used but you will have to compile on your own.
+Use the import lib **libgit2.dll.a** in the **bin** folder when linking.
 
 ### Windows:
 You're already set.
@@ -14,6 +15,7 @@ You need to build the libgit2 shared library (a specific commit is required):
     $ cd libgit2 && git checkout acd1700630ea1159a55dc5e8cee12e4a725afe18
     
 - Follow these instructions: http://libgit2.github.com/#install
+- You might need to install zlib if cmake says it's missing (use your package manager to find the zlib dev package)
 
 Make sure the libgit2 shared lib path is in your ld conf file.
 For example, on Linux Mint libgit2 installs to `/usr/local/lib`, so either 
