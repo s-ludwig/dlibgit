@@ -28,6 +28,7 @@ edit `/etc/ld.so.conf` or run:
 [DMD]: http://dlang.org/download.html
 
 ## Building and running samples
+diff sample:
 
     $ rdmd build.d samples/diff/diff.d
     $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
@@ -35,10 +36,21 @@ edit `/etc/ld.so.conf` or run:
 - This will diff the first two commits in **dlibgit**.
 - You could pass an absolute path, e.g. `C:/some/git/repo/.git`
 
-Another sample:
+showindex sample:
 
     $ rdmd build.d samples/showindex/showindex.d
     $ bin\showindex.exe .git
+
+git client sample:
+
+    $ rdmd build.d samples/network/git.d
+    $ bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
+    $ bin\git.exe index-pack path\to\.git\objects\pack\abcd1234.pack
+    $ bin\git.exe clone git://github.com/AndrejMitrovic/dlibgit.git ../dlibgit2_clone
+
+- `clone` is not the same as git's `clone` command, it does not deflate git object files.
+- `fetch` doesn't currently work due to some bugs in network\fetch.d.
+- Replace `path\to` with a valid path for index-pack.
 
 Some libgit functions work with either form of slashes on win32, but you should prefer using forward slashes.
 
