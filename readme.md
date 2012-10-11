@@ -2,8 +2,9 @@
 
 ## Requirements
 [DMD] 2.060+.
+
 GDC can be used but you will have to compile on your own.
-Use the import lib **libgit2.dll.a** in the **bin** folder when linking.
+For GDC use the import lib **libgit2.dll.a** in the **bin** folder when linking.
 
 ### Windows:
 You're already set.
