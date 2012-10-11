@@ -1,25 +1,29 @@
-These are the libgit2 D bindings.
+# dlibgit - libgit2 D bindings
 
-== Requirements ==
-    DMD 2.060+.
-    
-    Windows:
-        You're already set.
-    
-    Posix:
-        You need to build the libgit2 shared library (a specific commit is required):
-    
-        $ git clone -b development git://github.com/libgit2/libgit2.git
-        $ cd libgit2 && git checkout acd1700630ea1159a55dc5e8cee12e4a725afe18
-        - Follow these instructions: http://libgit2.github.com/#install
-        - Make sure the libgit2 shared lib path is in your ld conf file.
-          E.g. on Linux Mint libgit2 installs to /usr/local/lib, so either 
-          edit /etc/ld.so.conf or do:
-          
-          $ LD_LIBRARY_PATH=/usr/local/lib
-          $ export LD_LIBRARY_PATH
+## Requirements
+[DMD] 2.060+.
+GDC support will be added soon.
 
-== Building and running samples ==
+### Windows
+You're already set.
+
+### Posix
+You need to build the libgit2 shared library (a specific commit is required):
+
+    $ git clone -b development git://github.com/libgit2/libgit2.git
+    $ cd libgit2 && git checkout acd1700630ea1159a55dc5e8cee12e4a725afe18
+    
+- Follow these instructions: http://libgit2.github.com/#install
+- Make sure the libgit2 shared lib path is in your ld conf file.
+  E.g. on Linux Mint libgit2 installs to /usr/local/lib, so either 
+  edit /etc/ld.so.conf or do:
+  
+  $ LD_LIBRARY_PATH=/usr/local/lib
+  $ export LD_LIBRARY_PATH
+
+[DMD]: http://dlang.org/download.html
+
+## Building and running samples
     $ rdmd build.d samples/diff/diff.d
     $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
     
@@ -31,7 +35,7 @@ These are the libgit2 D bindings.
     
     Some libgit functions work with either form of slashes on win32, but you should prefer forward slashes.
 
-== Usage tips ==
+## Usage tips
     As a convenience you can import git2.all or git2._ to import all modules at once.
 
 == Documentation ==
