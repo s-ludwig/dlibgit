@@ -7,15 +7,36 @@ import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 
-enum 
+enum GIT_IDXENTRY_NAMEMASK          = 0x0fff;
+enum GIT_IDXENTRY_STAGEMASK         = 0x3000;
+enum GIT_IDXENTRY_EXTENDED          = 0x4000;
+enum GIT_IDXENTRY_VALID             = 0x8000;
+enum GIT_IDXENTRY_STAGESHIFT        = 12;
+enum GIT_IDXENTRY_UPDATE            = 1 << 0;
+enum GIT_IDXENTRY_REMOVE            = 1 << 1;
+enum GIT_IDXENTRY_UPTODATE          = 1 << 2;
+enum GIT_IDXENTRY_ADDED             = 1 << 3;
+enum GIT_IDXENTRY_HASHED            = 1 << 4;
+enum GIT_IDXENTRY_UNHASHED          = 1 << 5;
+enum GIT_IDXENTRY_WT_REMOVE         = 1 << 6; /* remove in work directory */
+enum GIT_IDXENTRY_CONFLICTED        = 1 << 7;
+enum GIT_IDXENTRY_UNPACKED          = 1 << 8;
+enum GIT_IDXENTRY_NEW_SKIP_WORKTREE = 1 << 9;
+enum GIT_IDXENTRY_INTENT_TO_ADD     = 1 << 13;
+enum GIT_IDXENTRY_SKIP_WORKTREE     = 1 << 14;
+enum GIT_IDXENTRY_EXTENDED2         = 1 << 15;
+enum GIT_IDXENTRY_EXTENDED_FLAGS    = GIT_IDXENTRY_INTENT_TO_ADD | GIT_IDXENTRY_SKIP_WORKTREE;
+
+enum
 {
     GIT_INDEXCAP_IGNORE_CASE = 1,
     GIT_INDEXCAP_NO_FILEMODE = 2,
     GIT_INDEXCAP_NO_SYMLINKS = 4,
-    GIT_INDEXCAP_FROM_OWNER = -1
+    GIT_INDEXCAP_FROM_OWNER  = -1
 }
 
-struct git_index_entry 
+
+struct git_index_entry
 {
     git_index_time ctime;
     git_index_time mtime;
@@ -31,18 +52,21 @@ struct git_index_entry
     char* path;
 }
 
-struct git_index_entry_unmerged 
+
+struct git_index_entry_unmerged
 {
     uint[3] mode;
     git_oid[3] oid;
     char* path;
 }
 
-struct git_index_time 
+
+struct git_index_time
 {
     git_time_t seconds;
     uint nanoseconds;
 }
+
 
 int git_index_add(git_index* index, const(char)* path, int stage);
 int git_index_add2(git_index* index, const(git_index_entry)* source_entry);

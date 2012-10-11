@@ -5,6 +5,11 @@ import git2.types;
 
 extern(C):
 
+enum GIT_SORT_NONE        = 0;
+enum GIT_SORT_TOPOLOGICAL = 1 << 0;
+enum GIT_SORT_TIME        = 1 << 1;
+enum GIT_SORT_REVERSE     = 1 << 2;
+
 void git_revwalk_free(git_revwalk* walk);
 int git_revwalk_hide(git_revwalk* walk, const(git_oid)* oid);
 int git_revwalk_hide_glob(git_revwalk* walk, const(char)* glob);

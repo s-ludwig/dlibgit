@@ -6,6 +6,16 @@ import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 
+bool GIT_ATTR_TRUE(T)(T attr)        { return git_attr_value(attr) == GIT_ATTR_TRUE_T; }
+bool GIT_ATTR_FALSE(T)(T attr)       { return git_attr_value(attr) == GIT_ATTR_FALSE_T; }
+bool GIT_ATTR_UNSPECIFIED(T)(T attr) { return git_attr_value(attr) == GIT_ATTR_UNSPECIFIED_T; }
+bool GIT_ATTR_HAS_VALUE(T)(T attr)   { return git_attr_value(attr) == GIT_ATTR_VALUE_T; }
+
+enum GIT_ATTR_CHECK_FILE_THEN_INDEX	= 0;
+enum GIT_ATTR_CHECK_INDEX_THEN_FILE	= 1;
+enum GIT_ATTR_CHECK_INDEX_ONLY		= 2;
+enum GIT_ATTR_CHECK_NO_SYSTEM		= (1 << 2);
+
 enum git_attr_t
 {
     GIT_ATTR_UNSPECIFIED_T = 0,

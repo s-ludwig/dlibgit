@@ -8,7 +8,9 @@ extern(C):
 enum GIT_OID_RAWSZ = 20;
 
 /** Size (in bytes) of a hex formatted oid */
-enum GIT_OID_HEXSZ = GIT_OID_RAWSZ * 2;
+enum GIT_OID_HEXSZ = (GIT_OID_RAWSZ * 2);
+
+enum GIT_OID_MINPREFIXLEN = 4;
 
 /** GIT_INLINE */
 int git_oid_cmp(const(git_oid)* a, const(git_oid)* b)

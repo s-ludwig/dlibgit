@@ -4,6 +4,19 @@ import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 
+version(Windows)
+{
+    enum GIT_WIN32 = 1;
+    enum GIT_PATH_LIST_SEPARATOR = ';';
+}
+else
+{
+    enum GIT_WIN32 = 0;
+    enum GIT_PATH_LIST_SEPARATOR = ':';
+}
+
+enum GIT_PATH_MAX = 4096;
+
 enum 
 {
     GIT_CAP_THREADS = 1,

@@ -37,3 +37,4 @@ import git2.threads;
 import git2.tree;
 import git2.types;
 import git2._object;
+import git2._version;

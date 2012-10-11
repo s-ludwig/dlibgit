@@ -5,6 +5,11 @@ import git2.types;
 
 extern(C):
 
+auto GIT_SUBMODULE_STATUS_IS_UNMODIFIED(T)(T S)
+{
+    return (((S) & ~(GIT_SUBMODULE_STATUS_IN_HEAD | GIT_SUBMODULE_STATUS_IN_INDEX | GIT_SUBMODULE_STATUS_IN_CONFIG | GIT_SUBMODULE_STATUS_IN_WD)) == 0);
+}
+
 enum git_submodule_update_t
 {
     GIT_SUBMODULE_UPDATE_DEFAULT = -1,
