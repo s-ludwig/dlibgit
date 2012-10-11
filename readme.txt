@@ -30,7 +30,10 @@ These are the libgit2 D bindings.
     $ bin\showindex.exe .git
     
     Some libgit functions work with either form of slashes on win32, but you should prefer forward slashes.
-    
+
+== Usage tips ==
+    As a convenience you can import git2.all or git2._ to import all modules at once.
+
 == Documentation ==
     The D bindings aren't documented, but they're 1-to-1 equivalents of the C library.
     Use these pages for the API docs:

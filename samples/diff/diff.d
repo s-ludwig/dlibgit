@@ -4,17 +4,7 @@ module diff;
     Colors were hardcoded to Posix, they're disabled here.
 */
 
-import git2.blob;
-import git2._object;
-import git2.index;
-import git2.commit;
-import git2.refs;
-import git2.tree;
-import git2.errors;
-import git2.repository;
-import git2.types;
-import git2.oid;
-import git2.diff;
+import git2.all;
 
 import std.array;
 import std.conv;

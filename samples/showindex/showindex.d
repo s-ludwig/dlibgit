@@ -1,11 +1,6 @@
 module showindex;
 
-import git2.blob;
-import git2._object;
-import git2.index;
-import git2.repository;
-import git2.types;
-import git2.oid;
+import git2.all;
 
 import std.stdio;
 import std.string;
