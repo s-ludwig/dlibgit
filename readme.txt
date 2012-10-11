@@ -1,4 +1,4 @@
-libgit D binding.
+These are the libgit2 D bindings.
 
 == Requirements ==
     DMD 2.060+.
@@ -35,7 +35,11 @@ libgit D binding.
 == Note ==
     DLL was built from commit acd1700630ea1159a55dc5e8cee12e4a725afe18 in the development branch. Inline functions were re-created in D because they're not exported. Don't try to use a DLL built from other commits without doing a diff and verifying that the inline functions are still the same in the D version as in C. The libgit2 master branch is out of date and might not compile.
 
-== LICENSE ==
+== See also ==
+http://libgit2.github.com/
+https://github.com/libgit2/libgit2/
+
+== License ==
 See libgit's COPYING file, included in this repo. I am not a lawyer.
 
 == DISCLAIMER ==
