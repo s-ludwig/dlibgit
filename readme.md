@@ -18,17 +18,18 @@ You need to build the libgit2 shared library (a specific commit is required):
   E.g. on Linux Mint libgit2 installs to /usr/local/lib, so either 
   edit /etc/ld.so.conf or do:
   
-  $ LD_LIBRARY_PATH=/usr/local/lib
-  $ export LD_LIBRARY_PATH
+    $ LD_LIBRARY_PATH=/usr/local/lib
+    $ export LD_LIBRARY_PATH
 
 [DMD]: http://dlang.org/download.html
 
 ## Building and running samples
+
     $ rdmd build.d samples/diff/diff.d
     $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
     
-    - ^ That will diff the first two commits in dlibgit.
-    - You could pass an absolute path, e.g. C:/some/git/repo/.git
+- ^ That will diff the first two commits in dlibgit.
+- You could pass an absolute path, e.g. C:/some/git/repo/.git
     
     $ rdmd build.d samples/showindex/showindex.d
     $ bin\showindex.exe .git
