@@ -32,7 +32,7 @@ These are the libgit2 D bindings.
     Some libgit functions work with either form of slashes on win32, but you should prefer forward slashes.
     
 == Documentation ==
-    The D bindings aren't documented, but they're 1-to-1 equivalents to the C bindings.
+    The D bindings aren't documented, but they're 1-to-1 equivalents of the C library.
     Use these pages for the API docs:
     
         http://libgit2.github.com/api.html
