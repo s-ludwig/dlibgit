@@ -21,10 +21,13 @@ libgit D binding.
 
 == Building and running samples ==
     $ rdmd build.d samples/diff/diff.d
-    $ bin/diff.exe D:/dev/projects/DWinProgramming/.git 6373ebc0252bb 2e145b334dd
+    $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
+    
+    - ^ That will diff the first two commits in dlibgit.
+    - You could pass an absolute path, e.g. C:/some/git/repo/.git
     
     $ rdmd build.d samples/showindex/showindex.d
-    $ bin/showindex.exe D:/dev/projects/DWinProgramming/.git
+    $ bin\showindex.exe .git
     
     Some libgit functions work with either form of slashes on win32, but you should
     probably prefer forward slashes.
