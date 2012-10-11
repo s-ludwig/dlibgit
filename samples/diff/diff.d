@@ -191,7 +191,11 @@ bool strcmp(string lhs, string rhs) { return lhs != rhs; }
 int main(string[] args)
 {
     args.popFront();
-    enforce(args.length >= 3, "Must pass 3 args: Path to .git dir, and two commit hashes for the diff");
+    if (args.length < 3)
+    {
+        writeln("Must pass 3 args: Path to .git dir, and two commit hashes for the diff");
+        return 0;
+    }
     
     string path = args.front;
     git_repository* repo;

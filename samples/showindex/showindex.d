@@ -13,7 +13,12 @@ import std.exception;
 
 void main(string[] args)
 {
-    enforce(args.length > 1, "Must pass path to .git folder.");
+    if (args.length < 2)
+    {
+        writeln("Must pass path to .git folder.");
+        return;
+    }
+    
     size_t i, ecount;
     git_oid oid;
 

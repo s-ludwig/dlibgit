@@ -17,13 +17,18 @@ else
 {
     enum string libArg = "-L-lgit2";
     enum string binPath = "bin/";
-    enum string exeExt;
+    enum string exeExt = "";
 }
 
 void main(string[] args)
 {
     args.popFront();
-    enforce(!args.empty, "Error: Pass a .d file to compile.");
+    if (args.empty)
+    {
+        writeln("Error: Pass a .d file to compile.");
+        return;
+    }
+    
     string arg = args.front;
     
     string proj = arg.stripExtension.baseName;
