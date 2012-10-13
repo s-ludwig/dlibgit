@@ -4,8 +4,15 @@ import git2.config;
 import git2.net;
 import git2.odb_backend;
 import git2.remote;
-import mingw.include.sys.types;
-import mingw.include.time;
+
+import core.stdc.stdint;
+
+alias core.stdc.stdint.int32_t int32_t;
+alias core.stdc.stdint.int64_t int64_t;
+alias core.stdc.stdint.uint16_t uint16_t;
+alias core.stdc.stdint.uint32_t uint32_t;
+alias long off64_t;
+alias long __time64_t;
 
 extern(C):
 

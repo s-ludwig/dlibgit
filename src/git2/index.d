@@ -3,7 +3,6 @@ module git2.index;
 import git2.indexer;
 import git2.oid;
 import git2.types;
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 

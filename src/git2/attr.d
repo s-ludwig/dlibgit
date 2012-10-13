@@ -1,8 +1,6 @@
 module git2.attr;
 
 import git2.types;
-import mingw.include.stdint;
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 
@@ -14,7 +12,7 @@ bool GIT_ATTR_HAS_VALUE(T)(T attr)   { return git_attr_value(attr) == git_attr_t
 enum GIT_ATTR_CHECK_FILE_THEN_INDEX	= 0;
 enum GIT_ATTR_CHECK_INDEX_THEN_FILE	= 1;
 enum GIT_ATTR_CHECK_INDEX_ONLY      = 2;
-enum GIT_ATTR_CHECK_NO_SYSTEM       = (1 << 2);
+enum GIT_ATTR_CHECK_NO_SYSTEM       = 1 << 2;
 
 enum git_attr_t
 {

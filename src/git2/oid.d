@@ -1,7 +1,5 @@
 module git2.oid;
 
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
-
 extern(C):
 
 /** Size (in bytes) of a raw/binary oid */

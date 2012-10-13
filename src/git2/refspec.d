@@ -1,7 +1,6 @@
 module git2.refspec;
 
 import git2.types;
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 

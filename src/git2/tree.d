@@ -3,7 +3,6 @@ module git2.tree;
 import git2._object;
 import git2.oid;
 import git2.types;
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 

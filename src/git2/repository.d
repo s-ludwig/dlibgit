@@ -2,8 +2,6 @@ module git2.repository;
 
 import git2.oid;
 import git2.types;
-import mingw.include.stdint;
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
 
 extern(C):
 

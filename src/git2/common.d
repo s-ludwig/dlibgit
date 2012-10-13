@@ -1,7 +1,5 @@
 module git2.common;
 
-import mingw.lib.gcc.mingw32._4._6._1.include.stddef;
-
 extern(C):
 
 version(Windows)
