@@ -12,6 +12,18 @@ void git_tree_free(git_tree* tree)
     git_object_free(cast(git_object *) tree);
 }
 
+/** GIT_INLINE */
+int git_tree_lookup(git_tree** tree, git_repository* repo, const(git_oid)* id)
+{
+	return git_object_lookup(cast(git_object**)tree, repo, id, git_otype.GIT_OBJ_TREE);
+}
+
+/** GIT_INLINE */
+int git_tree_lookup_prefix(git_tree** tree, git_repository* repo, const(git_oid)* id, size_t len)
+{
+	return git_object_lookup_prefix(cast(git_object**)tree, repo, id, len, git_otype.GIT_OBJ_TREE);
+}
+
 enum git_treewalk_mode
 {
     GIT_TREEWALK_PRE = 0,
@@ -34,8 +46,6 @@ int git_tree_entry_to_object(git_object** object_out, git_repository* repo, cons
 git_otype git_tree_entry_type(const(git_tree_entry)* entry);
 uint git_tree_entrycount(git_tree* tree);
 const(git_oid)* git_tree_id(git_tree* tree);
-int git_tree_lookup(git_tree** tree, git_repository* repo, const(git_oid)* id);
-int git_tree_lookup_prefix(git_tree** tree, git_repository* repo, const(git_oid)* id, size_t len);
 int git_tree_walk(git_tree* tree, git_treewalk_cb callback, int mode, void* payload);
 void git_treebuilder_clear(git_treebuilder* bld);
 int git_treebuilder_create(git_treebuilder** builder_p, const(git_tree)* source);
