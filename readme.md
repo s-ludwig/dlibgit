@@ -1,6 +1,7 @@
 # dlibgit - libgit2 D bindings
 
-These are the D bindings to the libgit2 library. An object-oriented wrapper is in development, which should make using the library much more convenient.
+These are the D bindings to the libgit2 library. 
+An object-oriented wrapper is in development, which should make using the library much more convenient.
 
 ## Requirements
 [DMD] 2.060+.
