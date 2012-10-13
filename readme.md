@@ -1,5 +1,7 @@
 # dlibgit - libgit2 D bindings
 
+These are the D bindings to the libgit2 library. An object-oriented wrapper is in development, which should make using the library much more convenient.
+
 ## Requirements
 [DMD] 2.060+.
 
@@ -28,10 +30,13 @@ edit `/etc/ld.so.conf` or run:
 [DMD]: http://dlang.org/download.html
 
 ## Building and running samples
+
+### Samples using direct C API
 **diff** sample:
 
+    $ cd c
     $ rdmd build.d samples/diff/diff.d
-    $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
+    $ ..\bin\diff.exe ..\.git 2504016ab220b5b 1e8ffc04be048c0
     
 - This will diff the first two commits in **dlibgit**.
 - You could pass an absolute path, e.g. `C:/some/git/repo/.git`
@@ -39,20 +44,23 @@ edit `/etc/ld.so.conf` or run:
 **showindex** sample:
 
     $ rdmd build.d samples/showindex/showindex.d
-    $ bin\showindex.exe .git
+    $ ..\bin\showindex.exe ..\.git
 
 **git client** sample:
 
     $ rdmd build.d samples/network/git.d
-    $ bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
-    $ bin\git.exe index-pack path\to\.git\objects\pack\abcd1234.pack
-    $ bin\git.exe clone git://github.com/AndrejMitrovic/dlibgit.git ../dlibgit2_clone
+    $ ..\bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
+    $ ..\bin\git.exe index-pack path\to\.git\objects\pack\abcd1234.pack
+    $ ..\bin\git.exe clone git://github.com/AndrejMitrovic/dlibgit.git ../../dlibgit2_clone
 
 - `clone` is not the same as git's `clone` command, it does not deflate git object files.
 - `fetch` doesn't currently work due to some bugs in network\fetch.d.
 - Replace `path\to` with a valid path for index-pack.
 
 On win32 some libgit functions work with either form of slashes, but you should prefer using forward slashes.
+
+### Samples using object-oriented D API
+- todo
 
 ## Usage tips
 As a convenience you can import `git2.all` or `git2._` to import all modules at once.
