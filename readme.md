@@ -61,10 +61,11 @@ As a convenience you can import `git2.all` or `git2._` to import all modules at 
 
 The D bindings aren't documented, but they're 1-to-1 equivalents of the C libgit2 library.
 
-You can use the libgit2 [Guide] and its [API] docs.
+You can use the libgit2 [Guide] and its [API] docs. The [general] example is a good read too.
 
 [API]: http://libgit2.github.com/libgit2/#HEAD
 [Guide]: http://libgit2.github.com/api.html
+[general]: http://libgit2.github.com/libgit2/ex/HEAD/general.html
 
 ## Note
 - The shared lib is built from commit `acd1700630ea1159a55dc5e8cee12e4a725afe18` in the [development] branch. Inline functions were re-created in D because they're not exported. Do not try to use a shared lib built from other commits without doing a diff and verifying that the inline functions are still the same in the D version as in C. The libgit2 master branch is out of date and might not compile.
