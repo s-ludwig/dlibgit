@@ -3,3 +3,4 @@
 *.dat
 *.exe
 *.o
+bin\dlibgit.lib
