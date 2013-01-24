@@ -72,7 +72,7 @@ You can use the libgit2 [Guide] and its [API] docs. The [general] example is a g
 [general]: http://libgit2.github.com/libgit2/ex/HEAD/general.html
 
 ## Note
-- The shared lib is built from commit `acd1700630ea1159a55dc5e8cee12e4a725afe18` in the [development] branch. Inline functions were re-created in D because they're not exported. Do not try to use a shared lib built from other commits without doing a diff and verifying that the inline functions are still the same in the D version as in C. The libgit2 master branch is out of date and might not compile.
+- The shared lib is built from commit `acd1700630ea1159a55dc5e8cee12e4a725afe18` in the [development] branch. Inline functions were re-created in D because they're not exported. Do not try to use a shared lib built from other commits without doing a diff and verifying that the inline functions are still the same in the D version as in C. Also note that the libgit2 master branch is usually out of date and might not compile.
 
 - x64 support will be added later. It might already work but some int types are hardcoded due to how gccxml exports typeinfo. size_t and friends will have to be fixed to guarantee safe behavior.
 
