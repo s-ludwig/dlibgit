@@ -20,8 +20,8 @@ You need to build the libgit2 shared library (a specific commit is required):
 - Follow these instructions: http://libgit2.github.com/#install
 - You might need to install zlib if cmake says it's missing (use your package manager to find the zlib dev package)
 
-Make sure the libgit2 shared lib path is in your ld conf file.
-For example, on Linux Mint libgit2 installs to `/usr/local/lib`, so either
+Make sure the libgit2 shared lib path is in your ld conf file,
+on Linux Mint libgit2 installs to `/usr/local/lib`, so either
 edit `/etc/ld.so.conf` or run:
 
     $ LD_LIBRARY_PATH=/usr/local/lib
