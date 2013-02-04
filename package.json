@@ -1,0 +1,8 @@
+{
+	"name": "dlibgit",
+	"description": "D bindings for libgit2",
+	"importPaths": ["."],
+	"copyFiles-windows-x86": ["bin/git2.dll"],
+	"files-windows-x86": ["bin/git2.lib"],
+	"libs-posix": ["git2"]
+}
