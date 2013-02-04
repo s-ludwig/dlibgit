@@ -11,7 +11,7 @@ struct git_transfer_progress {
 	size_t received_bytes;
 }
 
-alias git_transfer_progress_callback = void function(const git_transfer_progress *stats, void *payload);
+alias git_transfer_progress_callback = void function(const(git_transfer_progress)* stats, void* payload);
 
 struct git_indexer { }
 
