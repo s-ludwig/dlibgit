@@ -16,7 +16,7 @@ struct git_remote_head
 {
     mixin(bitfields!(
         int, "local", 1,
-        byte, "", 7
+        int, "", 31
     ));
     git_oid oid;
     git_oid loid;
