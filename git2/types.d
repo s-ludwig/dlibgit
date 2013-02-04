@@ -87,6 +87,8 @@ struct git_odb { }
 
 struct git_odb_object { }
 
+struct git_push {}
+
 struct git_reference { }
 
 struct git_reflog { }
