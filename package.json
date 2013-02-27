@@ -1,6 +1,7 @@
 {
 	"name": "dlibgit",
 	"description": "D bindings for libgit2",
+	"authors": ["Andrej Mitrovic", "Sönke Ludwig"],
 	"importPaths": ["."],
 	"sourcePath" : "git2",
 	"copyFiles-windows-x86": ["bin/git2.dll"],
