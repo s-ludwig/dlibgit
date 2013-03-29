@@ -5,6 +5,6 @@
 	"importPaths": ["."],
 	"sourcePath" : "git2",
 	"copyFiles-windows-x86": ["bin/git2.dll"],
-	"files-windows-x86": ["bin/git2.lib"],
+	"sourceFiles-windows-x86": ["bin/git2.lib"],
 	"libs-posix": ["git2"]
 }
