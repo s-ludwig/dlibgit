@@ -42,17 +42,17 @@ enum git_submodule_status_t {
 
 bool GIT_SUBMODULE_STATUS_IS_UNMODIFIED(git_submodule_status_t S)
 {
-	return (((S) & ~(GIT_SUBMODULE_STATUS_IN_HEAD |
-		  GIT_SUBMODULE_STATUS_IN_INDEX |
-		  GIT_SUBMODULE_STATUS_IN_CONFIG |
-		  GIT_SUBMODULE_STATUS_IN_WD)) == 0);
+	return (((S) & ~(git_submodule_status_t.IN_HEAD |
+		git_submodule_status_t.IN_INDEX |
+		git_submodule_status_t.IN_CONFIG |
+		git_submodule_status_t.IN_WD)) == 0);
 }
 
 bool GIT_SUBMODULE_STATUS_IS_WD_DIRTY(git_submodule_status_t S)
 {
-	return (((S) & (GIT_SUBMODULE_STATUS_WD_INDEX_MODIFIED |
-		 GIT_SUBMODULE_STATUS_WD_WD_MODIFIED |
-		 GIT_SUBMODULE_STATUS_WD_UNTRACKED)) != 0);
+	return (((S) & (git_submodule_status_t.WD_INDEX_MODIFIED |
+		git_submodule_status_t.WD_WD_MODIFIED |
+		git_submodule_status_t.WD_UNTRACKED)) != 0);
 }
 
 int git_submodule_lookup(git_submodule** submodule, git_repository* repo, const(char)* name);
