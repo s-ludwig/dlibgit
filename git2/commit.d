@@ -15,13 +15,13 @@ void git_commit_free(git_commit* commit)
 /** GIT_INLINE */
 int git_commit_lookup(git_commit** commit, git_repository* repo, const(git_oid)* id)
 {
-    return git_object_lookup(cast(git_object **)commit, repo, id, git_otype.GIT_OBJ_COMMIT);
+    return git_object_lookup(cast(git_object **)commit, repo, id, git_otype.COMMIT);
 }
 
 /** GIT_INLINE */
 int git_commit_lookup_prefix(git_commit** commit, git_repository* repo, const(git_oid)* id, size_t len)
 {
-    return git_object_lookup_prefix(cast(git_object **)commit, repo, id, len, git_otype.GIT_OBJ_COMMIT);
+    return git_object_lookup_prefix(cast(git_object **)commit, repo, id, len, git_otype.COMMIT);
 }
 
 const(git_signature)* git_commit_author(git_commit* commit);

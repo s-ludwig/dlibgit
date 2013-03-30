@@ -10,13 +10,13 @@ extern(C):
 /** GIT_INLINE */
 int git_tag_lookup(git_tag** tag, git_repository* repo, const(git_oid)* id)
 {
-    return git_object_lookup(cast(git_object**)tag, repo, id, cast(git_otype)git_otype.GIT_OBJ_TAG);
+    return git_object_lookup(cast(git_object**)tag, repo, id, cast(git_otype)git_otype.TAG);
 }
 
 /** GIT_INLINE */
 int git_tag_lookup_prefix(git_tag** tag, git_repository* repo, const(git_oid)* id, size_t len)
 {
-    return git_object_lookup_prefix(cast(git_object**)tag, repo, id, len, cast(git_otype)git_otype.GIT_OBJ_TAG);
+    return git_object_lookup_prefix(cast(git_object**)tag, repo, id, len, cast(git_otype)git_otype.TAG);
 }
 
 int git_tag_create(git_oid* oid, git_repository* repo, const(char)* tag_name, const(git_object)* target, const(git_signature)* tagger, const(char)* message, int force);

@@ -18,49 +18,49 @@ extern(C):
 
 enum git_otype
 {
-    GIT_OBJ_ANY = -2,
-    GIT_OBJ_BAD = -1,
-    GIT_OBJ__EXT1 = 0,
-    GIT_OBJ_COMMIT = 1,
-    GIT_OBJ_TREE = 2,
-    GIT_OBJ_BLOB = 3,
-    GIT_OBJ_TAG = 4,
-    GIT_OBJ__EXT2 = 5,
-    GIT_OBJ_OFS_DELTA = 6,
-    GIT_OBJ_REF_DELTA = 7
+    ANY = -2,
+    BAD = -1,
+    _EXT1 = 0,
+    COMMIT = 1,
+    TREE = 2,
+    BLOB = 3,
+    TAG = 4,
+    _EXT2 = 5,
+    OFS_DELTA = 6,
+    REF_DELTA = 7
 }
 
 enum git_filemode_t
 {
-    GIT_FILEMODE_NEW = 0,
-    GIT_FILEMODE_TREE = 16384,
-    GIT_FILEMODE_BLOB = 33188,
-    GIT_FILEMODE_BLOB_EXECUTABLE = 33261,
-    GIT_FILEMODE_LINK = 40960,
-    GIT_FILEMODE_COMMIT = 57344
+    NEW = 0,
+    TREE = 16384,
+    BLOB = 33188,
+    BLOB_EXECUTABLE = 33261,
+    LINK = 40960,
+    COMMIT = 57344
 }
 
 enum git_ref_t
 {
-    GIT_REF_INVALID = 0,
-    GIT_REF_OID = 1,
-    GIT_REF_SYMBOLIC = 2,
-    GIT_REF_PACKED = 4,
-    GIT_REF_HAS_PEEL = 8,
-    GIT_REF_LISTALL = 7
+    INVALID = 0,
+    OID = 1,
+    SYMBOLIC = 2,
+    PACKED = 4,
+    HAS_PEEL = 8,
+    LISTALL = 7
 }
 
 enum git_reset_type
 {
-    GIT_RESET_SOFT = 1,
-    GIT_RESET_MIXED = 2,
-    GIT_RESET_HARD = 3
+    SOFT = 1,
+    MIXED = 2,
+    HARD = 3
 }
 
 enum git_branch_t
 {
-    GIT_BRANCH_LOCAL = 1,
-    GIT_BRANCH_REMOTE = 2
+    LOCAL = 1,
+    REMOTE = 2
 }
 
 alias git2.config.git_config_file git_config_file;

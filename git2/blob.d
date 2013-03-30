@@ -15,13 +15,13 @@ void git_blob_free(git_blob* blob)
 /** GIT_INLINE */
 int git_blob_lookup(git_blob** blob, git_repository* repo, const(git_oid)* id)
 {
-    return git_object_lookup(cast(git_object **)blob, repo, id, git_otype.GIT_OBJ_BLOB);
+    return git_object_lookup(cast(git_object **)blob, repo, id, git_otype.BLOB);
 }
 
 /** GIT_INLINE */
 int git_blob_lookup_prefix(git_blob** blob, git_repository* repo, const(git_oid)* id, size_t len)
 {
-    return git_object_lookup_prefix(cast(git_object **)blob, repo, id, len, git_otype.GIT_OBJ_BLOB);
+    return git_object_lookup_prefix(cast(git_object **)blob, repo, id, len, git_otype.BLOB);
 }
 
 int git_blob_create_frombuffer(git_oid* oid, git_repository* repo, const(void)* buffer, size_t len);
