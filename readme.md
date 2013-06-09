@@ -70,10 +70,9 @@ As a convenience you can import `git2.all` or `git2._` to import all modules at 
 
 The D bindings aren't documented, but they're 1-to-1 equivalents of the C libgit2 library.
 
-You can use the libgit2 [Guide] and its [API] docs. The [general] example is a good read too.
+You can use the libgit2 [API] docs. The [general] example is a good read.
 
 [API]: http://libgit2.github.com/libgit2/#HEAD
-[Guide]: http://libgit2.github.com/api.html
 [general]: http://libgit2.github.com/libgit2/ex/HEAD/general.html
 
 ## Note
