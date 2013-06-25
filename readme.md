@@ -3,9 +3,9 @@
 These are the D bindings to the libgit2 library.
 
 ## News
-An updated D binding will be created once libgit2 is tagged with the 0.19 release.
-See [here](https://github.com/libgit2/libgit2/issues/1616) for the current
-libgit2 release status.
+**Note**: libgit2 has been tagged with the 0.19 release. dlibgit is currently being updated and should have a c-based API binding very soon. Stay tuned!
+
+See [here](https://github.com/libgit2/libgit2/issues/1616) for the libgit2 release status.
 
 ## Requirements
 [DMD] 2.060+.
