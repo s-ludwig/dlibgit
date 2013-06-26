@@ -1,6 +1,6 @@
 module showindex;
 
-import git2.c;
+import git.c;
 
 import std.stdio;
 import std.string;
@@ -30,7 +30,7 @@ void main(string[] args)
 
     for (i = 0; i < ecount; ++i)
     {
-        git_index_entry* e = git_index_get(index, i);
+        const e = git_index_get_byindex(index, i);
 
         oid = e.oid;
         git_oid_fmt(_out.ptr, &oid);

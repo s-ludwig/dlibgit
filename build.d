@@ -42,8 +42,10 @@ void main(string[] args)
     dlibgitPath = buildPath(dlibgitPath, "../").buildNormalizedPath;
     enforce(dlibgitPath.exists);
 
-    libArg = buildPath(dlibgitPath, libArg).buildNormalizedPath;
-    outFile = buildPath(dlibgitPath, outFile).buildNormalizedPath;
+    string basePath = buildPath(dlibgitPath, "../");
+
+    libArg = buildPath(basePath, libArg).buildNormalizedPath;
+    outFile = buildPath(basePath, outFile).buildNormalizedPath;
 
     string cmd = format("rdmd --force --build-only -m32 %s -I%s -of%s %s", libArg, dlibgitPath, outFile, arg);
     system(cmd);
