@@ -21,7 +21,7 @@ GDC can be used but you will have to compile on your own.
 For GDC use the import lib **libgit2.dll.a** in the **bin** folder when linking.
 
 ### Windows:
-Either build `libgit2` or grab the DLL binaries from [here](https://github.com/AndrejMitrovic/libgit_bin)
+Either build `libgit2` or grab the DLL binaries from [here](https://github.com/AndrejMitrovic/libgit_bin).
 
 ### Posix:
 You need to build the `libgit2` shared library:
@@ -34,8 +34,10 @@ You need to build the `libgit2` shared library:
 
 - Make sure the libgit2 shared lib path is in your ld conf file, on Linux Mint libgit2 installs to `/usr/local/lib`, so either edit `/etc/ld.so.conf` or run:
 
+    ```
     $ LD_LIBRARY_PATH=/usr/local/lib
     $ export LD_LIBRARY_PATH
+    ```
 
 [DMD]: http://dlang.org/download.html
 
@@ -71,7 +73,7 @@ You need to build the `libgit2` shared library:
 On win32 some libgit functions work with either form of slashes, but you should prefer using forward slashes.
 
 ## Usage tips
-As a convenience you can import `git2.all` or `git2._` to import all modules at once.
+As a convenience you can import `git.c.all` or `git.c` (with the new 2.064 package import feature) to import all modules at once.
 
 ## Documentation
 
