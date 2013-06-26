@@ -1,6 +1,11 @@
+bin
 *.rar
 *.obj
 *.dat
 *.exe
 *.o
-bin\dlibgit.lib
+*.lib
+*.7z
+*.a
+*.dll
+*.lib

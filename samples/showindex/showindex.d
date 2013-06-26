@@ -1,6 +1,6 @@
 module showindex;
 
-import git2.all;
+import git2.c;
 
 import std.stdio;
 import std.string;
@@ -13,7 +13,7 @@ void main(string[] args)
         writeln("Must pass path to .git folder.");
         return;
     }
-    
+
     size_t i, ecount;
     git_oid oid;
 
@@ -27,14 +27,14 @@ void main(string[] args)
     git_index_read(index);
 
     ecount = git_index_entrycount(index);
-    
+
     for (i = 0; i < ecount; ++i)
     {
         git_index_entry* e = git_index_get(index, i);
 
         oid = e.oid;
         git_oid_fmt(_out.ptr, &oid);
-        
+
         printf("File Path: %s\n", e.path);
         printf(" Blob SHA: %s\n", &_out);
         printf("File Size: %d\n", cast(int)e.file_size);

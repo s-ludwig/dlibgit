@@ -4,7 +4,7 @@ module diff;
     Colors were hardcoded to Posix, they're disabled here.
 */
 
-import git2.all;
+import git.c;
 
 import std.array;
 import std.conv;
@@ -49,7 +49,7 @@ int resolve_to_tree(git_repository* repo, string identifier, git_tree** tree)
     }
 
     if (obj == null)
-        return GIT_ENOTFOUND;
+        return git_error_code.GIT_ENOTFOUND;
 
     switch (git_object_type(obj))
     {
@@ -63,7 +63,7 @@ int resolve_to_tree(git_repository* repo, string identifier, git_tree** tree)
             break;
 
         default:
-            err = GIT_ENOTFOUND;
+            err = git_error_code.GIT_ENOTFOUND;
     }
 
     return err;
@@ -137,7 +137,7 @@ extern(C) int printer(
 int check_uint16_param(string arg, string pattern, ushort* val)
 {
     arg.popFrontN(pattern.length);
-    
+
     try
     {
         *val = to!ushort(arg);
@@ -146,14 +146,14 @@ int check_uint16_param(string arg, string pattern, ushort* val)
     {
         return 0;
     }
-    
+
     return 1;
 }
 
 int check_str_param(string arg, string pattern, char** val)
 {
     arg.popFrontN(pattern.length);
-    
+
     try
     {
         *val = cast(char*)toStringz(arg);
@@ -162,7 +162,7 @@ int check_str_param(string arg, string pattern, char** val)
     {
         return 0;
     }
-    
+
     return 1;
 }
 
@@ -172,7 +172,7 @@ void usage(string message, string arg)
         writefln("%s: %s\n", message, arg);
     else if (!message.empty)
         writeln(message);
-    
+
     assert(0, "usage: diff [<tree-oid> [<tree-oid>]]\n");
 }
 
@@ -186,7 +186,7 @@ int main(string[] args)
         writeln("Must pass 3 args: Path to .git dir, and two commit hashes for the diff");
         return 0;
     }
-    
+
     string path = args.front;
     git_repository* repo;
     git_tree* t1, t2;
@@ -197,7 +197,7 @@ int main(string[] args)
     int compact = 0;
     int cached = 0;
     string dir = args[0];
-    
+
     string treeish1;
     string treeish2;
 
@@ -250,7 +250,7 @@ int main(string[] args)
 
     if (!treeish1.empty)
         check(resolve_to_tree(repo, treeish1, &t1), "Looking up first tree");
-    
+
     if (!treeish2.empty)
         check(resolve_to_tree(repo, treeish2, &t2), "Looking up second tree");
 

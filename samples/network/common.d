@@ -1,6 +1,6 @@
 module common;
 
-import git2.all;
+import git2.c;
 
 struct fetch_dl_data
 {
@@ -9,7 +9,7 @@ struct fetch_dl_data
     git_indexer_stats* stats;
     int ret;
     int finished;
-};
+}
 
 struct clone_dl_data
 {

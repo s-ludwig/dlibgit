@@ -30,7 +30,7 @@ import std.conv;
 import std.stdio;
 import std.string;
 
-import git2.all;
+import git.c;
 
 int main(string[] args)
 {

@@ -1,6 +1,6 @@
 module ls_remote;
 
-import git2.all;
+import git2.c;
 
 import std.algorithm;
 import std.stdio;
@@ -72,8 +72,8 @@ int run_ls_remote(git_repository* repo, int argc, string[] argv)
     {
         writeln("I need a remote.\n");
         return -1;
-    }    
-    
+    }
+
     int error;
     int i;
 

@@ -1,6 +1,6 @@
 module clone;
 
-import git2.all;
+import git2.c;
 
 import core.thread;
 import std.concurrency;
@@ -20,14 +20,14 @@ void clone_thread()
 
     if (repo)
         git_repository_free(repo);
-    
+
     clone_data.finished = 1;
 }
 
 int do_clone(git_repository* repo, int argc, string[] args)
 {
     // Validate args
-    if (argc < 3) 
+    if (argc < 3)
     {
         writefln("USAGE: %s <url> <path>\n", args[0]);
         return -1;
@@ -41,7 +41,7 @@ int do_clone(git_repository* repo, int argc, string[] args)
 
     // Create the worker thread
     spawn(&clone_thread);
-    
+
     // Watch for progress information
     do {
         Thread.sleep(dur!("msecs")(100));

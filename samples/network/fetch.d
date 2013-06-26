@@ -1,6 +1,6 @@
 module fetch;
 
-import git2.all;
+import git2.c;
 
 import core.thread;
 import std.concurrency;
@@ -62,7 +62,7 @@ int run_fetch(git_repository* repo, int argc, string[] argv)
     git_remote* remote;
     git_off_t bytes    = 0;
     git_indexer_stats stats;
-    
+
     // Figure out whether it's a named remote or a URL
     writefln("Fetching %s\n", argv[1]);
 

@@ -1,0 +1,58 @@
+module git.c.all;
+
+public
+{
+    import git.c.attr;
+    import git.c.blob;
+    import git.c.branch;
+    import git.c.checkout;
+    import git.c.clone;
+    import git.c.commit;
+    import git.c.common;
+    import git.c.config;
+    import git.c.cred_helpers;
+    import git.c.diff;
+    import git.c.errors;
+    import git.c.graph;
+    import git.c.ignore;
+    import git.c.index;
+    import git.c.indexer;
+    import git.c.merge;
+    import git.c.message;
+    import git.c.net;
+    import git.c.notes;
+    import git.c.object_;
+    import git.c.odb;
+    import git.c.odb_backend;
+    import git.c.oid;
+    import git.c.pack;
+    import git.c.push;
+    import git.c.refdb;
+    import git.c.reflog;
+    import git.c.refs;
+    import git.c.refspec;
+    import git.c.remote;
+    import git.c.repository;
+    import git.c.reset;
+    import git.c.revparse;
+    import git.c.revwalk;
+    import git.c.signature;
+    import git.c.stash;
+    import git.c.status;
+    import git.c.strarray;
+    import git.c.submodule;
+    import git.c.tag;
+    import git.c.threads;
+    import git.c.trace;
+    import git.c.transport;
+    import git.c.tree;
+    import git.c.types;
+    import git.c.version_;
+    import git.c.sys.commit;
+    import git.c.sys.config;
+    import git.c.sys.index;
+    import git.c.sys.odb_backend;
+    import git.c.sys.refdb_backend;
+    import git.c.sys.refs;
+    import git.c.sys.repository;
+}

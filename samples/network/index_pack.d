@@ -1,6 +1,6 @@
 module index_pack;
 
-import git2.all;
+import git2.c;
 
 import std.stdio;
 import std.exception;
@@ -33,21 +33,21 @@ int run_index_pack(git_repository* repo, int argc, string[] argv)
         writeln("bad idx");
         return -1;
     }
-    
+
     scope(exit)
         git_indexer_stream_free(idx);
 
     File file = File(argv[1], "r");
-    
+
     while (1)
     {
         byte[] read_bytes = file.rawRead(buf);
 
         enforce(git_indexer_stream_add(idx, read_bytes.ptr, read_bytes.length, &stats) >= 0);
         printf("\rIndexing %d of %d", stats.processed, stats.total);
-        
+
         if (read_bytes.length < buf.length)
-            break;        
+            break;
     }
 
     enforce(git_indexer_stream_finalize(idx, &stats) >= 0);
