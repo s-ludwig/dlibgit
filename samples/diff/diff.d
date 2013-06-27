@@ -1,10 +1,8 @@
 module diff;
 
-/*
-    Colors were hardcoded to Posix, they're disabled here.
-*/
+/** Note: Colors were hardcoded to Posix, they're disabled in the D samples. */
 
-import git.c;
+import git.c.all;
 
 import std.array;
 import std.conv;
@@ -20,115 +18,39 @@ void check(int error, const char* message)
 
 int resolve_to_tree(git_repository* repo, string identifier, git_tree** tree)
 {
-    int err     = 0;
-    size_t  len = identifier.length;
-    git_oid oid;
-    git_object* obj = null;
+	int err = 0;
+	git_object *obj = null;
 
-    /* try to resolve as OID */
-    if (git_oid_fromstrn(&oid, toStringz(identifier), len) == 0)
-        git_object_lookup_prefix(&obj, repo, &oid, len, git_otype.GIT_OBJ_ANY);
+    err = git_revparse_single(&obj, repo, identifier.toStringz);
+	if (err < 0)
+		return err;
 
-    /* try to resolve as reference */
-    if (obj == null)
+	switch (git_object_type(obj)) with (git_otype)
     {
-        git_reference* _ref;
-        git_reference* resolved;
-
-        if (git_reference_lookup(&_ref, repo, toStringz(identifier)) == 0)
-        {
-            git_reference_resolve(&resolved, _ref);
-            git_reference_free(_ref);
-
-            if (resolved)
-            {
-                git_object_lookup(&obj, repo, git_reference_oid(resolved), git_otype.GIT_OBJ_ANY);
-                git_reference_free(resolved);
-            }
-        }
-    }
-
-    if (obj == null)
-        return git_error_code.GIT_ENOTFOUND;
-
-    switch (git_object_type(obj))
-    {
-        case git_otype.GIT_OBJ_TREE:
-            *tree = cast(git_tree*)obj;
+        case GIT_OBJ_TREE:
+            *tree = cast(git_tree *)obj;
             break;
 
-        case git_otype.GIT_OBJ_COMMIT:
-            err = git_commit_tree(tree, cast(git_commit*)obj);
+        case GIT_OBJ_COMMIT:
+            err = git_commit_tree(tree, cast(git_commit *)obj);
             git_object_free(obj);
             break;
 
         default:
             err = git_error_code.GIT_ENOTFOUND;
-    }
+	}
 
-    return err;
+	return err;
 }
 
-string[] colors = [
-    "\033[m",                /* reset */
-    "\033[1m",               /* bold */
-    "\033[31m",              /* red */
-    "\033[32m",              /* green */
-    "\033[36m"               /* cyan */
-];
-
 extern(C) int printer(
-    void* data,
     const(git_diff_delta)* delta,
     const(git_diff_range)* range,
     char usage,
     const(char)* line,
-    size_t line_len)
+    size_t line_len,
+    void* data)
 {
-    int* last_color = cast(int*)data;
-    int color = 0;
-
-    if (*last_color >= 0)
-    {
-        switch (usage)
-        {
-            case GIT_DIFF_LINE_ADDITION:
-                color = 3;
-                break;
-
-            case GIT_DIFF_LINE_DELETION:
-                color = 2;
-                break;
-
-            case GIT_DIFF_LINE_ADD_EOFNL:
-                color = 3;
-                break;
-
-            case GIT_DIFF_LINE_DEL_EOFNL:
-                color = 2;
-                break;
-
-            case GIT_DIFF_LINE_FILE_HDR:
-                color = 1;
-                break;
-
-            case GIT_DIFF_LINE_HUNK_HDR:
-                color = 4;
-                break;
-
-            default:
-                color = 0;
-        }
-
-        //~ if (color != *last_color)
-        //~ {
-            //~ if (*last_color == 1 || color == 1)
-                //~ fputs(colors[0], stdout);
-            //~ fputs(colors[color], stdout);
-            //~ *last_color = color;
-        //~ }
-    }
-
     printf("%s", line);
     stdout.flush();
     return 0;
@@ -150,7 +72,7 @@ int check_uint16_param(string arg, string pattern, ushort* val)
     return 1;
 }
 
-int check_str_param(string arg, string pattern, char** val)
+int check_str_param(string arg, string pattern, const(char)** val)
 {
     arg.popFrontN(pattern.length);
 
@@ -178,6 +100,12 @@ void usage(string message, string arg)
 
 bool strcmp(string lhs, string rhs) { return lhs != rhs; }
 
+enum {
+	FORMAT_PATCH = 0,
+	FORMAT_COMPACT = 1,
+	FORMAT_RAW = 2
+};
+
 int main(string[] args)
 {
     args.popFront();
@@ -190,8 +118,11 @@ int main(string[] args)
     string path = args.front;
     git_repository* repo;
     git_tree* t1, t2;
-    git_diff_options opts;
+    git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
+    git_diff_find_options findopts = GIT_DIFF_FIND_OPTIONS_INIT;
     git_diff_list* diff;
+    int format = FORMAT_PATCH;
+
     int i;
     int color = -1;
     int compact = 0;
@@ -260,41 +191,47 @@ int main(string[] args)
     /* --cached */
     /* nothing */
 
-    if (t1 && t2)
-        check(git_diff_tree_to_tree(repo, &opts, t1, t2, &diff), "Diff");
-    else if (t1 && cached)
-        check(git_diff_index_to_tree(repo, &opts, t1, &diff), "Diff");
-    else if (t1)
-    {
-        git_diff_list* diff2;
-        check(git_diff_index_to_tree(repo, &opts, t1, &diff), "Diff");
-        check(git_diff_workdir_to_index(repo, &opts, &diff2), "Diff");
-        check(git_diff_merge(diff, diff2), "Merge diffs");
-        git_diff_list_free(diff2);
-    }
-    else if (cached)
-    {
-        check(resolve_to_tree(repo, "HEAD", &t1), "looking up HEAD");
-        check(git_diff_index_to_tree(repo, &opts, t1, &diff), "Diff");
-    }
-    else
-        check(git_diff_workdir_to_index(repo, &opts, &diff), "Diff");
+	if (t1 && t2)
+		check(git_diff_tree_to_tree(&diff, repo, t1, t2, &opts), "Diff");
+	else if (t1 && cached)
+		check(git_diff_tree_to_index(&diff, repo, t1, null, &opts), "Diff");
+	else if (t1) {
+		git_diff_list *diff2;
+		check(git_diff_tree_to_index(&diff, repo, t1, null, &opts), "Diff");
+		check(git_diff_index_to_workdir(&diff2, repo, null, &opts), "Diff");
+		check(git_diff_merge(diff, diff2), "Merge diffs");
+		git_diff_list_free(diff2);
+	}
+	else if (cached) {
+		check(resolve_to_tree(repo, "HEAD", &t1), "looking up HEAD");
+		check(git_diff_tree_to_index(&diff, repo, t1, null, &opts), "Diff");
+	}
+	else
+		check(git_diff_index_to_workdir(&diff, repo, null, &opts), "Diff");
 
-    //~ if (color >= 0)
-        //~ fputs(colors[0], stdout);
+	if ((findopts.flags & git_diff_find_t.GIT_DIFF_FIND_ALL) != 0)
+		check(git_diff_find_similar(diff, &findopts),
+			"finding renames and copies ");
 
-    if (compact)
-        check(git_diff_print_compact(diff, &color, &printer), "Displaying diff");
-    else
-        check(git_diff_print_patch(diff, &color, &printer), "Displaying diff");
+	switch (format) {
+	case FORMAT_PATCH:
+		check(git_diff_print_patch(diff, &printer, &color), "Displaying diff");
+		break;
+	case FORMAT_COMPACT:
+		check(git_diff_print_compact(diff, &printer, &color), "Displaying diff");
+		break;
+	case FORMAT_RAW:
+		check(git_diff_print_raw(diff, &printer, &color), "Displaying diff");
+		break;
+    default:
+	}
 
-    //~ if (color >= 0)
-        //~ fputs(colors[0], stdout);
+	git_diff_list_free(diff);
+	git_tree_free(t1);
+	git_tree_free(t2);
+	git_repository_free(repo);
 
-    git_diff_list_free(diff);
-    git_tree_free(t1);
-    git_tree_free(t2);
-    git_repository_free(repo);
+	git_threads_shutdown();
 
-    return 0;
+	return 0;
 }

@@ -291,7 +291,7 @@ struct git_diff_delta {
  */
 alias git_diff_notify_cb = int function(
 	const git_diff_list *diff_so_far,
-	const git_diff_delta *delta_to_add,
+	const(git_diff_delta)* delta_to_add,
 	const(char)* matched_pathspec,
 	void *payload);
 
@@ -342,7 +342,7 @@ enum git_diff_options GIT_DIFF_OPTIONS_INIT = { GIT_DIFF_OPTIONS_VERSION, GIT_DI
  * @param payload User-specified pointer from foreach function
  */
 alias git_diff_file_cb = int function(
-	const git_diff_delta *delta,
+	const(git_diff_delta)* delta,
 	float progress,
 	void *payload);
 
@@ -360,8 +360,8 @@ struct git_diff_range {
  * When iterating over a diff, callback that will be made per hunk.
  */
 alias git_diff_hunk_cb = int function(
-	const git_diff_delta *delta,
-	const git_diff_range *range,
+	const(git_diff_delta)* delta,
+	const(git_diff_range)* range,
 	const(char)* header,
 	size_t header_len,
 	void *payload);
@@ -403,8 +403,8 @@ enum git_diff_line_t {
  * of lines of file and hunk headers.
  */
 alias git_diff_data_cb = int function(
-	const git_diff_delta *delta, /** delta that contains this data */
-	const git_diff_range *range, /** range of lines containing this data */
+	const(git_diff_delta)* delta, /** delta that contains this data */
+	const(git_diff_range)* range, /** range of lines containing this data */
 	char line_origin,            /** git_diff_list_t value from above */
 	const(char)* content,         /** diff data - not NUL terminated */
 	size_t content_len,          /** number of bytes of diff data */
@@ -841,7 +841,7 @@ void git_diff_patch_free(
 /**
  * Get the delta associated with a patch
  */
-const git_diff_delta * git_diff_patch_delta(
+const(git_diff_delta)*  git_diff_patch_delta(
 	git_diff_patch *patch);
 
 /**

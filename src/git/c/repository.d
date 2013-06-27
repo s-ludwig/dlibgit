@@ -31,7 +31,7 @@ import git.c.oid;
  * folder, or an existing work dir.
  *
  * The method will automatically detect if 'path' is a normal
- * or bare repository or fail is 'path' is neither.
+ * or bare repository or fail if 'path' is neither.
  *
  * @param out pointer to the repo which will be opened
  * @param path the path to the repository
