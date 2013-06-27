@@ -17,19 +17,31 @@ dlibgit has been updated and now targets libgit v0.19.0.
 ## Requirements
 [DMD] 2.063+.
 
+## Dependencies
+
 ### Windows:
-Either build `libgit2` or grab the DLL binaries from [here](https://github.com/AndrejMitrovic/libgit_bin).
+
+- Get the libgit2 DLL from [here](https://github.com/AndrejMitrovic/libgit_bin).
+- Or build `libgit2` manually.
 
 ### Posix:
-You need to build the `libgit2` shared library:
 
+- Get the libgit2 shared library with your package manager, making sure you're getting the `0.19.0` release.
+- Or build `libgit2` manually.
+
+## Building libgit2 manually
+
+    $ cd <your-folder-of-choice>
     $ git clone git://github.com/libgit2/libgit2.git
-    $ cd libgit2 && git checkout v0.19.0
+    $ cd libgit2
+    $ git checkout v0.19.0
 
-- Follow these instructions: https://github.com/libgit2/libgit2#building-libgit2---using-cmake
-- You might need to install zlib if cmake says it's missing (use your package manager to find the zlib dev package)
+- Then follow these instructions: https://github.com/libgit2/libgit2#building-libgit2---using-cmake
+- You might need to install zlib if cmake says it's missing (On Posix use your package manager to find the `zlib dev` package).
 
-- Make sure the libgit2 shared lib path is in your ld conf file, on Linux Mint libgit2 installs to `/usr/local/lib`, so either edit `/etc/ld.so.conf` or run:
+### Additional Posix notes:
+
+- Make sure the libgit2 shared lib path is in your ld conf file, for example on Linux Mint libgit2 installs to `/usr/local/lib`, so either edit `/etc/ld.so.conf` or run:
 
     ```
     $ LD_LIBRARY_PATH=/usr/local/lib
