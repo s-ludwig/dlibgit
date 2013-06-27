@@ -81,7 +81,7 @@ int git_stash_save(
  */
 alias git_stash_cb = int function(
 	size_t index,
-	const char* message,
+	const(char)* message,
 	const(git_oid)* stash_id,
 	void *payload);
 

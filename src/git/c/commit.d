@@ -264,7 +264,7 @@ int git_commit_create(
  * sure that the last line ends with a '\n'.
  *
  * The parents for the commit are specified as a variable list of pointers
- * to `const git_commit *`. Note that this is a convenience method which may
+ * to `const(git_commit)*`. Note that this is a convenience method which may
  * not be safe to export for certain languages or compilers
  *
  * All other parameters remain the same at `git_commit_create()`.

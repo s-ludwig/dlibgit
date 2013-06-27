@@ -290,7 +290,7 @@ struct git_diff_delta {
  *		continues.
  */
 alias git_diff_notify_cb = int function(
-	const git_diff_list *diff_so_far,
+	const(git_diff_list)* diff_so_far,
 	const(git_diff_delta)* delta_to_add,
 	const(char)* matched_pathspec,
 	void *payload);
@@ -554,7 +554,7 @@ int git_diff_tree_to_tree(
 	git_repository *repo,
 	git_tree *old_tree,
 	git_tree *new_tree,
-	const git_diff_options *opts); /**< can be NULL for defaults */
+	const(git_diff_options)* opts); /**< can be NULL for defaults */
 
 /**
  * Create a diff list between a tree and repository index.
@@ -576,7 +576,7 @@ int git_diff_tree_to_index(
 	git_repository *repo,
 	git_tree *old_tree,
 	git_index *index,
-	const git_diff_options *opts); /**< can be NULL for defaults */
+	const(git_diff_options)* opts); /**< can be NULL for defaults */
 
 /**
  * Create a diff list between the repository index and the workdir directory.
@@ -598,7 +598,7 @@ int git_diff_index_to_workdir(
 	git_diff_list **diff,
 	git_repository *repo,
 	git_index *index,
-	const git_diff_options *opts); /**< can be NULL for defaults */
+	const(git_diff_options)* opts); /**< can be NULL for defaults */
 
 /**
  * Create a diff list between a tree and the working directory.
@@ -633,7 +633,7 @@ int git_diff_tree_to_workdir(
 	git_diff_list **diff,
 	git_repository *repo,
 	git_tree *old_tree,
-	const git_diff_options *opts); /**< can be NULL for defaults */
+	const(git_diff_options)* opts); /**< can be NULL for defaults */
 
 /**
  * Merge one diff list into another.
@@ -650,7 +650,7 @@ int git_diff_tree_to_workdir(
  */
 int git_diff_merge(
 	git_diff_list *onto,
-	const git_diff_list *from);
+	const(git_diff_list)* from);
 
 /**
  * Transform a diff list marking file renames, copies, etc.
@@ -828,7 +828,7 @@ size_t git_diff_num_deltas_of_type(
  */
 int git_diff_get_patch(
 	git_diff_patch **patch_out,
-	const git_diff_delta **delta_out,
+	const(git_diff_delta)** delta_out,
 	git_diff_list *diff,
 	size_t idx);
 
@@ -870,7 +870,7 @@ int git_diff_patch_line_stats(
 	size_t *total_context,
 	size_t *total_additions,
 	size_t *total_deletions,
-	const git_diff_patch *patch);
+	const(git_diff_patch)* patch);
 
 /**
  * Get the information about a hunk in a patch
@@ -889,7 +889,7 @@ int git_diff_patch_line_stats(
  * @return 0 on success, GIT_ENOTFOUND if hunk_idx out of range, <0 on error
  */
 int git_diff_patch_get_hunk(
-	const git_diff_range **range,
+	const(git_diff_range)** range,
 	const(char)** header,
 	size_t *header_len,
 	size_t *lines_in_hunk,
@@ -1002,7 +1002,7 @@ int git_diff_blobs(
 	const(char)* old_as_path,
 	const(git_blob)* new_blob,
 	const(char)* new_as_path,
-	const git_diff_options *options,
+	const(git_diff_options)* options,
 	git_diff_file_cb file_cb,
 	git_diff_hunk_cb hunk_cb,
 	git_diff_data_cb line_cb,
@@ -1030,7 +1030,7 @@ int git_diff_patch_from_blobs(
 	const(char)* old_as_path,
 	const(git_blob)* new_blob,
 	const(char)* new_as_path,
-	const git_diff_options *opts);
+	const(git_diff_options)* opts);
 
 /**
  * Directly run a diff between a blob and a buffer.
@@ -1062,7 +1062,7 @@ int git_diff_blob_to_buffer(
 	const(char)* buffer,
 	size_t buffer_len,
 	const(char)* buffer_as_path,
-	const git_diff_options *options,
+	const(git_diff_options)* options,
 	git_diff_file_cb file_cb,
 	git_diff_hunk_cb hunk_cb,
 	git_diff_data_cb data_cb,
@@ -1092,7 +1092,7 @@ int git_diff_patch_from_blob_and_buffer(
 	const(char)* buffer,
 	size_t buffer_len,
 	const(char)* buffer_as_path,
-	const git_diff_options *opts);
+	const(git_diff_options)* opts);
 
 
 

@@ -56,8 +56,10 @@ string translate(string input)
 
     input = input.replace("const char **", "const(char)** ");
     input = input.replace("const char *", "const(char)* ");
+    input = input.replace("const char*", "const(char)*");
     input = input.replace("const git_config *", "const(git_config)* ");
     input = input.replace("const git_commit *", "const(git_commit)* ");
+    input = input.replace("const git_indexer_stream *", "const(git_indexer_stream)* ");
     input = input.replace("const git_diff_file *", "const(git_diff_file)* ");
     input = input.replace("const git_oid *", "const(git_oid)* ");
     input = input.replace("const git_blob *", "const(git_blob)* ");
@@ -69,6 +71,7 @@ string translate(string input)
     input = input.replace("const git_config_entry *", "const(git_config_entry)* ");
     input = input.replace("const git_error *", "const(git_error)* ");
     input = input.replace("const git_note *", "const(git_note)* ");
+    input = input.replace("const git_remote *", "const(git_remote)* ");
     input = input.replace("const git_reference *", "const(git_reference)* ");
     input = input.replace("const git_reflog_entry *", "const(git_reflog_entry)* ");
     input = input.replace("const git_refspec *", "const(git_refspec)* ");

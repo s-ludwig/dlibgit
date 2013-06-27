@@ -575,7 +575,7 @@ int git_repository_hashfile(
  */
 int git_repository_set_head(
 	git_repository* repo,
-	const char* refname);
+	const(char)* refname);
 
 /**
  * Make the repository HEAD directly point to the Commit.
@@ -595,7 +595,7 @@ int git_repository_set_head(
  */
 int git_repository_set_head_detached(
 	git_repository* repo,
-	const git_oid* commitish);
+	const(git_oid)* commitish);
 
 /**
  * Detach the HEAD.

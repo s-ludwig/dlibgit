@@ -120,7 +120,7 @@ enum git_libgit2_opt_t
  *		> `GIT_CONFIG_LEVEL_XDG`.  The search path is written to the `out`
  *		> buffer up to size `len`.  Returns GIT_EBUFS if buffer is too small.
  *
- *	* opts(GIT_OPT_SET_SEARCH_PATH, int level, const char *path)
+ *	* opts(GIT_OPT_SET_SEARCH_PATH, int level, const(char)* path)
  *
  *		> Set the search path for a level of config data.  The search path
  *		> applied to shared attributes and ignore files, too.

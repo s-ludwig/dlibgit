@@ -61,7 +61,7 @@ int git_push_new(git_push **out_, git_remote *remote);
  */
 int git_push_set_options(
 	git_push *push,
-	const git_push_options *opts);
+	const(git_push_options)* opts);
 
 /**
  * Add a refspec to be pushed

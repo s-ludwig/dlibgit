@@ -32,7 +32,7 @@ struct git_config_backend {
 
 	/* Open means open the file/database and parse if necessary */
 	int function(git_config_backend *, git_config_level_t level) open;
-	int function(const git_config_backend *, const(char)* key, const(git_config_entry)** entry) get;
+	int function(const(git_config_backend)*, const(char)* key, const(git_config_entry)** entry) get;
 	int function(git_config_backend *, const(char)* key, const(char)* regexp, git_config_foreach_cb callback, void *payload) get_multivar;
 	int function(git_config_backend *, const(char)* key, const(char)* value) set;
 	int function(git_config_backend *cfg, const(char)* name, const(char)* regexp, const(char)* value) set_multivar;

@@ -95,7 +95,7 @@ int git_merge_base(
 int git_merge_base_many(
 	git_oid *out_,
 	git_repository *repo,
-	const git_oid input_array[],
+	const(git_oid)* input_array,
 	size_t length);
 
 /**

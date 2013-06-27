@@ -41,7 +41,7 @@ int git_commit_create_from_oids(
 	const(char)* message,
 	const(git_oid)* tree,
 	int parent_count,
-	const(git_oid)* parents[]);  // array of pointer to const git_oid
+	const(git_oid)** parents);  // array of pointer to const(git_oid)
 
 
 

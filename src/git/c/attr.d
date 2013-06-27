@@ -156,8 +156,8 @@ int git_attr_get(
  *
  * For example, you might write:
  *
- *     const char *attrs[] = { "crlf", "diff", "foo" };
- *     const char **values[3];
+ *     const(char)*attrs[] = { "crlf", "diff", "foo" };
+ *     const(char)**values[3];
  *     git_attr_get_many(values, repo, 0, "my/fun/file.c", 3, attrs);
  *
  * Then you could loop through the 3 values to get the settings for

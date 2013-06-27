@@ -84,7 +84,7 @@ struct git_clone_options {
 	git_transport *transport;
 	git.c.remote.git_remote_callbacks *remote_callbacks;
 	git_remote_autotag_option_t remote_autotag;
-	const char* checkout_branch;
+	const(char)* checkout_branch;
 };
 
 enum GIT_CLONE_OPTIONS_VERSION = 1;

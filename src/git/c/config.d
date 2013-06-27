@@ -262,7 +262,7 @@ void git_config_free(git_config *cfg);
  * @return 0 or an error code
  */
 int git_config_get_entry(
-	const git_config_entry **out_,
+	const(git_config_entry)** out_,
 	const(git_config)* cfg,
 	const(char)* name);
 

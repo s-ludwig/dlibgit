@@ -58,7 +58,7 @@ int git_indexer_stream_finalize(git_indexer_stream *idx, git_transfer_progress *
  *
  * @param idx the indexer instance
  */
-const(git_oid)*  git_indexer_stream_hash(const git_indexer_stream *idx);
+const(git_oid)*  git_indexer_stream_hash(const(git_indexer_stream)* idx);
 
 /**
  * Free the indexer and its resources

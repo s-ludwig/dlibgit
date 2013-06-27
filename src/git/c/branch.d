@@ -52,7 +52,7 @@ int git_branch_create(
 	git_reference **out_,
 	git_repository *repo,
 	const(char)* branch_name,
-	const git_commit *target,
+	const(git_commit)* target,
 	int force);
 
 /**
@@ -158,7 +158,7 @@ int git_branch_lookup(
  * @return 0 on success; otherwise an error code (e.g., if the
  *  ref_ is no local or remote branch).
  */
-int git_branch_name(const char **out_,
+int git_branch_name(const(char)** out_,
 		git_reference *ref_);
 
 /**
