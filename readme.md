@@ -17,9 +17,6 @@ dlibgit has been updated and now targets libgit v0.19.0.
 ## Requirements
 [DMD] 2.063+.
 
-GDC can be used but you will have to compile on your own.
-For GDC use the import lib **libgit2.dll.a** in the **bin** folder when linking.
-
 ### Windows:
 Either build `libgit2` or grab the DLL binaries from [here](https://github.com/AndrejMitrovic/libgit_bin).
 
