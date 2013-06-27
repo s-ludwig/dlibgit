@@ -83,10 +83,12 @@ You can use the libgit2 [API] docs. The [general] example is a good read.
 [general]: http://libgit2.github.com/libgit2/ex/v0.19.0/general.html
 
 ## See also
-The libgit2 [homepage] and [github] repository.
+- The libgit2 [homepage] and [github] repository.
+- [Git Merge 2013] - Current status of libgit2 - conference video.
 
 [homepage]: http://libgit2.github.com/
 [github]: https://github.com/libgit2/libgit2/
+[Git Merge 2013]: http://www.youtube.com/watch?v=4ZWqr6iih3s
 
 ## License
 See libgit's [COPYING] file, included in the `src/git/c` folder. Also see the licensing remarks on the [libgit2] github page.
