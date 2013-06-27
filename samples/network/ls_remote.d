@@ -21,14 +21,14 @@ int use_unnamed(git_repository* repo, const char* url)
 
     // Create an instance of a remote from the URL. The transport to use
     // is detected from the URL
-    error = git_remote_new(&remote, repo, null, url, null);
+    error = git_remote_create_inmemory(&remote, repo, null, url);
 
     if (error < 0)
         goto cleanup;
 
     // When connecting, the underlying code needs to know wether we
     // want to push or fetch
-    error = git_remote_connect(remote, GIT_DIR_FETCH);
+    error = git_remote_connect(remote, git_direction.GIT_DIRECTION_FETCH);
 
     if (error < 0)
         goto cleanup;
@@ -52,7 +52,7 @@ int use_remote(git_repository* repo, const(char)* name)
     if (error < 0)
         goto cleanup;
 
-    error = git_remote_connect(remote, GIT_DIR_FETCH);
+    error = git_remote_connect(remote, git_direction.GIT_DIRECTION_FETCH);
 
     if (error < 0)
         goto cleanup;

@@ -79,8 +79,8 @@ As a convenience you can import `git.c.all` or `git.c` (with the new 2.064 packa
 
 You can use the libgit2 [API] docs. The [general] example is a good read.
 
-[API]: http://libgit2.github.com/libgit2/#HEAD
-[general]: http://libgit2.github.com/libgit2/ex/HEAD/general.html
+[API]: http://libgit2.github.com/libgit2/#v0.19.0
+[general]: http://libgit2.github.com/libgit2/ex/v0.19.0/general.html
 
 ## See also
 The libgit2 [homepage] and [github] repository.
