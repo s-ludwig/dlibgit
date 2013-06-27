@@ -44,7 +44,6 @@ You need to build the `libgit2` shared library:
 ## Building and running samples
 
 ### Samples
-**Note**: Samples have not been ported to v0.19.0 yet.
 
 **diff** sample:
 
@@ -60,6 +59,7 @@ You need to build the `libgit2` shared library:
     $ bin\showindex.exe .git
 
 **git client** sample:
+**Note**: This sample has not been ported to v0.19.0 yet.
 
     $ rdmd build.d samples/network/git.d
     $ bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
