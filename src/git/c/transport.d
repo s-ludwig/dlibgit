@@ -194,7 +194,7 @@ struct git_transport
 	 * the wants list for the fetch. */
 	int function(git_transport *transport,
 		git_repository *repo,
-		const(git.c.types.git_remote_head**) refs_,
+		const(git_remote_head**) refs_,
 		size_t count) negotiate_fetch;
 
 	/* This function may be called after a successful call to negotiate_fetch(),

@@ -1,6 +1,6 @@
 module common;
 
-import git2.c;
+import git.c;
 
 struct fetch_dl_data
 {

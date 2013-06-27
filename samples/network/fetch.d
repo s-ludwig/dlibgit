@@ -1,6 +1,6 @@
 module fetch;
 
-import git2.c;
+import git.c;
 
 import core.thread;
 import std.concurrency;

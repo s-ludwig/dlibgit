@@ -1,6 +1,6 @@
 module main;
 
-import git2.c;
+import git.c;
 
 import std.zlib;
 import core.thread;

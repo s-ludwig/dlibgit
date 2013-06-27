@@ -192,7 +192,6 @@ struct git_refspec { }
 struct git_remote { }
 struct git_push { }
 
-struct git_remote_head { }
 struct git_remote_callbacks { }
 
 /**

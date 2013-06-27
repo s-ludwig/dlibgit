@@ -1,6 +1,6 @@
 module ls_remote;
 
-import git2.c;
+import git.c;
 
 import std.algorithm;
 import std.stdio;

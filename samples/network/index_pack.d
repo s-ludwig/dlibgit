@@ -1,6 +1,6 @@
 module index_pack;
 
-import git2.c;
+import git.c;
 
 import std.stdio;
 import std.exception;
