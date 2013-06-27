@@ -108,6 +108,7 @@ int main(string[] args)
     // of the object.  This allows us to access objects without knowing thier type and inspect
     // the raw bytes unparsed.
     error = git_odb_read(&obj, odb, &oid);
+    check_error(error, "read odb error");
 
     // A raw object only has three properties - the type (commit, blob, tree or tag), the size
     // of the raw data and the raw, unparsed data itself.  For a commit or tag, that raw data
