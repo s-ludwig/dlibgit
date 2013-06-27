@@ -1,4 +1,3 @@
-bin
 *.rar
 *.obj
 *.dat
@@ -9,4 +8,4 @@ bin
 *.a
 *.dll
 *.lib
-bin
+bin/*

@@ -29,8 +29,25 @@
 import std.conv;
 import std.stdio;
 import std.string;
+import std.exception;
 
 import git.c;
+
+// Almost all libgit2 functions return 0 on success or negative on error.
+// This is not production quality error checking, but should be sufficient
+// as an example.
+void check_error(int error_code, const char *action)
+{
+	if (!error_code)
+		return;
+
+	const git_error *error = giterr_last();
+
+	printf("Error %d %s - %s\n", error_code, action,
+		   (error && error.message) ? error.message : "???");
+
+	assert(0);
+}
 
 int main(string[] args)
 {
@@ -43,15 +60,10 @@ int main(string[] args)
     // [me]: http://libgit2.github.com/libgit2/#HEAD/group/repository
     git_repository* repo;
 
-    if (args.length > 1)
-    {
-        git_repository_open(&repo, args[1].toStringz);
-    }
-    else
-    {
-        git_repository_open(&repo, r"D:\dev\projects\test\.git");
-    }
+	enforce(args.length > 1, "Repository .git path must be passed as a runtime argument.");
 
+	auto error = git_repository_open(&repo, args[1].toStringz);
+    check_error(error, "opening repository");
     // ### SHA-1 Value Conversions
 
     // For our first example, we will convert a 40 character hex value to the 20 byte raw SHA1 value.
@@ -91,7 +103,6 @@ int main(string[] args)
     git_otype otype;
     const(ubyte)* data;
     const(char)* str_type;
-    int error;
 
     // We can read raw objects directly from the object database if we have the oid (SHA)
     // of the object.  This allows us to access objects without knowing thier type and inspect
@@ -147,6 +158,7 @@ int main(string[] args)
     git_oid_fromstr(&oid, "f0877d0b841d75172ec404fc9370173dfffc20d1");
 
     error = git_commit_lookup(&commit, repo, &oid);
+    check_error(error, "looking up commit");
 
     const(git_signature)* author;
     const(git_signature)* cmtter;
@@ -241,13 +253,14 @@ int main(string[] args)
     git_oid_fromstr(&oid, "bc422d45275aca289c51d79830b45cecebff7c3a");
 
     error = git_tag_lookup(&tag, repo, &oid);
+    check_error(error, "looking up tag");
 
     // Now that we have the tag object, we can extract the information it generally contains: the target
     // (usually a commit object), the type of the target object (usually 'commit'), the name ('v1.0'),
     // the tagger (a git_signature - name, email, timestamp), and the tag message.
     git_tag_target(cast(git_object**)&commit, tag);
     tname    = git_tag_name(tag);    // "test"
-    ttype    = git_tag_type(tag);    // GIT_OBJ_COMMIT (otype enum)
+    ttype    = git_tag_target_type(tag);    // GIT_OBJ_COMMIT (otype enum)
     tmessage = git_tag_message(tag); // "tag message\n"
     writefln("Tag Message: %s\n", to!string(tmessage));
 
@@ -269,7 +282,7 @@ int main(string[] args)
     git_tree_lookup(&tree, repo, &oid);
 
     // Getting the count of entries in the tree so you can iterate over them if you want to.
-    int cnt = git_tree_entrycount(tree); // 3
+    size_t cnt = git_tree_entrycount(tree); // 3
     writefln("tree entries: %s\n", cnt);
 
     entry = git_tree_entry_byindex(tree, 0);
@@ -382,7 +395,7 @@ int main(string[] args)
 
     for (i = 0; i < ecount; ++i)
     {
-        git_index_entry* e = git_index_get(index, i);
+        const(git_index_entry)* e = git_index_get_byindex(index, i);
 
         writefln("path: %s", to!string(e.path));
         writefln("mtime: %s", cast(int)e.mtime.seconds);
@@ -403,7 +416,7 @@ int main(string[] args)
     // Here we will implement something like `git for-each-_ref` simply listing _out all available
     // references and the object SHA they resolve to.
     git_strarray ref_list;
-    git_reference_list(&ref_list, repo, git_ref_t.GIT_REF_LISTALL);
+    git_reference_list(&ref_list, repo);
 
     const(char)* refname;
     git_reference* _ref;
@@ -418,7 +431,7 @@ int main(string[] args)
         switch (git_reference_type(_ref))
         {
             case git_ref_t.GIT_REF_OID:
-                git_oid_fmt(_out.ptr, git_reference_oid(_ref));
+                git_oid_fmt(_out.ptr, git_reference_target(_ref));
                 writefln("%s [%s]\n", to!string(refname), to!string(_out.ptr));
                 break;
 
@@ -448,7 +461,7 @@ int main(string[] args)
     git_config* cfg;
 
     // Open a config object so we can read global values from it.
-    git_config_open_ondisk(&cfg, "~/.gitconfig");
+    check_error(git_config_open_ondisk(&cfg, "~/.gitconfig"), "opening config");
 
     git_config_get_int32(&j, cfg, "help.autocorrect");
     writefln("Autocorrect: %s\n", j);
