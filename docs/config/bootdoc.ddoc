@@ -35,14 +35,14 @@ DDOC = <!DOCTYPE html>
 	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="$(RESOURCEROOT)assets/ico/apple-touch-icon-114-precomposed.png">
 	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="$(RESOURCEROOT)assets/ico/apple-touch-icon-72-precomposed.png">
 	<link rel="apple-touch-icon-precomposed" href="$(RESOURCEROOT)assets/ico/apple-touch-icon-57-precomposed.png">
-	
+
 	<!-- Introduce DDoc settings required by JavaScript -->
 	<script type="text/javascript">
 		var Title = '$(TITLE)';
 		var SourceRepository = '$(REPOSRCTREE)';
 		var PackageSeparator = '$(PACKAGESEP)';
 	</script>
-	
+
 	<style type="text/css">
 		.ddoc-icon-variable { background-image: url('$(RESOURCEROOT)ddoc-icons/var.png'); }
 		.ddoc-icon-function { background-image: url('$(RESOURCEROOT)ddoc-icons/func.png'); }
@@ -63,7 +63,7 @@ DDOC = <!DOCTYPE html>
 	<ul id="module-list-source" class="hidden">
 		$(MODULES)
 	</ul>
-	
+
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
 			<div class="container-fluid">
@@ -77,11 +77,11 @@ DDOC = <!DOCTYPE html>
 					<ul class="nav">
 						<li class="active"><a href="$(REFERENCETOP)">Reference</a></li>
 					</ul>
-					
+
 					<form id="gotosymbol" class="navbar-search pull-left hidden">
 						<input type="text" class="search-query" placeholder="Go to symbol in $(TITLE)" data-provide="typeahead" data-items="4">
 					</form>
-					
+
 					<p class="navbar-text pull-right">$(TITLEBARTEXT)</p>
 				</div><!--/.nav-collapse -->
 			</div>
@@ -101,14 +101,14 @@ DDOC = <!DOCTYPE html>
 				</ul>
 				</div><!--/.well -->
 			</div><!--/span-->
-			
+
 			<div class="span10">
 				<div class="row-fluid">
 					<div class="span11">
 						<ul id="module-breadcrumb" class="breadcrumb">
 							<noscript><h1>$(TITLE)</h1></noscript>
 						</ul>
-						
+
 					</div>
 					<div class="span1 offset11">
 						<a href="$(LOGOLINK)"><img src="$(LOGOSRC)" alt="$(LOGOALT)"/></a>
@@ -117,13 +117,13 @@ DDOC = <!DOCTYPE html>
 				<div id="declaration-list">
 					$(BODY)
 				</div>
-				
+
 				<hr>
-				
+
 				<footer class="pull-left">
 					<p>Page generated with <a href="https://github.com/JakobOvrum/bootDoc">bootDoc</a>.</p>
 				</footer>
-				
+
 				<footer class="pull-right">
 					<p>$(COPYRIGHTFOOTER)</p>
 				</footer>
@@ -136,11 +136,11 @@ DDOC = <!DOCTYPE html>
 	<!-- Placed at the end of the document so the pages load faster -->
 	<script src="$(RESOURCEROOT)assets/js/jquery.min.js"></script>
 	<script src="$(RESOURCEROOT)assets/js/bootstrap.min.js"></script>
-	
+
 	<!-- bootDoc javascript
 	================================================== -->
 	<script src="$(RESOURCEROOT)bootdoc.js"></script>
-	
+
 	</body>
 </html>
 
@@ -285,3 +285,5 @@ RPMODULE6  = $(__MODULEREF6 $(THISROOTPACKAGE), $(THISROOTPACKAGE), $1, $2, $3, 
 
 STDREF = $(HTTP dlang.org/phobos/std_$1.html#$2, $(D std.$1.$2))
 STDMODULE = $(HTTP dlang.org/phobos/std_$1.html, $(D std.$1))
+
+LIBGIT2 = $(LINK2, http://libgit2.github.com/)
