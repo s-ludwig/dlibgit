@@ -9,3 +9,4 @@
 *.dll
 *.lib
 bin
+docs/*.html
