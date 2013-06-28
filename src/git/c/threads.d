@@ -19,6 +19,16 @@ import git.c.common;
 
 extern (C):
 
+shared static this()
+{
+    git_threads_init();
+}
+
+shared static ~this()
+{
+    git_threads_shutdown();
+}
+
 /**
  * Init the threading system.
  *
@@ -44,8 +54,3 @@ int git_threads_init();
  * support, this function is a no-op.
  */
 void git_threads_shutdown();
-
-
-
-
-
