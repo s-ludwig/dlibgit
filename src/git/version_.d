@@ -9,7 +9,7 @@ module git.version_;
 import git.c.version_;
 
 /**
-    A namespace containing the version information of $(LIBGIT2)
+    Contains version information of $(LIBGIT2)
     which this binding is based on.
 */
 struct GitVersion
