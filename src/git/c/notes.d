@@ -35,7 +35,7 @@ alias git_note_foreach_cb = int function(
 /**
  * note iterator
  */
-struct git_note_iterator { };
+struct git_note_iterator;
 
 /**
  * Creates a new iterator for notes

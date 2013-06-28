@@ -59,64 +59,64 @@ enum git_otype
 }
 
 /** An open object database handle. */
-struct git_odb { }
+struct git_odb;
 
 /** An object read from the ODB */
-struct git_odb_object { }
+struct git_odb_object;
 
 /** An open refs database handle. */
-struct git_refdb { }
+struct git_refdb;
 
 /**
  * Representation of an existing git repository,
  * including all its object contents
  */
-struct git_repository { }
+struct git_repository;
 
 /** Representation of a generic object in a repository */
-struct git_object { }
+struct git_object;
 
 /** Representation of an in-progress walk through the commits in a repo */
-struct git_revwalk { }
+struct git_revwalk;
 
 /** Parsed representation of a tag object. */
-struct git_tag { }
+struct git_tag;
 
 /** In-memory representation of a blob object. */
-struct git_blob { }
+struct git_blob;
 
 /** Parsed representation of a commit object. */
-struct git_commit { }
+struct git_commit;
 
 /** Representation of each one of the entries in a tree object. */
-struct git_tree_entry { }
+struct git_tree_entry;
 
 /** Representation of a tree object. */
-struct git_tree { }
+struct git_tree;
 
 /** Constructor for in-memory trees */
-struct git_treebuilder { }
+struct git_treebuilder;
 
 /** Memory representation of an index file. */
-struct git_index { }
+struct git_index;
 
 /** An interator for conflicts in the index. */
-struct git_index_conflict_iterator { }
+struct git_index_conflict_iterator;
 
 /** Memory representation of a set of config files */
-struct git_config { }
+struct git_config;
 
 /** Representation of a reference log entry */
-struct git_reflog_entry { }
+struct git_reflog_entry;
 
 /** Representation of a reference log */
-struct git_reflog { }
+struct git_reflog;
 
 /** Representation of a git note */
-struct git_note { }
+struct git_note;
 
 /** Representation of a git packbuilder */
-struct git_packbuilder { }
+struct git_packbuilder;
 
 /** Time in a signature */
 struct git_time
@@ -134,13 +134,13 @@ struct git_signature
 }
 
 /** In-memory representation of a reference. */
-struct git_reference { }
+struct git_reference;
 
 /** Merge heads, the input to merge */
-struct git_merge_head { }
+struct git_merge_head;
 
 /** Representation of a status collection */
-struct git_status_list { }
+struct git_status_list;
 
 
 /** Basic type of any Git reference. */
@@ -170,9 +170,9 @@ enum git_filemode_t
 	GIT_FILEMODE_COMMIT					= octal!160000,
 }
 
-struct git_refspec { }
-struct git_remote { }
-struct git_push { }
+struct git_refspec;
+struct git_remote;
+struct git_push;
 
 /**
  * This is passed as the first argument to the callback to allow the

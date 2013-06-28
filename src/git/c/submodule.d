@@ -31,7 +31,7 @@ import git.c.oid;
  * directory that look like submodules (i.e. a git repo) but are not
  * mentioned in those places won't be tracked.
  */
-struct git_submodule { };
+struct git_submodule;
 
 /**
  * Values that could be specified for the update rule of a submodule.

@@ -15,7 +15,7 @@ import git.c.oid;
 
 
 
-struct git_indexer_stream { };
+struct git_indexer_stream;
 
 /**
  * Create a new streaming indexer instance
