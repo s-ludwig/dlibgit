@@ -166,7 +166,11 @@ mixin _ExportEnumMembers!git_diff_option_t;
  * responsible for releasing the object memory when done, using the
  * `git_diff_list_free()` function.
  */
-struct git_diff_list;
+struct git_diff_list
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * Flags for the delta object and the file objects on each side.
@@ -424,7 +428,11 @@ alias git_diff_data_cb = int function(
  * You can easily loop over the content of patches and get information about
  * them.
  */
-struct git_diff_patch;
+struct git_diff_patch
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * Flags to control the behavior of diff rename/copy detection.

@@ -69,64 +69,140 @@ enum git_otype
 mixin _ExportEnumMembers!git_otype;
 
 /** An open object database handle. */
-struct git_odb;
+struct git_odb
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** An object read from the ODB */
-struct git_odb_object;
+struct git_odb_object
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** An open refs database handle. */
-struct git_refdb;
+struct git_refdb
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * Representation of an existing git repository,
  * including all its object contents
  */
-struct git_repository;
+struct git_repository
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a generic object in a repository */
-struct git_object;
+struct git_object
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of an in-progress walk through the commits in a repo */
-struct git_revwalk;
+struct git_revwalk
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Parsed representation of a tag object. */
-struct git_tag;
+struct git_tag
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** In-memory representation of a blob object. */
-struct git_blob;
+struct git_blob
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Parsed representation of a commit object. */
-struct git_commit;
+struct git_commit
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of each one of the entries in a tree object. */
-struct git_tree_entry;
+struct git_tree_entry
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a tree object. */
-struct git_tree;
+struct git_tree
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Constructor for in-memory trees */
-struct git_treebuilder;
+struct git_treebuilder
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Memory representation of an index file. */
-struct git_index;
+struct git_index
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** An interator for conflicts in the index. */
-struct git_index_conflict_iterator;
+struct git_index_conflict_iterator
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Memory representation of a set of config files */
-struct git_config;
+struct git_config
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a reference log entry */
-struct git_reflog_entry;
+struct git_reflog_entry
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a reference log */
-struct git_reflog;
+struct git_reflog
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a git note */
-struct git_note;
+struct git_note
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a git packbuilder */
-struct git_packbuilder;
+struct git_packbuilder
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Time in a signature */
 struct git_time
@@ -144,14 +220,25 @@ struct git_signature
 }
 
 /** In-memory representation of a reference. */
-struct git_reference;
+struct git_reference
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Merge heads, the input to merge */
-struct git_merge_head;
+struct git_merge_head
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Representation of a status collection */
-struct git_status_list;
-
+struct git_status_list
+{
+    @disable this();
+    @disable this(this);
+}
 
 /** Basic type of any Git reference. */
 enum git_ref_t
@@ -186,9 +273,23 @@ enum git_filemode_t
 
 mixin _ExportEnumMembers!git_filemode_t;
 
-struct git_refspec;
-struct git_remote;
-struct git_push;
+struct git_refspec
+{
+    @disable this();
+    @disable this(this);
+}
+
+struct git_remote
+{
+    @disable this();
+    @disable this(this);
+}
+
+struct git_push
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * This is passed as the first argument to the callback to allow the
