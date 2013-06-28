@@ -8,10 +8,21 @@ module git.version_;
 
 import git.c.version_;
 
+/**
+    A namespace containing the version information of $(LIBGIT2)
+    which this binding is based on.
+*/
 struct GitVersion
 {
-    enum string Version = LIBGIT2_VERSION;
-    enum int VersionMajor = LIBGIT2_VER_MAJOR;
-    enum int VersionMinor = LIBGIT2_VER_MINOR;
-    enum int VersionRevision = LIBGIT2_VER_REVISION;
+    /// Text representation of version, e.g. "0.19.1"
+    enum string text = LIBGIT2_VERSION;
+
+    /// Major version, e.g. 0.19.1 -> 0
+    enum int major = LIBGIT2_VER_MAJOR;
+
+    /// Minor version, e.g. 0.19.1 -> 19
+    enum int minor = LIBGIT2_VER_MINOR;
+
+    /// Revision version, e.g. 0.19.1 -> 1
+    enum int revision = LIBGIT2_VER_REVISION;
 }
