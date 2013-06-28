@@ -19,6 +19,7 @@ import std.conv;
 
 import git.c.common;
 import git.c.oid;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -102,6 +103,8 @@ enum git_repository_open_flag_t {
 	GIT_REPOSITORY_OPEN_NO_SEARCH = (1 << 0),
 	GIT_REPOSITORY_OPEN_CROSS_FS  = (1 << 1),
 } ;
+
+mixin _ExportEnumMembers!git_repository_open_flag_t;
 
 /**
  * Find and open a repository with extended controls.
@@ -207,6 +210,8 @@ enum git_repository_init_flag_t {
 	GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE = (1u << 5),
 } ;
 
+mixin _ExportEnumMembers!git_repository_init_flag_t;
+
 /**
  * Mode options for `git_repository_init_ext`.
  *
@@ -225,6 +230,8 @@ enum git_repository_init_mode_t {
 	GIT_REPOSITORY_INIT_SHARED_GROUP = octal!2775,
 	GIT_REPOSITORY_INIT_SHARED_ALL   = octal!2777,
 } ;
+
+mixin _ExportEnumMembers!git_repository_init_mode_t;
 
 /**
  * Extended options structure for `git_repository_init_ext`.
@@ -628,6 +635,8 @@ enum git_repository_state_t {
 	GIT_REPOSITORY_STATE_APPLY_MAILBOX,
 	GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE,
 } ;
+
+mixin _ExportEnumMembers!git_repository_state_t;
 
 /**
  * Determines the status of a git repository - ie, whether an operation

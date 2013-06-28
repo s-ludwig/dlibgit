@@ -20,6 +20,7 @@ import git.c.oid;
 import git.c.strarray;
 import git.c.sys.refdb_backend;
 import git.c.types;
+import git.c.util;
 
 extern (C):
 
@@ -472,6 +473,8 @@ enum git_reference_normalize_t {
 	 */
 	GIT_REF_FORMAT_REFSPEC_SHORTHAND = (1 << 2),
 } ;
+
+mixin _ExportEnumMembers!git_reference_normalize_t;
 
 /**
  * Normalize reference name and check validity.

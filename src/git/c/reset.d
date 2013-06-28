@@ -15,6 +15,7 @@ module git.c.reset;
  */
 
 import git.c.strarray;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -27,6 +28,8 @@ enum git_reset_t {
 	GIT_RESET_MIXED = 2, /** SOFT plus reset index to the commit */
 	GIT_RESET_HARD  = 3, /** MIXED plus changes in working tree discarded */
 } ;
+
+mixin _ExportEnumMembers!git_reset_t;
 
 /**
  * Sets the current head to the specified commit oid and optionally

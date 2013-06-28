@@ -16,6 +16,7 @@ module git.c.net;
 
 import git.c.common;
 import git.c.oid;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -33,6 +34,7 @@ enum git_direction {
 	GIT_DIRECTION_PUSH  = 1
 } ;
 
+mixin _ExportEnumMembers!git_direction;
 
 /**
  * Remote head description, given out on `ls` calls.

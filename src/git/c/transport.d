@@ -17,6 +17,7 @@ module git.c.transport;
 
 import git.c.indexer;
 import git.c.net;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -37,6 +38,8 @@ enum git_credtype_t {
 	GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE = 2,
 	GIT_CREDTYPE_SSH_PUBLICKEY = 3,
 } ;
+
+mixin _ExportEnumMembers!git_credtype_t;
 
 /* The base structure for all credential types */
 struct git_cred {
@@ -157,6 +160,9 @@ enum git_transport_flags_t {
 	 * of the server certificate should not be verified. */
 	GIT_TRANSPORTFLAGS_NO_CHECK_CERT = 1
 } ;
+
+
+mixin _ExportEnumMembers!git_transport_flags_t;
 
 alias git_transport_message_cb = void function(const(char)* str, int len, void *data);
 
@@ -307,6 +313,8 @@ enum git_smart_service_t {
 	GIT_SERVICE_RECEIVEPACK_LS = 3,
 	GIT_SERVICE_RECEIVEPACK = 4,
 } ;
+
+mixin _ExportEnumMembers!git_smart_service_t;
 
 /* A stream used by the smart transport to read and write data
  * from a subtransport */

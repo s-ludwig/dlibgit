@@ -17,6 +17,7 @@ module git.c.config;
 
 import git.c.common;
 import git.c.types;
+import git.c.util;
 
 extern (C):
 
@@ -55,6 +56,8 @@ enum git_config_level_t {
 	GIT_CONFIG_HIGHEST_LEVEL = -1,
 }
 
+mixin _ExportEnumMembers!git_config_level_t;
+
 struct git_config_entry {
 	const(char)* name;
 	const(char)* value;
@@ -69,6 +72,8 @@ enum git_cvar_t {
 	GIT_CVAR_INT32,
 	GIT_CVAR_STRING
 } ;
+
+mixin _ExportEnumMembers!git_cvar_t;
 
 struct git_cvar_map {
 	git_cvar_t cvar_type;

@@ -15,6 +15,7 @@ module git.c.errors;
  */
 
 import git.c.common;
+import git.c.util;
 
 extern (C):
 
@@ -37,6 +38,8 @@ enum git_error_code {
 	GIT_PASSTHROUGH = -30,
 	GIT_ITEROVER = -31,
 } ;
+
+mixin _ExportEnumMembers!git_error_code;
 
 struct git_error {
 	char *message;
@@ -68,6 +71,8 @@ enum git_error_t {
 	GITERR_FETCHHEAD,
 	GITERR_MERGE,
 } ;
+
+mixin _ExportEnumMembers!git_error_t;
 
 /**
  * Return the last `git_error` object that was generated for the

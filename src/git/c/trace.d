@@ -16,6 +16,7 @@ module git.c.trace;
  */
 
 import git.c.common;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -46,6 +47,8 @@ enum git_trace_level_t {
 	/** Exceptionally detailed debugging data */
 	GIT_TRACE_TRACE = 6
 } ;
+
+mixin _ExportEnumMembers!git_trace_level_t;
 
 /**
  * An instance for a tracing function

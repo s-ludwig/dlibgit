@@ -17,6 +17,7 @@ module git.c.submodule;
 
 import git.c.common;
 import git.c.oid;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -46,6 +47,8 @@ enum git_submodule_update_t {
 	GIT_SUBMODULE_UPDATE_NONE = 3
 } ;
 
+mixin _ExportEnumMembers!git_submodule_update_t;
+
 /**
  * Values that could be specified for how closely to examine the
  * working directory when getting submodule status.
@@ -60,6 +63,8 @@ enum git_submodule_ignore_t {
 	GIT_SUBMODULE_IGNORE_DIRTY = 2,     /* only dirty if HEAD moved */
 	GIT_SUBMODULE_IGNORE_ALL = 3        /* never dirty */
 } ;
+
+mixin _ExportEnumMembers!git_submodule_ignore_t;
 
 /**
  * Return codes for submodule status.
@@ -119,6 +124,8 @@ enum git_submodule_status_t {
 	GIT_SUBMODULE_STATUS_WD_WD_MODIFIED    = (1u << 12),
 	GIT_SUBMODULE_STATUS_WD_UNTRACKED      = (1u << 13),
 } ;
+
+mixin _ExportEnumMembers!git_submodule_status_t;
 
 enum GIT_SUBMODULE_STATUS__IN_FLAGS =
 	(git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_HEAD |

@@ -29,6 +29,7 @@ alias __haiku_std_int64 = long;
 import std.conv;
 
 import git.c.common;
+import git.c.util;
 
 extern (C):
 
@@ -64,6 +65,8 @@ enum git_otype
 	GIT_OBJ_OFS_DELTA = 6, /**< A delta, base is given by an offset. */
 	GIT_OBJ_REF_DELTA = 7, /**< A delta, base is given by object id. */
 }
+
+mixin _ExportEnumMembers!git_otype;
 
 /** An open object database handle. */
 struct git_odb;
@@ -159,12 +162,16 @@ enum git_ref_t
 	GIT_REF_LISTALL = GIT_REF_OID|GIT_REF_SYMBOLIC,
 }
 
+mixin _ExportEnumMembers!git_ref_t;
+
 /** Basic type of any Git branch. */
 enum git_branch_t
 {
 	GIT_BRANCH_LOCAL = 1,
 	GIT_BRANCH_REMOTE = 2,
 }
+
+mixin _ExportEnumMembers!git_branch_t;
 
 /** Valid modes for index and tree entries. */
 enum git_filemode_t
@@ -176,6 +183,8 @@ enum git_filemode_t
 	GIT_FILEMODE_LINK					= octal!120000,
 	GIT_FILEMODE_COMMIT					= octal!160000,
 }
+
+mixin _ExportEnumMembers!git_filemode_t;
 
 struct git_refspec;
 struct git_remote;

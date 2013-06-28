@@ -18,6 +18,7 @@ module git.c.odb_backend;
 import git.c.common;
 import git.c.oid;
 import git.c.sys.odb_backend;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -67,6 +68,8 @@ enum git_odb_stream_t {
 	GIT_STREAM_WRONLY = (1 << 2),
 	GIT_STREAM_RW = (GIT_STREAM_RDONLY | GIT_STREAM_WRONLY),
 } ;
+
+mixin _ExportEnumMembers!git_odb_stream_t;
 
 /** A stream to read/write from a backend */
 struct git_odb_stream {

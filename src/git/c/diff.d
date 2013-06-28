@@ -58,6 +58,7 @@ import git.c.common;
 import git.c.oid;
 import git.c.refs;
 import git.c.strarray;
+import git.c.util;
 import git.c.tree;
 import git.c.types;
 
@@ -67,7 +68,7 @@ extern (C):
  * Flags for diff options.  A combination of these flags can be passed
  * in via the `flags` value in the `git_diff_options`.
  */
-enum {
+enum git_diff_option_t {
 	/** Normal diff, the default */
 	GIT_DIFF_NORMAL = 0,
 	/** Reverse the sides of the diff */
@@ -155,6 +156,8 @@ enum {
 	GIT_DIFF_FORCE_BINARY = (1 << 20),
 };
 
+mixin _ExportEnumMembers!git_diff_option_t;
+
 /**
  * The diff list object that contains all individual file deltas.
  *
@@ -179,6 +182,8 @@ enum git_diff_flag_t {
 	GIT_DIFF_FLAG_VALID_OID  = (1 << 2), /** `oid` value is known correct */
 } ;
 
+mixin _ExportEnumMembers!git_diff_flag_t;
+
 /**
  * What type of change is described by a git_diff_delta?
  *
@@ -200,6 +205,8 @@ enum git_delta_t {
 	GIT_DELTA_UNTRACKED = 7,  /** entry is untracked item in workdir */
 	GIT_DELTA_TYPECHANGE = 8, /** type of entry changed between old and new */
 } ;
+
+mixin _ExportEnumMembers!git_delta_t;
 
 /**
  * Description of one side of a diff entry.
@@ -393,6 +400,8 @@ enum git_diff_line_t {
 	GIT_DIFF_LINE_BINARY    = 'B'
 } ;
 
+mixin _ExportEnumMembers!git_diff_line_t;
+
 /**
  * When iterating over a diff, callback that will be made per text diff
  * line. In this context, the provided range will be NULL.
@@ -454,6 +463,8 @@ enum git_diff_find_t {
 	/** measure similarity only by comparing SHAs (fast and cheap) */
 	GIT_DIFF_FIND_EXACT_MATCH_ONLY = (1 << 14),
 } ;
+
+mixin _ExportEnumMembers!git_diff_find_t;
 
 /**
  * Pluggable similarity metric

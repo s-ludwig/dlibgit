@@ -22,6 +22,7 @@ import git.c.oid;
 import git.c.refspec;
 import git.c.repository;
 import git.c.strarray;
+import git.c.util;
 import git.c.transport;
 import git.c.types;
 
@@ -396,6 +397,8 @@ enum git_remote_completion_type {
 	GIT_REMOTE_COMPLETION_ERROR,
 } ;
 
+mixin _ExportEnumMembers!git_remote_completion_type;
+
 /**
  * The callback settings structure
  *
@@ -434,6 +437,8 @@ enum git_remote_autotag_option_t {
 	GIT_REMOTE_DOWNLOAD_TAGS_NONE = 1,
 	GIT_REMOTE_DOWNLOAD_TAGS_ALL = 2
 } ;
+
+mixin _ExportEnumMembers!git_remote_autotag_option_t;
 
 /**
  * Retrieve the tag auto-follow setting

@@ -20,6 +20,7 @@ import git.c.checkout;
 import git.c.diff;
 import git.c.index;
 import git.c.oid;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -33,6 +34,8 @@ enum git_merge_tree_flag_t {
 	GIT_MERGE_TREE_FIND_RENAMES = (1 << 0),
 } ;
 
+mixin _ExportEnumMembers!git_merge_tree_flag_t;
+
 /**
  * Automerge options for `git_merge_trees_opts`.
  */
@@ -43,6 +46,7 @@ enum git_merge_automerge_flags {
 	GIT_MERGE_AUTOMERGE_FAVOR_THEIRS = 3,
 } ;
 
+mixin _ExportEnumMembers!git_merge_automerge_flags;
 
 struct git_merge_tree_opts {
 	uint version_;

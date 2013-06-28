@@ -19,6 +19,7 @@ import git.c.common;
 import git.c.indexer;
 import git.c.oid;
 import git.c.strarray;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -127,6 +128,8 @@ enum git_indexcap_t {
 	GIT_INDEXCAP_FROM_OWNER  = ~0u
 } ;
 
+mixin _ExportEnumMembers!git_indexcap_t;
+
 /** Callback for APIs that add/remove/update files matching pathspec */
 alias git_index_matched_path_cb = int function(
 	const(char)* path, const(char)* matched_pathspec, void *payload);
@@ -138,6 +141,8 @@ enum git_index_add_option_t {
 	GIT_INDEX_ADD_DISABLE_PATHSPEC_MATCH = (1u << 1),
 	GIT_INDEX_ADD_CHECK_PATHSPEC = (1u << 2),
 } ;
+
+mixin _ExportEnumMembers!git_index_add_option_t;
 
 /** @name Index File Functions
  *

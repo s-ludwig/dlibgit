@@ -16,6 +16,7 @@ module git.c.revparse;
  */
 
 import git.c.common;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -67,6 +68,8 @@ enum git_revparse_mode_t {
 	/** The spec used the '...' operator, which invokes special semantics. */
 	GIT_REVPARSE_MERGE_BASE     = 1 << 2,
 } ;
+
+mixin _ExportEnumMembers!git_revparse_mode_t;
 
 /**
  * Git Revision Spec: output of a `git_revparse` operation

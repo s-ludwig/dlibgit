@@ -18,6 +18,7 @@ module git.c.status;
 import git.c.common;
 import git.c.diff;
 import git.c.strarray;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -49,6 +50,8 @@ enum git_status_t {
 
 	GIT_STATUS_IGNORED          = (1u << 14),
 } ;
+
+mixin _ExportEnumMembers!git_status_t;
 
 /**
  * Function pointer to receive status on individual files
@@ -83,6 +86,8 @@ enum git_status_show_t {
 	GIT_STATUS_SHOW_WORKDIR_ONLY = 2,
 	GIT_STATUS_SHOW_INDEX_THEN_WORKDIR = 3,
 } ;
+
+mixin _ExportEnumMembers!git_status_show_t;
 
 /**
  * Flags to control status callbacks
@@ -139,6 +144,8 @@ enum git_status_opt_t {
 	GIT_STATUS_OPT_SORT_CASE_SENSITIVELY    = (1u << 9),
 	GIT_STATUS_OPT_SORT_CASE_INSENSITIVELY  = (1u << 10),
 } ;
+
+mixin _ExportEnumMembers!git_status_opt_t;
 
 enum GIT_STATUS_OPT_DEFAULTS =
 	(git_status_opt_t.GIT_STATUS_OPT_INCLUDE_IGNORED |

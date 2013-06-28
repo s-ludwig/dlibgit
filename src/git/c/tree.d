@@ -18,6 +18,7 @@ module git.c.tree;
 import git.c.common;
 import git.c.object_;
 import git.c.oid;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -365,6 +366,8 @@ enum git_treewalk_mode {
 	GIT_TREEWALK_PRE = 0, /* Pre-order */
 	GIT_TREEWALK_POST = 1, /* Post-order */
 } ;
+
+mixin _ExportEnumMembers!git_treewalk_mode;
 
 /**
  * Traverse the entries in a tree and its subtrees in post or pre order.

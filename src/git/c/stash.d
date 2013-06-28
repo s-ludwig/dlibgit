@@ -16,6 +16,7 @@ module git.c.stash;
 
 import git.c.common;
 import git.c.oid;
+import git.c.util;
 import git.c.types;
 
 extern (C):
@@ -38,6 +39,8 @@ enum git_stash_flags {
 	 */
 	GIT_STASH_INCLUDE_IGNORED = (1 << 2),
 } ;
+
+mixin _ExportEnumMembers!git_stash_flags;
 
 /**
  * Save the local modifications to a new stash.
