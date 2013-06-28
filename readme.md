@@ -14,6 +14,9 @@ dlibgit has been updated and now targets libgit v0.19.0.
 
 - C-based documentation in the header files is now included with the .d files.
 
+- Enums members can now be accessed both with their fully qualified name (e.g. `auto x = git_otype.GIT_OBJ_ANY`),
+    and as if they were defined in module scope (e.g. `auto x = GIT_OBJ_ANY`).
+
 ## Requirements
 [DMD] 2.063+.
 
