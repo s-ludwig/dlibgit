@@ -1,20 +1,11 @@
 module git.c.diff;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
  * This file is part of libgit2, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
-
-import git.c.common;
-import git.c.types;
-import git.c.oid;
-import git.c.tree;
-import git.c.refs;
-import git.c.strarray;
 
 /**
  * @file git2/diff.h
@@ -63,6 +54,14 @@ import git.c.strarray;
  * @{
  */
 
+import git.c.common;
+import git.c.oid;
+import git.c.refs;
+import git.c.strarray;
+import git.c.tree;
+import git.c.types;
+
+extern (C):
 
 /**
  * Flags for diff options.  A combination of these flags can be passed

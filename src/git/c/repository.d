@@ -1,19 +1,11 @@
 module git.c.repository;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
  * This file is part of libgit2, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
-
-import std.conv;
-
-import git.c.common;
-import git.c.types;
-import git.c.oid;
 
 /**
  * @file git2/repository.h
@@ -23,6 +15,13 @@ import git.c.oid;
  * @{
  */
 
+import std.conv;
+
+import git.c.common;
+import git.c.oid;
+import git.c.types;
+
+extern (C):
 
 /**
  * Open a git repository.

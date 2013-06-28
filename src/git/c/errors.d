@@ -7,14 +7,14 @@ module git.c.errors;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-import git.c.common;
-
 /**
  * @file git2/errors.h
  * @brief Git error handling routines and variables
  * @ingroup Git
  * @{
  */
+
+import git.c.common;
 
 extern (C):
 

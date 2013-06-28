@@ -7,10 +7,6 @@ module git.c.branch;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-import git.c.common;
-import git.c.oid;
-import git.c.types;
-
 /**
  * @file git2/branch.h
  * @brief Git branch parsing routines
@@ -18,6 +14,10 @@ import git.c.types;
  * @ingroup Git
  * @{
  */
+
+import git.c.common;
+import git.c.oid;
+import git.c.types;
 
 extern (C):
 

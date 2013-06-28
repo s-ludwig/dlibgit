@@ -6,8 +6,6 @@ module git.c.attr;
  * This file is part of libgit2, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
-import git.c.common;
-import git.c.types;
 
 /**
  * @file git2/attr.h
@@ -16,6 +14,10 @@ import git.c.types;
  * @ingroup Git
  * @{
  */
+
+import git.c.common;
+import git.c.types;
+import git.c.util;
 
 extern (C):
 
@@ -83,6 +85,8 @@ enum git_attr_t
     GIT_ATTR_FALSE_T,
     GIT_ATTR_VALUE_T,
 }
+
+mixin _ExportEnumMembers!git_attr_t;
 
 /*
  *	Return the value type for a given attribute.

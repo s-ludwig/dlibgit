@@ -1,16 +1,16 @@
 module git.c.sys.index;
 
-extern (C):
-
-import git.c.oid;
-import git.c.types;
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
  * This file is part of libgit2, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
+
+import git.c.oid;
+import git.c.types;
+
+extern (C):
 
 /**
  * @file git2/sys/index.h

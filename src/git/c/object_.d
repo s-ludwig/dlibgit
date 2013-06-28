@@ -7,10 +7,6 @@ module git.c.object_;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-import git.c.common;
-import git.c.types;
-import git.c.oid;
-
 /**
  * @file git2/object.h
  * @brief Git revision object management routines
@@ -18,6 +14,10 @@ import git.c.oid;
  * @ingroup Git
  * @{
  */
+
+import git.c.common;
+import git.c.oid;
+import git.c.types;
 
 extern (C):
 

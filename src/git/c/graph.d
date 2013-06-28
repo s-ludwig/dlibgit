@@ -7,10 +7,6 @@ module git.c.graph;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-import git.c.common;
-import git.c.types;
-import git.c.oid;
-
 /**
  * @file git2/graph.h
  * @brief Git graph traversal routines
@@ -19,6 +15,11 @@ import git.c.oid;
  * @{
  */
 
+import git.c.common;
+import git.c.oid;
+import git.c.types;
+
+extern (C):
 
 /**
  * Count the number of unique commits between two commit objects
@@ -35,8 +36,3 @@ import git.c.oid;
  * @param upstream the commit for upstream
  */
 int git_graph_ahead_behind(size_t *ahead, size_t *behind, git_repository *repo, const(git_oid)* local, const(git_oid)* upstream);
-
-
-
-
-

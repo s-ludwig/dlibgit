@@ -1,18 +1,11 @@
 module git.c.checkout;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
  * This file is part of libgit2, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
-
-import git.c.common;
-import git.c.types;
-import git.c.diff;
-import git.c.strarray;
 
 /**
  * @file git2/checkout.h
@@ -22,6 +15,13 @@ import git.c.strarray;
  * @{
  */
 
+import git.c.common;
+import git.c.diff;
+import git.c.strarray;
+import git.c.types;
+import git.c.util;
+
+extern (C):
 
 /**
  * Checkout behavior flags
@@ -158,6 +158,8 @@ enum git_checkout_strategy_t {
 
 };
 
+mixin _ExportEnumMembers!git_checkout_strategy_t;
+
 /**
  * Checkout notification flags
  *
@@ -189,6 +191,8 @@ enum git_checkout_notify_t {
 
 	GIT_CHECKOUT_NOTIFY_ALL       = 0x0FFFFu
 } ;
+
+mixin _ExportEnumMembers!git_checkout_notify_t;
 
 /** Checkout notification callback function */
 alias git_checkout_notify_cb = int function(

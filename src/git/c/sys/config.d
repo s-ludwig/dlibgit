@@ -1,7 +1,5 @@
 module git.c.sys.config;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -10,8 +8,10 @@ extern (C):
  */
 
 import git.c.common;
-import git.c.types;
 import git.c.config;
+import git.c.types;
+
+extern (C):
 
 /**
  * @file git2/sys/config.h

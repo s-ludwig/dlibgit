@@ -1,7 +1,5 @@
 module git.c.sys.refs;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -10,8 +8,10 @@ extern (C):
  */
 
 import git.c.common;
-import git.c.types;
 import git.c.oid;
+import git.c.types;
+
+extern (C):
 
 /**
  * Create a new direct reference from an OID.

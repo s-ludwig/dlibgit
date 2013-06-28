@@ -7,11 +7,6 @@ module git.c.config;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-import git.c.common;
-import git.c.types;
-
-extern (C):
-
 /**
  * @file git2/config.h
  * @brief Git config management routines
@@ -20,6 +15,10 @@ extern (C):
  * @{
  */
 
+import git.c.common;
+import git.c.types;
+
+extern (C):
 
 /**
  * Priority level of a config file.

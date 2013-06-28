@@ -1,7 +1,5 @@
 module git.c.ignore;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -12,7 +10,7 @@ extern (C):
 import git.c.common;
 import git.c.types;
 
-
+extern (C):
 
 /**
  * Add ignore rules for a repository.

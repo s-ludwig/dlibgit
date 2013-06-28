@@ -1,7 +1,5 @@
 module git.c.sys.odb_backend;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -10,10 +8,12 @@ extern (C):
  */
 
 import git.c.common;
-import git.c.types;
-import git.c.oid;
 import git.c.odb;
 import git.c.odb_backend;
+import git.c.oid;
+import git.c.types;
+
+extern (C):
 
 /**
  * @file git2/sys/backend.h

@@ -7,11 +7,6 @@ module git.c.blob;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-import git.c.common;
-import git.c.types;
-import git.c.oid;
-import git.c.object_;
-
 /**
  * @file git2/blob.h
  * @brief Git blob load and write routines
@@ -19,6 +14,11 @@ import git.c.object_;
  * @ingroup Git
  * @{
  */
+
+import git.c.common;
+import git.c.object_;
+import git.c.oid;
+import git.c.types;
 
 extern (C):
 

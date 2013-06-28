@@ -1,6 +1,11 @@
 module git.c.types;
 
-import git.c.common;
+/*
+ * Copyright (C) the libgit2 contributors. All rights reserved.
+ *
+ * This file is part of libgit2, distributed under the GNU GPL v2 with
+ * a Linking Exception. For full terms see the included COPYING file.
+ */
 
 /**
  * @file git2/types.h
@@ -22,6 +27,8 @@ alias __int64 = long;
 alias __haiku_std_int64 = long;
 
 import std.conv;
+
+import git.c.common;
 
 extern (C):
 

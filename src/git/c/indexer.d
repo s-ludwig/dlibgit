@@ -1,7 +1,5 @@
 module git.c.indexer;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -10,10 +8,10 @@ extern (C):
  */
 
 import git.c.common;
-import git.c.types;
 import git.c.oid;
+import git.c.types;
 
-
+extern (C):
 
 struct git_indexer_stream;
 

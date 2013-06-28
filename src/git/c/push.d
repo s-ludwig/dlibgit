@@ -1,16 +1,11 @@
 module git.c.push;
 
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
  * This file is part of libgit2, distributed under the GNU GPL v2 with
  * a Linking Exception. For full terms see the included COPYING file.
  */
-
-import git.c.common;
-import git.c.types;
 
 /**
  * @file git2/push.h
@@ -20,6 +15,10 @@ import git.c.types;
  * @{
  */
 
+import git.c.common;
+import git.c.types;
+
+extern (C):
 
 /**
  * Controls the behavior of a git_push object.

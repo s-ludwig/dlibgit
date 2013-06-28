@@ -1,10 +1,5 @@
 module git.c.reset;
 
-import git.c.types;
-import git.c.strarray;
-
-extern (C):
-
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -19,6 +14,10 @@ extern (C):
  * @{
  */
 
+import git.c.strarray;
+import git.c.types;
+
+extern (C):
 
 /**
  * Kinds of reset operation
