@@ -13,7 +13,11 @@ import git.c.types;
 
 extern (C):
 
-struct git_indexer_stream;
+struct git_indexer_stream
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * Create a new streaming indexer instance
