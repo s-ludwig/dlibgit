@@ -13,6 +13,7 @@ import git.c.common;
 import git.c.types;
 import git.c.oid;
 import git.c.odb;
+import git.c.odb_backend;
 
 /**
  * @file git2/sys/backend.h

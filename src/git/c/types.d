@@ -61,23 +61,11 @@ enum git_otype
 /** An open object database handle. */
 struct git_odb { }
 
-/** A custom backend in an ODB */
-struct git_odb_backend { }
-
 /** An object read from the ODB */
 struct git_odb_object { }
 
-/** A stream to read/write from the ODB */
-struct git_odb_stream { }
-
-/** A stream to write a packfile to the ODB */
-struct git_odb_writepack { }
-
 /** An open refs database handle. */
 struct git_refdb { }
-
-/** A custom backend for refs */
-struct git_refdb_backend { }
 
 /**
  * Representation of an existing git repository,
@@ -118,9 +106,6 @@ struct git_index_conflict_iterator { }
 /** Memory representation of a set of config files */
 struct git_config { }
 
-/** Interface to access a configuration file */
-struct git_config_backend { }
-
 /** Representation of a reference log entry */
 struct git_reflog_entry { }
 
@@ -150,9 +135,6 @@ struct git_signature
 
 /** In-memory representation of a reference. */
 struct git_reference { }
-
-/** Iterator for references */
-struct git_reference_iterator { }
 
 /** Merge heads, the input to merge */
 struct git_merge_head { }
@@ -191,8 +173,6 @@ enum git_filemode_t
 struct git_refspec { }
 struct git_remote { }
 struct git_push { }
-
-struct git_remote_callbacks { }
 
 /**
  * This is passed as the first argument to the callback to allow the

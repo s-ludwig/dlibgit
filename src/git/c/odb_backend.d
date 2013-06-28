@@ -12,6 +12,7 @@ extern (C):
 import git.c.common;
 import git.c.types;
 import git.c.oid;
+import git.c.sys.odb_backend;
 
 /**
  * @file git2/backend.h

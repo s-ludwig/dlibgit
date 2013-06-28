@@ -13,6 +13,7 @@ import git.c.common;
 import git.c.types;
 import git.c.oid;
 import git.c.strarray;
+import git.c.sys.refdb_backend;
 
 /**
  * @file git2/refs.h
