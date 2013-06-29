@@ -219,13 +219,9 @@ int git_submodule_lookup(
  * @return 0 on success, -1 on error, or non-zero return value of callback
  */
 
-// note: must be defined outside parameter list due to Issue 6754:
-// http://d.puremagic.com/issues/show_bug.cgi?id=6754
-alias extern(C) int function(git_submodule *sm, const(char)* name, void *payload) _Git_Callback;
-
 int git_submodule_foreach(
 	git_repository *repo,
-	_Git_Callback callback,
+	int function(git_submodule *sm, const(char)* name, void *payload) callback,
 	void *payload);
 
 /**
