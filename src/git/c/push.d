@@ -118,12 +118,10 @@ int git_push_unpack_ok(git_push *push);
  * @return 0 on success, GIT_EUSER on non-zero callback, or error code
  */
 
-// note: must be defined outside parameter list due to Issue 6754:
-// http://d.puremagic.com/issues/show_bug.cgi?id=6754
-alias extern(C) int function(const(char)* ref_, const(char)* msg, void *data) CB;
-
-int git_push_status_foreach(git_push *push, CB cb,
-			void *data);
+int git_push_status_foreach(
+    git_push *push,
+    int function(const(char)* ref_, const(char)* msg, void *data) cb,
+	void *data);
 
 /**
  * Free the given push object
