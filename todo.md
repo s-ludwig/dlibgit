@@ -4,3 +4,4 @@
 - Create .ddoc file for the docs (grab some from H. S. Teoh)
 - Move build scripts to build folder
 - Create separate version structs for libgit2 and dlibgit
+- use https://github.com/libgit2/TestGitRepository for samples
