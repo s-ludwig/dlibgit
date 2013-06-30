@@ -207,7 +207,11 @@ int git_oid_iszero(const(git_oid)* id);
 /**
  * OID Shortener object
  */
-struct git_oid_shorten;
+struct git_oid_shorten
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * Create a new OID shortener.
