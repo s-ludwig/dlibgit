@@ -7,7 +7,9 @@ set binPath=%thisPath%\..\bin
 cd %thisPath%\..\src
 
 set "files="
-for /r %%i in (*.d) do set files=!files! %%i
+for /r %%i in (src\git\*.d) do set files=%%i !files!
+for /r %%i in (src\git\c\*.d) do set files=%%i !files!
+for /r %%i in (src\git\c\sys\*.d) do set files=%%i !files!
 
 set compiler=dmd.exe
 rem set compiler=dmd_msc.exe
