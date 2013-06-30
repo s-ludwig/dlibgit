@@ -6,6 +6,10 @@
  */
 module git.util;
 
+/**
+    Contains utility functions for this package.
+*/
+
 import std.conv;
 import std.exception;
 import std.string;
@@ -42,7 +46,6 @@ package void require(bool state, string file = __FILE__, size_t line = __LINE__)
 unittest
 {
     import git.c.oid;
-
     git_oid oid;
     assertThrown!GitException(require(git_oid_fromstr(&oid, "foobar") == 0));
 }
