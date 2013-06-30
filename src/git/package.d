@@ -8,5 +8,12 @@ module git;
 
 public
 {
-    import git.c.version_;
+    import git.exception;
+    import git.util;
+    import git.version_;
+}
+
+private
+{
+    import git.c;
 }
