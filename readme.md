@@ -5,6 +5,8 @@ These are the D bindings to the libgit2 library.
 ## News
 dlibgit has been updated and now targets libgit v0.19.0.
 
+**Note:** A new D-oriented API is currently being written on top of the bindings.
+
 ## v0.19.0 Changes
 
 - The new C-based bindings are now part of the `git.c` package.
