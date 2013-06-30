@@ -17,6 +17,10 @@ import git.exception;
 /**
     Call this function when an error code is returned from a git function.
     It will retrieve the last error and throw a GitException.
+
+    $(RED Note:) assert or in blocks should be used to verify arguments (such as strings)
+    before calling Git functions since Git itself does not check pointers for null.
+    Passing null pointers to Git functions usually results in access violations.
 */
 package void require(bool state, string file = __FILE__, size_t line = __LINE__)
 {
@@ -28,7 +32,7 @@ package void require(bool state, string file = __FILE__, size_t line = __LINE__)
     enforce(gitError !is null,
         "Error: No Git error thrown, error condition check is likely invalid.");
 
-    const msg = format("Git error (%s):\n%s.", cast(git_error_t)gitError.klass, to!string(gitError.message));
+    const msg = format("Git error (%s): %s.", cast(git_error_t)gitError.klass, to!string(gitError.message));
 
     giterr_clear();
     throw new GitException(msg, file, line);
@@ -38,5 +42,7 @@ package void require(bool state, string file = __FILE__, size_t line = __LINE__)
 unittest
 {
     import git.c.oid;
-    require(git_oid_fromstr(null, null) == 0);
+
+    git_oid oid;
+    assertThrown!GitException(require(git_oid_fromstr(&oid, "foobar") == 0));
 }
