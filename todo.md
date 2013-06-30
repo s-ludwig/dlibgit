@@ -5,3 +5,6 @@
 - Move build scripts to build folder
 - Create separate version structs for libgit2 and dlibgit
 - use https://github.com/libgit2/TestGitRepository for samples
+- assert or in blocks should be used to verify arguments (such as strings)
+  before calling Git functions since Git itself does not check pointers for null.
+  Passing null pointers to Git functions usually results in access violations.
