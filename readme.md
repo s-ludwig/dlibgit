@@ -68,7 +68,7 @@ dlibgit has been updated and now targets libgit v0.19.0.
 
 **diff** sample:
 
-    $ rdmd build.d samples/diff/diff.d
+    $ rdmd build.d diff/diff.d
     $ bin\diff.exe .git 2504016ab220b5b 1e8ffc04be048c0
 
 - This will diff the first two commits in **dlibgit**.
@@ -76,13 +76,13 @@ dlibgit has been updated and now targets libgit v0.19.0.
 
 **showindex** sample:
 
-    $ rdmd build.d samples/showindex/showindex.d
+    $ rdmd build.d showindex/showindex.d
     $ bin\showindex.exe .git
 
 **git client** sample:
 **Note**: This sample has not been ported to v0.19.0 yet.
 
-    $ rdmd build.d samples/network/git.d
+    $ rdmd build.d network/git.d
     $ bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
     $ bin\git.exe index-pack path\to\.git\objects\pack\abcd1234.pack
     $ bin\git.exe clone git://github.com/AndrejMitrovic/dlibgit.git ../../dlibgit2_clone
