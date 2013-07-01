@@ -8,3 +8,5 @@
 - assert or in blocks should be used to verify arguments (such as strings)
   before calling Git functions since Git itself does not check pointers for null.
   Passing null pointers to Git functions usually results in access violations.
+- make build script avoid using -unittest if test\repo dir is missing, and issue
+  a warning that the user should update the submodules in order to test the library
