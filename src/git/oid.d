@@ -58,9 +58,7 @@ struct GitOid
         // note: don't use an enum due to http://d.puremagic.com/issues/show_bug.cgi?id=10516
         const srcHex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
         const oid = GitOid(srcHex);
-
-        char[MaxHexSize] tgtHex;
-        git_oid_fmt(tgtHex.ptr, &oid._oid);
+        const tgtHex = oid.toHex();
 
         assert(tgtHex == srcHex);
     }
@@ -71,9 +69,7 @@ struct GitOid
         // can convert from a partial string
         const srcHex = "4932";
         const oid = GitOid(srcHex);
-
-        char[MaxHexSize] tgtHex;
-        git_oid_fmt(tgtHex.ptr, &oid._oid);
+        const tgtHex = oid.toHex();
 
         assert(tgtHex[0 .. 4] == srcHex);
         assert(tgtHex[4 .. $].count('0') == tgtHex.length - 4);
@@ -144,7 +140,7 @@ struct GitOidShorten
     /**
         Create a new OID shortener. $(D length) is the minimum length
         which will be used to shorted the OIDs, even if a shorter
-        length is possible to unique identify all OIDs.
+        length can uniquely identify all OIDs.
     */
     this(size_t length)
     {
@@ -171,7 +167,7 @@ struct GitOidShorten
         the set. This length can then be retrieved by calling $(D minLength).
 
         $(B Note:) The hex OID must be a 40-char hexadecimal string. Calling
-        $(D add) with a shorter OID will thrown a GitOid exception.
+        $(D add) with a shorter OID will throw a GitOid exception.
 
         For performance reasons, there is a hard-limit of how many
         OIDs can be added to a single set - around ~22000, assuming
@@ -218,7 +214,7 @@ struct GitOidShorten
         static assert(!__traits(compiles, GitOidShorten() ));
     }
 
-    /** Return the current minimum length to uniquely identify the stored OIDs. */
+    /** Return the current minimum length used to uniquely identify all the stored OIDs. */
     @property size_t minLength() { return _minLength; }
 
 private:
@@ -251,8 +247,10 @@ private:
         git_oid_shorten* _payload;
     }
 
+    // refcounted git_oid_shorten
     alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
     Data _data;
 
+    // current minimum length
     size_t _minLength;
 }
