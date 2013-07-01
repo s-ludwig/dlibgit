@@ -31,6 +31,11 @@ dlibgit has been updated and now targets libgit v0.19.0.
 
 ## Dependencies
 
+- Make sure you either clone with `git clone --recursive`, or if you've already cloned then use:
+
+    $ git submodule init
+    $ git submodule update
+
 ### Windows:
 
 - Get the libgit2 DLL from [here](https://github.com/AndrejMitrovic/libgit_bin).
