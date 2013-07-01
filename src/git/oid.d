@@ -137,6 +137,13 @@ struct GitOidShorten
     /// Default-construction is disabled
     @disable this();
 
+    ///
+    unittest
+    {
+        // default construction is disabled
+        static assert(!__traits(compiles, GitOidShorten()));
+    }
+
     /**
         Create a new OID shortener. $(D length) is the minimum length
         which will be used to shorted the OIDs, even if a shorter
@@ -209,9 +216,6 @@ struct GitOidShorten
         // adding a shortened hex is disallowed
         auto sh = GitOidShorten(5);
         assertThrown!GitException(sh.add("1234"));
-
-        // default construction is disabled
-        static assert(!__traits(compiles, GitOidShorten() ));
     }
 
     /** Return the current minimum length used to uniquely identify all the stored OIDs. */
