@@ -138,6 +138,9 @@ private:
 */
 struct GitOidShorten
 {
+    /// Default-construction is disabled
+    @disable this();
+
     /**
         Create a new OID shortener. $(D length) is the minimum length
         which will be used to shorted the OIDs, even if a shorter
@@ -204,6 +207,13 @@ struct GitOidShorten
         assert(sh.minLength == 6);
     }
 
+    ///
+    unittest
+    {
+        // default construction is disabled
+        static assert(!__traits(compiles, GitOidShorten() ));
+    }
+
     /** Return the current minimum length to uniquely identify the stored OIDs. */
     @property size_t minLength() { return _minLength; }
 
@@ -219,6 +229,8 @@ private:
 
         ~this()
         {
+            printf("-- dtor\n");
+
             if (_payload !is null)
             {
                 git_oid_shorten_free(_payload);
