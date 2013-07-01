@@ -32,6 +32,16 @@ version(unittest)
     enum _testRepo = "../test/repo/.git";
 }
 
+/// Used in the call to $(D GitRepo.discoverRepo)
+enum AcrossFS
+{
+    ///
+    no,
+
+    ///
+    yes
+}
+
 /**
     The structure representing a git repository.
 */
@@ -83,20 +93,22 @@ struct GitRepo
 
         - the first repository is found.
         - a directory referenced in $(D ceilingDirs) has been reached.
-        - the filesystem changed (if acrossFS is false).
+        - the filesystem changed (if acrossFS is equal to $(D AcrossFS.no)).
 
         Parameters:
 
-        $(D acrossFS): If true the lookup will still continue when a
-        filesystem device change is detected while exploring parent directories.
+        $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will still
+        continue when a filesystem device change is detected while exploring
+        parent directories, otherwise $(D GitException) is thrown.
 
-        $(D ceilingDirs) An array of absolute symbolic-link-free paths.
-        The lookup will stop if any of these paths are reached.
+        $(D ceilingDirs) An array of absolute paths which are symbolic-link-free.
+        The lookup will stop and $(D GitException) will be thrown if any of
+        these paths are reached.
 
         $(B Note:) The lookup always performs on $(D startPath) even if
         $(D startPath) is listed in $(D ceilingDirs).
      */
-    static string discoverRepo(string startPath, string[] ceilingDirs = null, bool acrossFS = true)
+    static string discoverRepo(string startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
     {
         char[4096] buffer;
         const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
@@ -107,7 +119,7 @@ struct GitRepo
                 assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
         }
 
-        require(git_repository_discover(buffer.ptr, buffer.length, startPath.toStringz, acrossFS, c_ceilDirs) == 0);
+        require(git_repository_discover(buffer.ptr, buffer.length, startPath.toStringz, cast(bool)acrossFS, c_ceilDirs) == 0);
 
         return to!string(buffer.ptr);
     }
@@ -121,8 +133,11 @@ struct GitRepo
         // The function will expand this line and return the true
         // repository location.
         string path = buildPath(_testRepo.dirName, "a");
-        string repo = discoverRepo(path).relativePath.toPosixPath;
-        assert(repo == "../.git/modules/test/repo");
+        string repoPath = discoverRepo(path).relativePath.toPosixPath;
+        assert(repoPath == "../.git/modules/test/repo");
+
+        // verify the repo can be opened
+        GitRepo(repoPath);
     }
 
     ///
@@ -178,41 +193,6 @@ private:
 }
 
 extern (C):
-
-/**
- * Look for a git repository and copy its path in the given buffer.
- * The lookup start from base_path and walk across parent directories
- * if nothing has been found. The lookup ends when the first repository
- * is found, or when reaching a directory referenced in ceiling_dirs
- * or when the filesystem changes (in case across_fs is true).
- *
- * The method will automatically detect if the repository is bare
- * (if there is a repository).
- *
- * @param path_out The user allocated buffer which will
- * contain the found path.
- *
- * @param path_size repository_path size
- *
- * @param start_path The base path where the lookup starts.
- *
- * @param across_fs If true, then the lookup will still continue when a
- * filesystem device change is detected while exploring parent directories.
- *
- * @param ceiling_dirs A GIT_PATH_LIST_SEPARATOR separated list of
- * absolute symbolic link free paths. The lookup will stop when any
- * of this paths is reached. Note that the lookup always performs on
- * start_path no matter start_path appears in ceiling_dirs ceiling_dirs
- * might be NULL (which is equivalent to an empty string)
- *
- * @return 0 or an error code
- */
-int git_repository_discover(
-		char *path_out,
-		size_t path_size,
-		const(char)* start_path,
-		int across_fs,
-		const(char)* ceiling_dirs);
 
 /**
  * Option flags for `git_repository_open_ext`.
