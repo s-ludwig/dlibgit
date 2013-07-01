@@ -198,8 +198,8 @@ struct GitOidShorten
         sh.add("1234500000000000000000000000000000000000");
         assert(sh.minLength == 5);
 
-        // introduce conflicting oid for length 5,
-        // which requires a larger length for unique identification
+        // introduce conflicting oid which requires a
+        // larger length for unique identification in the set
         sh.add("1234560000000000000000000000000000000000");
         assert(sh.minLength == 6);
     }
