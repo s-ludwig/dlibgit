@@ -12,6 +12,7 @@ import std.algorithm;
 import std.exception;
 import std.conv;
 import std.file;
+import std.path;
 import std.range;
 import std.stdio;
 import std.string;
@@ -24,6 +25,11 @@ import git.c.types;
 
 import git.exception;
 import git.util;
+
+version(unittest)
+{
+    enum _testRepo = "../test/repo/.git";
+}
 
 /**
     The structure representing a git repository.
@@ -40,6 +46,15 @@ struct GitRepo
         static assert(!__traits(compiles, GitRepo()));
     }
 
+    /**
+        Open a git repository.
+
+        $(D path) must either be a path to a .git file or the
+        path to the directory where the .git file is located.
+
+        If $(D path) does not exist, or if the .git file is not
+        found in $(D path), a $(D GitException) is thrown.
+     */
     this(const(char)[] path)
     {
         enforceEx!GitException(path.exists, format("Error: Path '%s' does not exist.", path));
@@ -49,7 +64,14 @@ struct GitRepo
     ///
     unittest
     {
+        // throw when path does not exist
         assertThrown!GitException(GitRepo(r".\invalid\path\.git"));
+
+        // open path of .git file
+        GitRepo(_testRepo);
+
+        // open path of .git directory
+        GitRepo(_testRepo.dirName);
     }
 
 private:
