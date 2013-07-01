@@ -19,6 +19,6 @@ set "flags=%binPath%\libgit2_implib.lib"
 
 rem Note: -g option disabled due to CodeView bugs which crash linkers
 rem (both Optlink and Unilink will ICE)
-set dtest=rdmd --main -debug -unittest --force -of%binPath%\dlibgit_test.exe
+set dtest=rdmd -g --main -debug -unittest --force -of%binPath%\dlibgit_test.exe
 
 %dtest% --compiler=%compiler% %flags% -Isrc git\package.d && %compiler% -of%binPath%\dlibgit.lib -lib %flags% %files% && echo Success: dlibgit tested and built ok.
