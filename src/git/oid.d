@@ -38,14 +38,17 @@ struct GitOid
     enum MinHexSize = GIT_OID_MINPREFIXLEN;
 
     /**
-        Parse a full hex-formatted object ID and return a GitOid object.
-        $(D input) must be a the size of $(D HexSize).
+        Parse a full or partial hex-formatted object ID and
+        return a GitOid object.
+
+        $(D input) must be at least the size of $(D MinHexSize),
+        or the size of $(D HexSize).
     */
     static GitOid fromHex(const(char)[] input)
     {
-        assert(input.length == HexSize);
+        assert(input.length >= MinHexSize && input.length <= HexSize);
         GitOid result;
-        require(git_oid_fromstr(&result._oid, input.toStringz) == 0);
+        require(git_oid_fromstrn(&result._oid, input.ptr, input.length) == 0);
         return result;
     }
 
@@ -65,32 +68,9 @@ struct GitOid
     ///
     unittest
     {
-        /// cannot convert from a partial string
+        // can convert from a partial string
         const srcHex = "4932";
-        assertThrown!AssertError(GitOid.fromHex(srcHex));
-
-        /// cannot convert from a string bigger than MinHexSize
-        const bigHex = std.array.replicate("1", HexSize + 1);
-        assertThrown!AssertError(GitOid.fromHex(bigHex));
-    }
-
-    /**
-        Parse a partial hex-formatted object ID and return a GitOid object.
-        $(D input) must be at least the size of $(D MinHexSize).
-    */
-    static GitOid fromShortHex(const(char)[] input)
-    {
-        assert(input.length >= MinHexSize && input.length <= HexSize);
-        GitOid result;
-        require(git_oid_fromstrp(&result._oid, input.toStringz) == 0);
-        return result;
-    }
-
-    ///
-    unittest
-    {
-        const srcHex = "4932";
-        const oid = GitOid.fromShortHex(srcHex);
+        const oid = GitOid.fromHex(srcHex);
 
         char[HexSize] tgtHex;
         git_oid_fmt(tgtHex.ptr, &oid._oid);
@@ -104,11 +84,11 @@ struct GitOid
     {
         /// cannot convert from a partial string smaller than MinHexSize
         const smallHex = "493";
-        assertThrown!AssertError(GitOid.fromShortHex(smallHex));
+        assertThrown!AssertError(GitOid.fromHex(smallHex));
 
         /// cannot convert from a string bigger than MinHexSize
         const bigHex = std.array.replicate("1", HexSize + 1);
-        assertThrown!AssertError(GitOid.fromShortHex(bigHex));
+        assertThrown!AssertError(GitOid.fromHex(bigHex));
     }
 
 private:
@@ -129,7 +109,7 @@ extern (C):
  * @param length length of the input string
  * @return 0 or an error code
  */
-int git_oid_fromstrn(git_oid *out_, const(char)* str, size_t length);
+//~ int git_oid_fromstrn(git_oid *out_, const(char)* str, size_t length);
 
 /**
  * Copy an already raw oid into a git_oid structure.
@@ -137,7 +117,7 @@ int git_oid_fromstrn(git_oid *out_, const(char)* str, size_t length);
  * @param out_ oid structure the result is written into.
  * @param raw the raw input bytes to be copied.
  */
-void git_oid_fromraw(git_oid *out_, const(ubyte)* raw);
+//~ void git_oid_fromraw(git_oid *out_, const(ubyte)* raw);
 
 /**
  * Format a git_oid into a hex string.
