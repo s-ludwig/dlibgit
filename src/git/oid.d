@@ -55,7 +55,7 @@ struct GitOid
     ///
     unittest
     {
-        // note: don't use enum due to http://d.puremagic.com/issues/show_bug.cgi?id=10516
+        // note: don't use an enum due to http://d.puremagic.com/issues/show_bug.cgi?id=10516
         const srcHex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
         const oid = GitOid.fromHex(srcHex);
 
