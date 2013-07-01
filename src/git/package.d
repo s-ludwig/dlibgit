@@ -10,11 +10,12 @@ public
 {
     import git.exception;
     import git.oid;
-    import git.util;
+    import git.repository;
     import git.version_;
 }
 
 private
 {
     import git.c;
+    import git.util;
 }
