@@ -30,23 +30,23 @@ struct GitOid
     /** Size (in bytes) of a raw/binary oid */
     enum BinarySize = GIT_OID_RAWSZ;
 
-    /** Size (in bytes) of a hex formatted oid */
-    enum HexSize = GIT_OID_HEXSZ;
-
     /** Minimum length (in number of hex characters,
      * i.e. packets of 4 bits) of an oid prefix */
     enum MinHexSize = GIT_OID_MINPREFIXLEN;
+
+    /** Size (in bytes) of a hex formatted oid */
+    enum MaxHexSize = GIT_OID_HEXSZ;
 
     /**
         Parse a full or partial hex-formatted object ID and
         return a GitOid object.
 
         $(D input) must be at least the size of $(D MinHexSize),
-        or the size of $(D HexSize).
+        but not larger than $(D MaxHexSize).
     */
     static GitOid fromHex(const(char)[] input)
     {
-        assert(input.length >= MinHexSize && input.length <= HexSize);
+        assert(input.length >= MinHexSize && input.length <= MaxHexSize);
         GitOid result;
         require(git_oid_fromstrn(&result._oid, input.ptr, input.length) == 0);
         return result;
@@ -59,7 +59,7 @@ struct GitOid
         const srcHex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
         const oid = GitOid.fromHex(srcHex);
 
-        char[HexSize] tgtHex;
+        char[MaxHexSize] tgtHex;
         git_oid_fmt(tgtHex.ptr, &oid._oid);
 
         assert(tgtHex == srcHex);
@@ -72,7 +72,7 @@ struct GitOid
         const srcHex = "4932";
         const oid = GitOid.fromHex(srcHex);
 
-        char[HexSize] tgtHex;
+        char[MaxHexSize] tgtHex;
         git_oid_fmt(tgtHex.ptr, &oid._oid);
 
         assert(tgtHex[0 .. 4] == srcHex);
@@ -87,7 +87,7 @@ struct GitOid
         assertThrown!AssertError(GitOid.fromHex(smallHex));
 
         /// cannot convert from a string bigger than MinHexSize
-        const bigHex = std.array.replicate("1", HexSize + 1);
+        const bigHex = std.array.replicate("1", MaxHexSize + 1);
         assertThrown!AssertError(GitOid.fromHex(bigHex));
     }
 
