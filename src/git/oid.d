@@ -19,6 +19,7 @@ import git.c.common;
 import git.c.oid;
 import git.c.types;
 
+import git.exception;
 import git.util;
 
 /**
@@ -133,85 +134,49 @@ private:
 struct GitOidShorten
 {
     /**
-    * Create a new OID shortener.
-    *
-    * The OID shortener is used to process a list of OIDs
-    * in text form and return the shortest length that would
-    * uniquely identify all of them.
-    *
-    * E.g. look at the result of `git log --abbrev`.
-    *
-    * @param min_length The minimal length for all identifiers,
-    *		which will be used even if shorter OIDs would still
-    *		be unique.
-    *	@return a `git_oid_shorten` instance, NULL if OOM
+        Create a new OID shortener. $(D minLength) is the minimum length
+        which will be used to shorted the OIDs, even if a shorter
+        length is possible to unique identify all OIDs.
     */
-
-    this(size_t length)
+    this(size_t minLength)
     {
-        _git_oid_shorten = enforce(git_oid_shorten_new(length), "Error: Out of memory.");
+        _git_oid_shorten = enforce(git_oid_shorten_new(minLength), "Error: Out of memory.");
+        _minLength = minLength;
     }
 
-    //~ void add
-    //~ int git_oid_shorten_add(git_oid_shorten *os, const(char)* text_id);
+    /**
+        Add a new hex OID to the set of shortened OIDs and store
+        the minimal length to uniquely identify all the OIDs in
+        the set. This length can then be retrieved by calling $(D minLength).
+
+        $(B Note:) The hex OID must be a 40-char hexadecimal string. Calling
+        $(D add) with a shorter OID will thrown a GitOid exception.
+
+        For performance reasons, there is a hard-limit of how many
+        OIDs can be added to a single set - around ~22000, assuming
+        a mostly randomized distribution.
+
+        Attempting to go over this limit will throw a $(D GitException).
+    */
+    void add(const(char)[] hex)
+    {
+        enforceEx!GitException(hex.length == GitOid.MaxHexSize,
+                               format("Error: Hex string size must be equal to '%s' (GitOid.MaxHexSize), not '%s'", GitOid.MaxHexSize, hex.length));
+
+        auto result = git_oid_shorten_add(_git_oid_shorten, hex.ptr);
+        require(result >= 0);
+        _minLength = result;
+    }
+
+    ~this()
+    {
+        git_oid_shorten_free(_git_oid_shorten);
+    }
+
+    /** Return the current minimum length to uniquely identify the stored OIDs. */
+    @property size_t minLength() { return _minLength; }
 
 private:
     git_oid_shorten* _git_oid_shorten;
+    size_t _minLength;
 }
-
-// todo: remove these once all are ported
-extern (C):
-
-/**
- * OID Shortener object
- */
-//~ struct git_oid_shorten;
-
-/**
- * Create a new OID shortener.
- *
- * The OID shortener is used to process a list of OIDs
- * in text form and return the shortest length that would
- * uniquely identify all of them.
- *
- * E.g. look at the result of `git log --abbrev`.
- *
- * @param min_length The minimal length for all identifiers,
- *		which will be used even if shorter OIDs would still
- *		be unique.
- *	@return a `git_oid_shorten` instance, NULL if OOM
- */
-git_oid_shorten * git_oid_shorten_new(size_t min_length);
-
-/**
- * Add a new OID to set of shortened OIDs and calculate
- * the minimal length to uniquely identify all the OIDs in
- * the set.
- *
- * The OID is expected to be a 40-char hexadecimal string.
- * The OID is owned by the user and will not be modified
- * or freed.
- *
- * For performance reasons, there is a hard-limit of how many
- * OIDs can be added to a single set (around ~22000, assuming
- * a mostly randomized distribution), which should be enough
- * for any kind of program, and keeps the algorithm fast and
- * memory-efficient.
- *
- * Attempting to add more than those OIDs will result in a
- * GIT_ENOMEM error
- *
- * @param os a `git_oid_shorten` instance
- * @param text_id an OID in text form
- * @return the minimal length to uniquely identify all OIDs
- *		added so far to the set; or an error code (<0) if an
- *		error occurs.
- */
-int git_oid_shorten_add(git_oid_shorten *os, const(char)* text_id);
-
-/**
- * Free an OID shortener instance
- *
- * @param os a `git_oid_shorten` instance
- */
-void git_oid_shorten_free(git_oid_shorten *os);
