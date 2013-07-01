@@ -111,51 +111,12 @@ struct GitOid
         assertThrown!AssertError(GitOid.fromPartialHex(bigHex));
     }
 
-
 private:
     git_oid _oid;
 }
 
 // todo: remove these once all are ported
 extern (C):
-
-/** Size (in bytes) of a raw/binary oid */
-//~ enum GIT_OID_RAWSZ = 20;
-
-//~ /** Size (in bytes) of a hex formatted oid */
-//~ enum GIT_OID_HEXSZ = (GIT_OID_RAWSZ * 2);
-
-//~ /** Minimum length (in number of hex characters,
- //~ * i.e. packets of 4 bits) of an oid prefix */
-//~ enum GIT_OID_MINPREFIXLEN = 4;
-
-//~ /** Unique identity of any object (commit, tree, blob, tag). */
-//~ struct git_oid
-//~ {
-	//~ /** raw binary formatted id */
-	//~ ubyte[GIT_OID_RAWSZ] id;
-//~ }
-
-/**
- * Parse a hex formatted object id into a git_oid.
- *
- * @param out_ oid structure the result is written into.
- * @param str input hex string; must be pointing at the start of
- *		the hex sequence and have at least the number of bytes
- *		needed for an oid encoded in hex (40 bytes).
- * @return 0 or an error code
- */
-//~ int git_oid_fromstr(git_oid *out_, const(char)* str);
-
-/**
- * Parse a hex formatted null-terminated string into a git_oid.
- *
- * @param out_ oid structure the result is written into.
- * @param str input hex string; must be at least 4 characters
- *      long and null-terminated.
- * @return 0 or an error code
- */
-//~ int git_oid_fromstrp(git_oid *out_, const(char)* str);
 
 /**
  * Parse N characters of a hex formatted object id into a git_oid
