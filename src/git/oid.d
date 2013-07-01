@@ -223,7 +223,7 @@ struct GitOidShorten
 
 private:
 
-    /** Payload for the $(D git_oid_shorten object) which should be refcounted. */
+    /** Payload for the $(D git_oid_shorten) object which should be refcounted. */
     struct Payload
     {
         this(size_t length)
@@ -233,7 +233,7 @@ private:
 
         ~this()
         {
-            // printf("-- dtor\n");
+            //~ writefln("- %s", __FUNCTION__);
 
             if (_payload !is null)
             {
