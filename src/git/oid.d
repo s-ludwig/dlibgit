@@ -14,6 +14,7 @@ import std.conv;
 import std.range;
 import std.stdio;
 import std.string;
+import std.typecons;
 
 import git.c.common;
 import git.c.oid;
@@ -130,18 +131,35 @@ private:
     The OID shortener is used to process a list of OIDs
     in text form and return the shortest length that would
     uniquely identify all of them.
+
+    $(B Note): This is a refcounted type and can be
+    safely copied by value. The underyling C handle will be
+    released once the reference count reaches zero.
 */
 struct GitOidShorten
 {
     /**
-        Create a new OID shortener. $(D minLength) is the minimum length
+        Create a new OID shortener. $(D length) is the minimum length
         which will be used to shorted the OIDs, even if a shorter
         length is possible to unique identify all OIDs.
     */
-    this(size_t minLength)
+    this(size_t length)
     {
-        _git_oid_shorten = enforce(git_oid_shorten_new(minLength), "Error: Out of memory.");
-        _minLength = minLength;
+        enforceEx!GitException(length <= GitOid.MaxHexSize,
+                               format("Error: Minimum hex length cannot be larger than '%s' (GitOid.MaxHexSize), it is '%s'", GitOid.MaxHexSize, length));
+
+        _data = Data(length);
+        _minLength = length;
+    }
+
+    ///
+    unittest
+    {
+        auto oidShort = GitOidShorten(10);
+        assert(oidShort.minLength == 10);
+
+        // cannot be larger than MaxHexSize
+        assertThrown!GitException(GitOidShorten(GitOid.MaxHexSize + 1));
     }
 
     /**
@@ -163,20 +181,64 @@ struct GitOidShorten
         enforceEx!GitException(hex.length == GitOid.MaxHexSize,
                                format("Error: Hex string size must be equal to '%s' (GitOid.MaxHexSize), not '%s'", GitOid.MaxHexSize, hex.length));
 
-        auto result = git_oid_shorten_add(_git_oid_shorten, hex.ptr);
+        auto result = git_oid_shorten_add(_data._payload, hex.ptr);
         require(result >= 0);
         _minLength = result;
     }
 
-    ~this()
+    ///
+    unittest
     {
-        git_oid_shorten_free(_git_oid_shorten);
+        auto sh = GitOidShorten(5);
+        assert(sh.minLength == 5);
+
+        sh.add("1234000000000000000000000000000000000000");
+        assert(sh.minLength == 5);
+
+        sh.add("1234500000000000000000000000000000000000");
+        assert(sh.minLength == 5);
+
+        // introduce conflicting oid for length 5,
+        // which requires a larger length for unique identification
+        sh.add("1234560000000000000000000000000000000000");
+        assert(sh.minLength == 6);
     }
 
     /** Return the current minimum length to uniquely identify the stored OIDs. */
     @property size_t minLength() { return _minLength; }
 
 private:
-    git_oid_shorten* _git_oid_shorten;
+
+    /** Payload for the $(D git_oid_shorten object) which should be refcounted. */
+    struct Payload
+    {
+        this(size_t length)
+        {
+            _payload = enforce(git_oid_shorten_new(length), "Error: Out of memory.");
+        }
+
+        ~this()
+        {
+            printf("-- Calling dtor\n");
+
+            if (_payload !is null)
+            {
+                git_oid_shorten_free(_payload);
+                _payload = null;
+            }
+        }
+
+        /// Should never perform copy
+        @disable this(this);
+
+        /// Should never perform assign
+        @disable void opAssign(typeof(this));
+
+        git_oid_shorten* _payload;
+    }
+
+    alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
+    Data _data;
+
     size_t _minLength;
 }
