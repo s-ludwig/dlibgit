@@ -91,6 +91,38 @@ struct GitOid
         assertThrown!AssertError(GitOid.fromHex(bigHex));
     }
 
+    /**
+        Convert this GitOid into a hex string.
+
+        $(B Note): If this oid has been constructed with a partial
+        hex string, $(D toHex) will still return a hex string of size
+        $(D MaxHexSize) but with padded zeros.
+    */
+    string toHex() const
+    {
+        auto buffer = new char[](MaxHexSize);
+        git_oid_nfmt(buffer.ptr, MaxHexSize, &_oid);
+        return assumeUnique(buffer);
+    }
+
+    ///
+    unittest
+    {
+        // convert hex to oid and back to hex
+        const hex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
+        const oid = GitOid.fromHex(hex);
+        assert(oid.toHex == hex);
+    }
+
+    ///
+    unittest
+    {
+        // convert partial hex to oid and back to hex
+        const hex = "4932";
+        const oid = GitOid.fromHex(hex);
+        assert(oid.toHex == "4932000000000000000000000000000000000000");
+    }
+
 private:
     git_oid _oid;
 }
@@ -98,38 +130,17 @@ private:
 // todo: remove these once all are ported
 extern (C):
 
-/**
- * Parse N characters of a hex formatted object id into a git_oid
- *
- * If N is odd, N-1 characters will be parsed instead.
- * The remaining space in the git_oid will be set to zero.
- *
- * @param out_ oid structure the result is written into.
- * @param str input hex string of at least size `length`
- * @param length length of the input string
- * @return 0 or an error code
- */
-//~ int git_oid_fromstrn(git_oid *out_, const(char)* str, size_t length);
-
-/**
- * Copy an already raw oid into a git_oid structure.
- *
- * @param out_ oid structure the result is written into.
- * @param raw the raw input bytes to be copied.
- */
-//~ void git_oid_fromraw(git_oid *out_, const(ubyte)* raw);
-
-/**
- * Format a git_oid into a hex string.
- *
- * @param out_ output hex string; must be pointing at the start of
- *		the hex sequence and have at least the number of bytes
- *		needed for an oid encoded in hex (40 bytes). Only the
- *		oid digits are written; a '\\0' terminator must be added
- *		by the caller if it is required.
- * @param id oid structure to format.
- */
-void git_oid_fmt(char *out_, const(git_oid)* id);
+//~ /**
+ //~ * Format a git_oid into a hex string.
+ //~ *
+ //~ * @param out_ output hex string; must be pointing at the start of
+ //~ *		the hex sequence and have at least the number of bytes
+ //~ *		needed for an oid encoded in hex (40 bytes). Only the
+ //~ *		oid digits are written; a '\\0' terminator must be added
+ //~ *		by the caller if it is required.
+ //~ * @param id oid structure to format.
+ //~ */
+//~ void git_oid_fmt(char *out_, const(git_oid)* id);
 
 /**
  * Format a git_oid into a partial hex string.
