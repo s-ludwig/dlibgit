@@ -10,3 +10,7 @@
   Passing null pointers to Git functions usually results in access violations.
 - make build script avoid using -unittest if test\repo dir is missing, and issue
   a warning that the user should update the submodules in order to test the library
+
+## bugs to file to libgit2 (or pulls to make-
+- git_repository_discover dosc reference base_path instead of start_path
+    - it also seems to mention that if 'acrossFS' is true lookup stops, but it should be if it's false

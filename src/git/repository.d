@@ -23,6 +23,7 @@ import git.c.oid;
 import git.c.repository;
 import git.c.types;
 
+import git.common;
 import git.exception;
 import git.util;
 
@@ -57,7 +58,6 @@ struct GitRepo
      */
     this(const(char)[] path)
     {
-        enforceEx!GitException(path.exists, format("Error: Path '%s' does not exist.", path));
         _data = Data(path);
     }
 
@@ -72,6 +72,74 @@ struct GitRepo
 
         // open path of .git directory
         GitRepo(_testRepo.dirName);
+    }
+
+    /**
+        Discover a git repository and return its path.
+
+        The lookup starts from $(D startPath) and walks across parent directories
+        if nothing has been found. The lookup ends when one of the following
+        becomes true:
+
+        - the first repository is found.
+        - a directory referenced in $(D ceilingDirs) has been reached.
+        - the filesystem changed (if acrossFS is false).
+
+        Parameters:
+
+        $(D acrossFS): If true the lookup will still continue when a
+        filesystem device change is detected while exploring parent directories.
+
+        $(D ceilingDirs) An array of absolute symbolic-link-free paths.
+        The lookup will stop if any of these paths are reached.
+
+        $(B Note:) The lookup always performs on $(D startPath) even if
+        $(D startPath) is listed in $(D ceilingDirs).
+     */
+    static string discoverRepo(string startPath, string[] ceilingDirs = null, bool acrossFS = true)
+    {
+        char[4096] buffer;
+        const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
+
+        version(assert)
+        {
+            foreach (path; ceilingDirs)
+                assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
+        }
+
+        require(git_repository_discover(buffer.ptr, buffer.length, startPath.toStringz, acrossFS, c_ceilDirs) == 0);
+
+        return to!string(buffer.ptr);
+    }
+
+    ///
+    unittest
+    {
+        // look for the .git repo in "../test/repo/a/".
+        // The .git file will be found one dir up, and will contain
+        // the line 'gitdir: ../../.git/modules/test/repo'.
+        // The function will expand this line and return the true
+        // repository location.
+        string path = buildPath(_testRepo.dirName, "a");
+        string repo = discoverRepo(path).relativePath.toPosixPath;
+        assert(repo == "../.git/modules/test/repo");
+    }
+
+    ///
+    unittest
+    {
+        // ceiling dir blocks reading the .git file
+        string path = buildPath(_testRepo.dirName, "a").absolutePath.buildNormalizedPath;
+        string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
+        assertThrown!GitException(discoverRepo(path, ceils));
+    }
+
+    ///
+    unittest
+    {
+        // all ceiling paths must be absolute
+        string[] ceils = ["../.."];
+        assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
     }
 
 private:
@@ -112,34 +180,6 @@ private:
 extern (C):
 
 /**
- * Open a git repository.
- *
- * The 'path' argument must point to either a git repository
- * folder, or an existing work dir.
- *
- * The method will automatically detect if 'path' is a normal
- * or bare repository or fail if 'path' is neither.
- *
- * @param out pointer to the repo which will be opened
- * @param path the path to the repository
- * @return 0 or an error code
- */
-int git_repository_open(git_repository **out_, const(char)* path);
-
-/**
- * Create a "fake" repository to wrap an object database
- *
- * Create a repository object to wrap an object database to be used
- * with the API when all you have is an object database. This doesn't
- * have any paths associated with it, so use with care.
- *
- * @param out pointer to the repo
- * @param odb the object database to wrap
- * @return 0 or an error code
- */
-int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
-
-/**
  * Look for a git repository and copy its path in the given buffer.
  * The lookup start from base_path and walk across parent directories
  * if nothing has been found. The lookup ends when the first repository
@@ -156,7 +196,7 @@ int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
  *
  * @param start_path The base path where the lookup starts.
  *
- * @param across_fs If true, then the lookup will not stop when a
+ * @param across_fs If true, then the lookup will still continue when a
  * filesystem device change is detected while exploring parent directories.
  *
  * @param ceiling_dirs A GIT_PATH_LIST_SEPARATOR separated list of
@@ -167,7 +207,6 @@ int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
  *
  * @return 0 or an error code
  */
-// todo: libgit.sharp uses static discover
 int git_repository_discover(
 		char *path_out,
 		size_t path_size,
@@ -191,6 +230,8 @@ int git_repository_discover(
 	//~ GIT_REPOSITORY_OPEN_NO_SEARCH = (1 << 0),
 	//~ GIT_REPOSITORY_OPEN_CROSS_FS  = (1 << 1),
 //~ } ;
+
+//~ mixin _ExportEnumMembers!git_repository_open_flag_t;
 
 /**
  * Find and open a repository with extended controls.
@@ -227,6 +268,19 @@ int git_repository_open_ext(
  * @return 0 on success, or an error code
  */
 int git_repository_open_bare(git_repository **out_, const(char)* bare_path);
+
+/**
+ * Free a previously allocated repository
+ *
+ * Note that after a repository is free'd, all the objects it has spawned
+ * will still exist until they are manually closed by the user
+ * with `git_object_free`, but accessing any of the attributes of
+ * an object without a backing repository will result in undefined
+ * behavior
+ *
+ * @param repo repository handle to close. If NULL nothing occurs.
+ */
+void git_repository_free(git_repository *repo);
 
 /**
  * Creates a new Git repository in the given folder.
@@ -283,6 +337,8 @@ int git_repository_init(
 	//~ GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE = (1u << 5),
 //~ } ;
 
+//~ mixin _ExportEnumMembers!git_repository_init_flag_t;
+
 /**
  * Mode options for `git_repository_init_ext`.
  *
@@ -301,6 +357,8 @@ int git_repository_init(
 	//~ GIT_REPOSITORY_INIT_SHARED_GROUP = octal!2775,
 	//~ GIT_REPOSITORY_INIT_SHARED_ALL   = octal!2777,
 //~ } ;
+
+//~ mixin _ExportEnumMembers!git_repository_init_mode_t;
 
 /**
  * Extended options structure for `git_repository_init_ext`.
@@ -705,6 +763,8 @@ int git_repository_detach_head(
 	//~ GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE,
 //~ } ;
 
+//~ mixin _ExportEnumMembers!git_repository_state_t;
+
 /**
  * Determines the status of a git repository - ie, whether an operation
  * (merge, cherry-pick, etc) is in progress.
@@ -744,3 +804,21 @@ const(char)*  git_repository_get_namespace(git_repository *repo);
  * @return 1 if shallow, zero if not
  */
 int git_repository_is_shallow(git_repository *repo);
+
+/**
+    Functions to wrap later:
+*/
+
+/**
+ * Create a "fake" repository to wrap an object database
+ *
+ * Create a repository object to wrap an object database to be used
+ * with the API when all you have is an object database. This doesn't
+ * have any paths associated with it, so use with care.
+ *
+ * @param out pointer to the repo
+ * @param odb the object database to wrap
+ * @return 0 or an error code
+ */
+// todo: wrap git_odb before wrapping this function
+int git_repository_wrap_odb(git_repository **out_, git_odb *odb);

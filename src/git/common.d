@@ -4,19 +4,14 @@
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
  */
-module git;
+module git.common;
 
-public
-{
-    import git.exception;
-    import git.oid;
-    import git.repository;
-    import git.version_;
-}
+// todo: port more of these from git.c.common
 
-private
+package
 {
-    import git.c;
-    import git.common;
-    import git.util;
+    version(Windows)
+        enum GitPathSep = ";";
+    else
+        enum GitPathSep = ":";
 }

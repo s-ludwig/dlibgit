@@ -10,6 +10,7 @@ module git.util;
     Contains utility functions for this package.
 */
 
+import std.array;
 import std.conv;
 import std.exception;
 import std.string;
@@ -48,4 +49,16 @@ unittest
     import git.c.oid;
     git_oid oid;
     assertThrown!GitException(require(git_oid_fromstr(&oid, "foobar") == 0));
+}
+
+/** Return a posix-native path, replacing back slashes with forward slashes. */
+string toPosixPath(string input)
+{
+    return input.replace(r"\", "/");
+}
+
+///
+unittest
+{
+    assert(r"foo/bar\doo".toPosixPath == r"foo/bar/doo");
 }
