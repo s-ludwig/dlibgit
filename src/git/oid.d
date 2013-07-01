@@ -78,7 +78,7 @@ struct GitOid
         Parse a partial hex-formatted object ID and return a GitOid object.
         $(D input) must be at least the size of $(D MinHexSize).
     */
-    static GitOid fromPartialHex(const(char)[] input)
+    static GitOid fromShortHex(const(char)[] input)
     {
         assert(input.length >= MinHexSize && input.length <= HexSize);
         GitOid result;
@@ -90,7 +90,7 @@ struct GitOid
     unittest
     {
         const srcHex = "4932";
-        const oid = GitOid.fromPartialHex(srcHex);
+        const oid = GitOid.fromShortHex(srcHex);
 
         char[HexSize] tgtHex;
         git_oid_fmt(tgtHex.ptr, &oid._oid);
@@ -104,11 +104,11 @@ struct GitOid
     {
         /// cannot convert from a partial string smaller than MinHexSize
         const smallHex = "493";
-        assertThrown!AssertError(GitOid.fromPartialHex(smallHex));
+        assertThrown!AssertError(GitOid.fromShortHex(smallHex));
 
         /// cannot convert from a string bigger than MinHexSize
         const bigHex = std.array.replicate("1", HexSize + 1);
-        assertThrown!AssertError(GitOid.fromPartialHex(bigHex));
+        assertThrown!AssertError(GitOid.fromShortHex(bigHex));
     }
 
 private:
