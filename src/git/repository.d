@@ -23,6 +23,10 @@ import git.c.types;
 import git.exception;
 import git.util;
 
+struct GitRepo
+{
+}
+
 extern (C):
 
 /**
@@ -81,6 +85,7 @@ int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
  *
  * @return 0 or an error code
  */
+// todo: libgit.sharp uses static discover
 int git_repository_discover(
 		char *path_out,
 		size_t path_size,
