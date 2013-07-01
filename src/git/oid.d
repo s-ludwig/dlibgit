@@ -6,10 +6,31 @@
  */
 module git.oid;
 
+import std.string;
+
 import git.c.common;
 import git.c.oid;
 import git.c.types;
 
+import git.util;
+
+/**
+    The unique ID of any Git object, whether it's a commit,
+    tree, blob, tag, etc.
+*/
+struct GitOid
+{
+    /** Parse a hex-formatted object ID and return a GitOid object. */
+    static GitOid fromString(const(char)[] input)
+    {
+        GitOid result;
+        require(git_oid_fromstr(&result._oid, input.toStringz) == 0);
+        return result;
+    }
+
+private:
+    git_oid _oid;
+}
 
 // todo: remove these once all are ported
 extern (C):
@@ -206,11 +227,7 @@ int git_oid_iszero(const(git_oid)* id);
 /**
  * OID Shortener object
  */
-struct git_oid_shorten
-{
-    @disable this();
-    @disable this(this);
-}
+//~ struct git_oid_shorten;
 
 /**
  * Create a new OID shortener.
