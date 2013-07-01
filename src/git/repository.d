@@ -19,6 +19,7 @@ import std.typecons;
 
 import git.c.common;
 import git.c.oid;
+import git.c.repository;
 import git.c.types;
 
 import git.exception;
@@ -42,6 +43,7 @@ struct GitRepo
     this(const(char)[] path)
     {
         enforceEx!GitException(path.exists, format("Error: Path '%s' does not exist.", path));
+        _data = Data(path);
     }
 
     ///
@@ -49,6 +51,40 @@ struct GitRepo
     {
         assertThrown!GitException(GitRepo(r".\invalid\path\.git"));
     }
+
+private:
+
+    /** Payload for the $(D git_repository) object which should be refcounted. */
+    struct Payload
+    {
+        this(const(char)[] path)
+        {
+            require(git_repository_open(&_payload, path.toStringz) == 0);
+        }
+
+        ~this()
+        {
+            //~ writefln("- %s", __FUNCTION__);
+
+            if (_payload !is null)
+            {
+                git_repository_free(_payload);
+                _payload = null;
+            }
+        }
+
+        /// Should never perform copy
+        @disable this(this);
+
+        /// Should never perform assign
+        @disable void opAssign(typeof(this));
+
+        git_repository* _payload;
+    }
+
+    // refcounted git_oid_shorten
+    alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
+    Data _data;
 }
 
 extern (C):
@@ -169,19 +205,6 @@ int git_repository_open_ext(
  * @return 0 on success, or an error code
  */
 int git_repository_open_bare(git_repository **out_, const(char)* bare_path);
-
-/**
- * Free a previously allocated repository
- *
- * Note that after a repository is free'd, all the objects it has spawned
- * will still exist until they are manually closed by the user
- * with `git_object_free`, but accessing any of the attributes of
- * an object without a backing repository will result in undefined
- * behavior
- *
- * @param repo repository handle to close. If NULL nothing occurs.
- */
-void git_repository_free(git_repository *repo);
 
 /**
  * Creates a new Git repository in the given folder.
