@@ -39,17 +39,15 @@ struct GitOid
 
     /**
         Parse a full or partial hex-formatted object ID and
-        return a GitOid object.
+        create a GitOid object.
 
-        $(D input) must be at least the size of $(D MinHexSize),
+        $(D hex) must be at least the size of $(D MinHexSize),
         but not larger than $(D MaxHexSize).
     */
-    static GitOid fromHex(const(char)[] input)
+    this(const(char)[] hex)
     {
-        assert(input.length >= MinHexSize && input.length <= MaxHexSize);
-        GitOid result;
-        require(git_oid_fromstrn(&result._oid, input.ptr, input.length) == 0);
-        return result;
+        assert(hex.length >= MinHexSize && hex.length <= MaxHexSize);
+        require(git_oid_fromstrn(&_oid, hex.ptr, hex.length) == 0);
     }
 
     ///
@@ -57,7 +55,7 @@ struct GitOid
     {
         // note: don't use an enum due to http://d.puremagic.com/issues/show_bug.cgi?id=10516
         const srcHex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
-        const oid = GitOid.fromHex(srcHex);
+        const oid = GitOid(srcHex);
 
         char[MaxHexSize] tgtHex;
         git_oid_fmt(tgtHex.ptr, &oid._oid);
@@ -70,7 +68,7 @@ struct GitOid
     {
         // can convert from a partial string
         const srcHex = "4932";
-        const oid = GitOid.fromHex(srcHex);
+        const oid = GitOid(srcHex);
 
         char[MaxHexSize] tgtHex;
         git_oid_fmt(tgtHex.ptr, &oid._oid);
@@ -84,11 +82,11 @@ struct GitOid
     {
         /// cannot convert from a partial string smaller than MinHexSize
         const smallHex = "493";
-        assertThrown!AssertError(GitOid.fromHex(smallHex));
+        assertThrown!AssertError(GitOid(smallHex));
 
         /// cannot convert from a string bigger than MinHexSize
         const bigHex = std.array.replicate("1", MaxHexSize + 1);
-        assertThrown!AssertError(GitOid.fromHex(bigHex));
+        assertThrown!AssertError(GitOid(bigHex));
     }
 
     /**
@@ -110,7 +108,7 @@ struct GitOid
     {
         // convert hex to oid and back to hex
         const hex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
-        const oid = GitOid.fromHex(hex);
+        const oid = GitOid(hex);
         assert(oid.toHex == hex);
     }
 
@@ -119,7 +117,7 @@ struct GitOid
     {
         // convert partial hex to oid and back to hex
         const hex = "4932";
-        const oid = GitOid.fromHex(hex);
+        const oid = GitOid(hex);
         assert(oid.toHex == "4932000000000000000000000000000000000000");
     }
 
@@ -127,79 +125,42 @@ private:
     git_oid _oid;
 }
 
+/**
+    The OID shortener is used to process a list of OIDs
+    in text form and return the shortest length that would
+    uniquely identify all of them.
+*/
+struct GitOidShorten
+{
+    /**
+    * Create a new OID shortener.
+    *
+    * The OID shortener is used to process a list of OIDs
+    * in text form and return the shortest length that would
+    * uniquely identify all of them.
+    *
+    * E.g. look at the result of `git log --abbrev`.
+    *
+    * @param min_length The minimal length for all identifiers,
+    *		which will be used even if shorter OIDs would still
+    *		be unique.
+    *	@return a `git_oid_shorten` instance, NULL if OOM
+    */
+
+    this(size_t length)
+    {
+        _git_oid_shorten = enforce(git_oid_shorten_new(length), "Error: Out of memory.");
+    }
+
+    //~ void add
+    //~ int git_oid_shorten_add(git_oid_shorten *os, const(char)* text_id);
+
+private:
+    git_oid_shorten* _git_oid_shorten;
+}
+
 // todo: remove these once all are ported
 extern (C):
-
-/**
- * Format a git_oid into a loose-object path string.
- *
- * The resulting string is "aa/...", where "aa" is the first two
- * hex digits of the oid and "..." is the remaining 38 digits.
- *
- * @param out_ output hex string; must be pointing at the start of
- *		the hex sequence and have at least the number of bytes
- *		needed for an oid encoded in hex (41 bytes). Only the
- *		oid digits are written; a '\\0' terminator must be added
- *		by the caller if it is required.
- * @param id oid structure to format.
- */
-void git_oid_pathfmt(char *out_, const(git_oid)* id);
-
-/**
- * Compare two oid structures.
- *
- * @param a first oid structure.
- * @param b second oid structure.
- * @return <0, 0, >0 if a < b, a == b, a > b.
- */
-int git_oid_cmp(const(git_oid)* a, const(git_oid)* b);
-
-/**
- * Compare two oid structures for equality
- *
- * @param a first oid structure.
- * @param b second oid structure.
- * @return true if equal, false otherwise
- */
-int git_oid_equal(const(git_oid)* a, const(git_oid)* b);
-
-/**
- * Compare the first 'len' hexadecimal characters (packets of 4 bits)
- * of two oid structures.
- *
- * @param a first oid structure.
- * @param b second oid structure.
- * @param len the number of hex chars to compare
- * @return 0 in case of a match
- */
-int git_oid_ncmp(const(git_oid)* a, const(git_oid)* b, size_t len);
-
-/**
- * Check if an oid equals an hex formatted object id.
- *
- * @param id oid structure.
- * @param str input hex string of an object id.
- * @return GIT_ENOTOID if str is not a valid hex string,
- * 0 in case of a match, GIT_ERROR otherwise.
- */
-int git_oid_streq(const(git_oid)* id, const(char)* str);
-
-/**
- * Compare an oid to an hex formatted object id.
- *
- * @param id oid structure.
- * @param str input hex string of an object id.
- * @return -1 if str is not valid, <0 if id sorts before str,
- *         0 if id matches str, >0 if id sorts after str.
- */
-int git_oid_strcmp(const(git_oid)* id, const(char)* str);
-
-/**
- * Check is an oid is all zeros.
- *
- * @return 1 if all zeros, 0 otherwise.
- */
-int git_oid_iszero(const(git_oid)* id);
 
 /**
  * OID Shortener object
