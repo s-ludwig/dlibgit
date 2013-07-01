@@ -130,29 +130,6 @@ private:
 // todo: remove these once all are ported
 extern (C):
 
-//~ /**
- //~ * Format a git_oid into a hex string.
- //~ *
- //~ * @param out_ output hex string; must be pointing at the start of
- //~ *		the hex sequence and have at least the number of bytes
- //~ *		needed for an oid encoded in hex (40 bytes). Only the
- //~ *		oid digits are written; a '\\0' terminator must be added
- //~ *		by the caller if it is required.
- //~ * @param id oid structure to format.
- //~ */
-//~ void git_oid_fmt(char *out_, const(git_oid)* id);
-
-/**
- * Format a git_oid into a partial hex string.
- *
- * @param out_ output hex string; you say how many bytes to write.
- *		If the number of bytes is > GIT_OID_HEXSZ, extra bytes
- *		will be zeroed; if not, a '\0' terminator is NOT added.
- * @param n number of characters to write into out_ string
- * @param id oid structure to format.
- */
-void git_oid_nfmt(char *out_, size_t n, const(git_oid)* id);
-
 /**
  * Format a git_oid into a loose-object path string.
  *
@@ -167,42 +144,6 @@ void git_oid_nfmt(char *out_, size_t n, const(git_oid)* id);
  * @param id oid structure to format.
  */
 void git_oid_pathfmt(char *out_, const(git_oid)* id);
-
-/**
- * Format a git_oid into a newly allocated c-string.
- *
- * @param id the oid structure to format
- * @return the c-string; NULL if memory is exhausted. Caller must
- *			deallocate the string with git__free().
- */
-char* git_oid_allocfmt(const(git_oid)* id);
-
-/**
- * Format a git_oid into a buffer as a hex format c-string.
- *
- * If the buffer is smaller than GIT_OID_HEXSZ+1, then the resulting
- * oid c-string will be truncated to n-1 characters (but will still be
- * NUL-byte terminated).
- *
- * If there are any input parameter errors (out_ == NULL, n == 0, oid ==
- * NULL), then a pointer to an empty string is returned, so that the
- * return value can always be printed.
- *
- * @param out_ the buffer into which the oid string is output.
- * @param n the size of the out_ buffer.
- * @param id the oid structure to format.
- * @return the out_ buffer pointer, assuming no input parameter
- *			errors, otherwise a pointer to an empty string.
- */
-char * git_oid_tostr(char *out_, size_t n, const(git_oid)* id);
-
-/**
- * Copy an oid from one structure to another.
- *
- * @param out_ oid structure the result is written into.
- * @param src oid structure to copy from.
- */
-void git_oid_cpy(git_oid *out_, const(git_oid)* src);
 
 /**
  * Compare two oid structures.
