@@ -219,8 +219,6 @@ private:
 
         ~this()
         {
-            printf("-- Calling dtor\n");
-
             if (_payload !is null)
             {
                 git_oid_shorten_free(_payload);
