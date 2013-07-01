@@ -677,7 +677,3 @@ const(char)*  git_repository_get_namespace(git_repository *repo);
  * @return 1 if shallow, zero if not
  */
 int git_repository_is_shallow(git_repository *repo);
-
-
-
-
