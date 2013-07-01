@@ -11,6 +11,7 @@ import core.exception;
 import std.algorithm;
 import std.exception;
 import std.conv;
+import std.file;
 import std.range;
 import std.stdio;
 import std.string;
@@ -23,8 +24,31 @@ import git.c.types;
 import git.exception;
 import git.util;
 
+/**
+    The structure representing a git repository.
+*/
 struct GitRepo
 {
+    /// Default-construction is disabled
+    @disable this();
+
+    ///
+    unittest
+    {
+        // default construction is disabled
+        static assert(!__traits(compiles, GitRepo()));
+    }
+
+    this(const(char)[] path)
+    {
+        enforceEx!GitException(path.exists, format("Error: Path '%s' does not exist.", path));
+    }
+
+    ///
+    unittest
+    {
+        assertThrown!GitException(GitRepo(r".\invalid\path\.git"));
+    }
 }
 
 extern (C):
