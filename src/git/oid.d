@@ -210,6 +210,10 @@ struct GitOidShorten
     ///
     unittest
     {
+        // adding a shortened hex is disallowed
+        auto sh = GitOidShorten(5);
+        assertThrown!GitException(sh.add("1234"));
+
         // default construction is disabled
         static assert(!__traits(compiles, GitOidShorten() ));
     }
@@ -229,7 +233,7 @@ private:
 
         ~this()
         {
-            printf("-- dtor\n");
+            // printf("-- dtor\n");
 
             if (_payload !is null)
             {
