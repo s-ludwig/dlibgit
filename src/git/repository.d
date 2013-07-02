@@ -16,7 +16,9 @@ import std.path;
 import std.range;
 import std.stdio;
 import std.string;
+import std.traits;
 import std.typecons;
+import std.typetuple;
 
 import git.c.common;
 import git.c.errors;
@@ -26,6 +28,7 @@ import git.c.types;
 
 import git.common;
 import git.exception;
+import git.oid;
 import git.util;
 
 version(unittest)
@@ -113,7 +116,7 @@ struct GitRepo
         assert(repo1.isHeadDetached);
 
         // new repo does not have a detached head
-        auto repo2 = initRepo(_userRepo);
+        auto repo2 = initRepo(_userRepo, OpenBare.no);
         scope(exit) rmdirRecurse(_userRepo);
         assert(!repo2.isHeadDetached);
     }
@@ -136,7 +139,7 @@ struct GitRepo
         assert(!repo1.isHeadOrphan);
 
         // new repo has orphan branch
-        auto repo2 = initRepo(_userRepo);
+        auto repo2 = initRepo(_userRepo, OpenBare.no);
         scope(exit) rmdirRecurse(_userRepo);
         assert(repo2.isHeadOrphan);
     }
@@ -160,7 +163,7 @@ struct GitRepo
         assert(!repo1.isEmpty);
 
         // new repo is empty
-        auto repo2 = initRepo(_userRepo);
+        auto repo2 = initRepo(_userRepo, OpenBare.no);
         scope(exit) rmdirRecurse(_userRepo);
         assert(repo2.isEmpty);
     }
@@ -384,6 +387,122 @@ struct GitRepo
         assertThrown!GitException(repo.removeMergeMsg());
     }
 
+    enum ContinueWalk
+    {
+        /// Stop walk
+        no,
+
+        /// Continue walk
+        yes
+    }
+
+    /// The function or delegate type that $(D walkFetchHead) can take as the callback.
+    alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
+    /// ditto
+    alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
+    /// docstring
+    void walkFetchHead(FetchHeadFunction callback)
+    {
+        walkFetchHeadImpl(callback);
+    }
+
+    /// ditto
+    void walkFetchHead(FetchHeadDelegate callback)
+    {
+        walkFetchHeadImpl(callback);
+    }
+
+    private void walkFetchHeadImpl(Callback)(Callback callback)
+        if (is(Callback == FetchHeadFunction) || is(Callback == FetchHeadDelegate))
+    {
+        /**
+            This C function retrieves the callback function or delegate through the payload parameter,
+            it converts arguments received from the library into types the callback understands,
+            and then calls the function and returns its return value to the C library.
+        */
+        static extern(C) int c_callback(
+            const(char)* refName,
+            const(char)* remoteURL,
+            const(git_oid)* oid,
+            uint isMerge,
+            void *payload)
+        {
+            alias toSlice = to!(const(char)[]);
+            Callback callback = *cast(Callback*)payload;
+
+            // return 1 to stop iteration
+            return callback(toSlice(refName), toSlice(remoteURL), GitOid(*oid), isMerge == 1) == ContinueWalk.no;
+        }
+
+        auto result = git_repository_fetchhead_foreach(_data._payload, &c_callback, &callback);
+        require(result == GIT_EUSER || result == 0);
+    }
+
+    ///
+    unittest
+    {
+        // todo: remove hardcoding
+        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
+        //~ scope(exit) rmdirRecurse(_userRepo);
+
+        //~ string fetchPath = buildPath(repo.path, "FETCH_HEAD");
+        //~ string[] heads =
+        //~ [
+            //~ "b0d66b5110faaeb395610ba43b6eb70a18ab5e25        branch 'master' of git://git.kernel.org/pub/scm/git/git",
+            //~ "a9004c5cb2204cf950debab328e86de5eefb9da4        branch 'master' of git://git.kernel.org/pub/scm/git/sit"
+        //~ ];
+
+        //~ std.file.write(fetchPath, heads.join("\n"));
+
+        static ContinueWalk staticWalker(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
+        {
+            import std.stdio;
+            //~ writefln("Function walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
+                     //~ refName, remoteURL, oid, isMerge);
+            return ContinueWalk.no;
+        }
+
+        repo.walkFetchHead(&staticWalker);  // todo: open a proper repository with actual objects
+
+        int x;
+
+        ContinueWalk walker(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
+        {
+            x++;  // make it a delegate
+            import std.stdio;
+            //~ writefln("Delegate walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
+                     //~ refName, remoteURL, oid, isMerge);
+            return ContinueWalk.yes;
+        }
+
+        repo.walkFetchHead(&walker);  // todo: open a proper repository with actual objects
+    }
+
+    //~ alias git_repository_fetchhead_foreach_cb = int function(const(char)* ref_name,
+            //~ const(char)* remote_url,
+            //~ const(git_oid)* oid,
+            //~ uint is_merge,
+            //~ void *payload);
+
+    // todo: store context pointer in payload
+    // todo: add simple function which retrieves an array of structs containing
+    // everything in the parameter list above
+
+    /**
+     * Call callback 'callback' for each entry in the given FETCH_HEAD file.
+     *
+     * @param repo A repository object
+     * @param callback Callback function
+     * @param payload Pointer to callback data (optional)
+     * @return 0 on success, GIT_ENOTFOUND, GIT_EUSER or error
+     */
+    //~ int git_repository_fetchhead_foreach(git_repository *repo,
+            //~ git_repository_fetchhead_foreach_cb callback,
+            //~ void *payload);
+
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -538,7 +657,7 @@ enum OpenBare
     todo:
         - Reinit the repository
 */
-GitRepo initRepo(string path, OpenBare openBare = OpenBare.no)
+GitRepo initRepo(string path, OpenBare openBare)
 {
     git_repository* repo;
     require(git_repository_init(&repo, path.toStringz, cast(bool)openBare) == 0);
@@ -573,6 +692,10 @@ extern (C):
  * @return 0 on success, or error
  */
 int git_repository_merge_cleanup(git_repository *repo);
+
+//~ b0d66b5110faaeb395610ba43b6eb70a18ab5e25        branch 'master' of git://git.kernel.org/pub/scm/git/git
+//~ a9004c5cb2204cf950debab328e86de5eefb9da4        branch 'next' of git://git.kernel.org/pub/scm/git/git
+
 
 alias git_repository_fetchhead_foreach_cb = int function(const(char)* ref_name,
         const(char)* remote_url,
