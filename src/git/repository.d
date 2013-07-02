@@ -193,11 +193,11 @@ struct GitRepo
     /**
         Get the path of this repository.
 
-        $(B Note:) Submodule repositories will have their path set
-        to the path set by $(B gitdir) in the `.git` file.
-
         This is the path of the `.git` folder for normal repositories,
         or of the repository itself for bare repositories.
+
+        $(B Note:) Submodule repositories will have their path set
+        by the $(B gitdir) option in the `.git` file.
     */
     @property string path()
     {
