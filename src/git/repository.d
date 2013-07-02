@@ -266,26 +266,6 @@ unittest
 extern (C):
 
 /**
- * Creates a new Git repository in the given folder.
- *
- * TODO:
- *      - Reinit the repository
- *
- * @param out pointer to the repo which will be created or reinitialized
- * @param path the path to the repository
- * @param is_bare if true, a Git repository without a working directory is
- *              created at the pointed path. If false, provided path will be
- *              considered as the working directory into which the .git directory
- *              will be created.
- *
- * @return 0 or an error code
- */
-int git_repository_init(
-        git_repository **out_,
-        const(char)* path,
-        uint is_bare);
-
-/**
  * Option flags for `git_repository_init_ext`.
  *
  * These flags configure extra behaviors to `git_repository_init_ext`.
