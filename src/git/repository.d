@@ -166,6 +166,25 @@ struct GitRepo
     {
         return requireBool(git_repository_is_bare(_data._payload));
     }
+    ///
+    unittest
+    {
+        // existing repo is not bare
+        auto repo1 = GitRepo(_testRepo);
+        assert(!repo1.isBare());
+
+        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
+
+        // new bare repo is bare
+        auto repo2 = initRepo(repoPath, OpenBare.yes);
+        assert(repo2.isBare());
+        rmdirRecurse(repoPath);
+
+        // new non-bare repo is not bare
+        auto repo3 = initRepo(repoPath, OpenBare.no);
+        assert(!repo3.isBare());
+        rmdirRecurse(repoPath);
+    }
 
 private:
 
