@@ -183,6 +183,9 @@ struct GitRepo
     /**
         Get the path of this repository.
 
+        $(B Note:) Submodule repositories will have their path set
+        to the path set by $(B gitdir) in the `.git` file.
+
         This is the path of the `.git` folder for normal repositories,
         or of the repository itself for bare repositories.
     */
@@ -194,7 +197,7 @@ struct GitRepo
     ///
     unittest
     {
-        // existing repo is not bare
+        // existing repo path
         auto repo1 = GitRepo(_testRepo);
         assert(repo1.path().relativePath.toPosixPath == "../.git/modules/test/repo");
 
@@ -206,6 +209,38 @@ struct GitRepo
         // new non-bare repo path is the path of the .git directory
         auto repo3 = initRepo(_userRepo, OpenBare.no);
         assert(repo3.path().relativePath.toPosixPath == "../test/_myTestRepo/.git");
+        rmdirRecurse(_userRepo);
+    }
+
+    /**
+        Get the path of the working directory of this repository.
+
+        $(B Note): Unlike $(D path), this function is not affected
+        by whether this repository is a submodule of another repository.
+
+        If the repository is bare, this function will return $(D null).
+    */
+    @property string workPath()
+    {
+        return to!string(git_repository_workdir(_data._payload));
+    }
+
+    ///
+    unittest
+    {
+        // existing repo work path is different to the path of the .git directory,
+        // since this repo is a submodule
+        auto repo1 = GitRepo(_testRepo);
+        assert(repo1.workPath().relativePath.toPosixPath == "../test/repo");
+
+        // new bare repo work path is empty
+        auto repo2 = initRepo(_userRepo, OpenBare.yes);
+        assert(repo2.workPath().relativePath.toPosixPath is null);
+        rmdirRecurse(_userRepo);
+
+        // new non-bare repo work path is by default the directory path of the .git directory
+        auto repo3 = initRepo(_userRepo, OpenBare.no);
+        assert(repo3.workPath().relativePath.toPosixPath == "../test/_myTestRepo");
         rmdirRecurse(_userRepo);
     }
 
@@ -507,17 +542,6 @@ int git_repository_init_ext(
         git_repository **out_,
         const(char)* repo_path,
         git_repository_init_options *opts);
-
-/**
- * Get the path of the working directory for this repository
- *
- * If the repository is bare, this function will always return
- * NULL.
- *
- * @param repo A repository object
- * @return the path to the working dir, if it exists
- */
-const(char)*  git_repository_workdir(git_repository *repo);
 
 /**
  * Set the path to the working directory for this repository
