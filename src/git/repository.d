@@ -35,10 +35,10 @@ version(unittest)
 /// Used in the call to $(D GitRepo.discoverRepo)
 enum AcrossFS
 {
-    ///
+    /// Stop searching on file system change.
     no,
 
-    ///
+    /// Continue searching on file system change.
     yes
 }
 
@@ -63,7 +63,7 @@ struct GitRepo
         $(D path) must either be a path to a .git file or the
         path to the directory where the .git file is located.
 
-        If $(D path) does not exist, or if the .git file is not
+        If $(D path) does not exist or if the .git file is not
         found in $(D path), a $(D GitException) is thrown.
      */
     this(const(char)[] path)
@@ -87,23 +87,24 @@ struct GitRepo
     /**
         Discover a git repository and return its path.
 
-        The lookup starts from $(D startPath) and walks across parent directories
-        if nothing has been found. The lookup ends when one of the following
+        The lookup starts from $(D startPath) and continues searching across
+        parent directories. The lookup stops when one of the following
         becomes true:
 
-        - the first repository is found.
-        - a directory referenced in $(D ceilingDirs) has been reached.
-        - the filesystem changed (if acrossFS is equal to $(D AcrossFS.no)).
+        $(LI a git repository is found.)
+        $(LI a directory referenced in $(D ceilingDirs) has been reached.)
+        $(LI the filesystem changed (if acrossFS is equal to $(D AcrossFS.no).))
 
         Parameters:
 
-        $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will still
+        $(D startPath): The base path where the lookup starts.
+
+        $(D ceilingDirs): An array of absolute paths which are symbolic-link-free.
+        If any of these paths are reached a $(D GitException) will be thrown.
+
+        $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will
         continue when a filesystem device change is detected while exploring
         parent directories, otherwise $(D GitException) is thrown.
-
-        $(D ceilingDirs) An array of absolute paths which are symbolic-link-free.
-        The lookup will stop and $(D GitException) will be thrown if any of
-        these paths are reached.
 
         $(B Note:) The lookup always performs on $(D startPath) even if
         $(D startPath) is listed in $(D ceilingDirs).
@@ -127,11 +128,13 @@ struct GitRepo
     ///
     unittest
     {
-        // look for the .git repo in "../test/repo/a/".
-        // The .git file will be found one dir up, and will contain
-        // the line 'gitdir: ../../.git/modules/test/repo'.
-        // The function will expand this line and return the true
-        // repository location.
+        /**
+            look for the .git repo in "../test/repo/a/".
+            The .git file will be found one dir up, and will contain
+            the line 'gitdir: ../../.git/modules/test/repo'.
+            The function will expand this line and return the true
+            repository location.
+        */
         string path = buildPath(_testRepo.dirName, "a");
         string repoPath = discoverRepo(path).relativePath.toPosixPath;
         assert(repoPath == "../.git/modules/test/repo");
@@ -143,7 +146,7 @@ struct GitRepo
     ///
     unittest
     {
-        // ceiling dir blocks reading the .git file
+        // ceiling dir is found before any git repository
         string path = buildPath(_testRepo.dirName, "a").absolutePath.buildNormalizedPath;
         string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
         assertThrown!GitException(discoverRepo(path, ceils));

@@ -1,6 +1,2 @@
 MODULES =
-    $(MODULE git.exception)
-    $(MODULE git.oid)
-    $(MODULE git.package)
-    $(MODULE git.util)
-    $(MODULE git.version_)
+    $(MODULE git.repository)
