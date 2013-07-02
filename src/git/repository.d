@@ -48,6 +48,22 @@ enum UpdateGitlink
     yes
 }
 
+/// The return type of the callback for the $(D walkFetchHead) function.
+enum ContinueWalk
+{
+    /// Stop walk
+    no,
+
+    /// Continue walk
+    yes
+}
+
+/// The function or delegate type that $(D walkFetchHead) can take as the callback.
+alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
+/// ditto
+alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
 /**
     The structure representing a git repository.
 */
@@ -387,22 +403,14 @@ struct GitRepo
         assertThrown!GitException(repo.removeMergeMsg());
     }
 
-    enum ContinueWalk
-    {
-        /// Stop walk
-        no,
+    /**
+        Call the $(D callback) for each entry in the $(B FETCH_HEAD) file in this repository.
 
-        /// Continue walk
-        yes
-    }
+        The $(D callback) type must be either $(D FetchHeadFunction) or $(D FetchHeadDelegate).
 
-    /// The function or delegate type that $(D walkFetchHead) can take as the callback.
-    alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
-
-    /// ditto
-    alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
-
-    /// docstring
+        This function will return when either all entries are exhausted or when the $(D callback)
+        returns $(D ContinueWalk.no).
+    */
     void walkFetchHead(FetchHeadFunction callback)
     {
         walkFetchHeadImpl(callback);
@@ -479,16 +487,6 @@ struct GitRepo
 
         repo.walkFetchHead(&walker);  // todo: open a proper repository with actual objects
     }
-
-    //~ alias git_repository_fetchhead_foreach_cb = int function(const(char)* ref_name,
-            //~ const(char)* remote_url,
-            //~ const(git_oid)* oid,
-            //~ uint is_merge,
-            //~ void *payload);
-
-    // todo: store context pointer in payload
-    // todo: add simple function which retrieves an array of structs containing
-    // everything in the parameter list above
 
     /**
      * Call callback 'callback' for each entry in the given FETCH_HEAD file.
