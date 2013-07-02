@@ -9,8 +9,8 @@ module git.repository;
 import core.exception;
 
 import std.algorithm;
-import std.exception;
 import std.conv;
+import std.exception;
 import std.file;
 import std.path;
 import std.range;
