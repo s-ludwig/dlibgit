@@ -168,7 +168,8 @@ alias git_transport_message_cb = void function(const(char)* str, int len, void *
 
 struct git_transport
 {
-	uint version_;
+	uint version_ = GIT_TRANSPORT_VERSION;
+
 	/* Set progress and error callbacks */
 	int function(git_transport *transport,
 		git_transport_message_cb progress_cb,

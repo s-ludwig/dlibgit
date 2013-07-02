@@ -28,7 +28,7 @@ extern (C):
  * An instance for a custom backend
  */
 struct git_odb_backend {
-	uint version_;
+	uint version_ = GIT_ODB_BACKEND_VERSION;
 	git_odb *odb;
 
 	/* read and read_prefix each return to libgit2 a buffer which

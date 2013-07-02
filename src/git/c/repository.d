@@ -262,7 +262,7 @@ mixin _ExportEnumMembers!git_repository_init_mode_t;
  *        will be added pointing to this URL.
  */
 struct git_repository_init_options {
-	uint version_;
+	uint version_ = GIT_REPOSITORY_INIT_OPTIONS_VERSION;
 	uint32_t    flags;
 	uint32_t    mode;
 	const(char)* workdir_path;

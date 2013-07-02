@@ -65,7 +65,7 @@ extern (C):
  */
 
 struct git_clone_options {
-	uint version_;
+	uint version_ = GIT_CLONE_OPTIONS_VERSION;
 
 	git_checkout_opts checkout_opts;
 	int bare;

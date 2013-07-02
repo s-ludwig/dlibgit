@@ -27,7 +27,7 @@ extern (C):
  * access a configuration file
  */
 struct git_config_backend {
-	uint version_;
+	uint version_ = GIT_CONFIG_BACKEND_VERSION;
 	git_config *cfg;
 
 	/* Open means open the file/database and parse if necessary */
