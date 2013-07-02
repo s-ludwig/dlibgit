@@ -328,7 +328,7 @@ struct GitRepo
         Use this function to get the contents of this file. Don't forget to
         remove the file after you create the commit.
     */
-    @property string mergeMessage()
+    @property string mergeMsg()
     {
         char[4096] buffer;
         auto result = git_repository_message(buffer.ptr, buffer.length, _data._payload);
@@ -351,14 +351,14 @@ struct GitRepo
         string msg = "merge this";
         std.file.write(msgPath, msg);
 
-        assert(repo.mergeMessage == msg);
+        assert(repo.mergeMsg == msg);
     }
 
     /**
         Remove the prepared message for this repository.
         If the message file does not exist $(D GitException) is thrown.
     */
-    void removeMergeMessage()
+    void removeMergeMsg()
     {
         require(git_repository_message_remove(_data._payload) == 0);
     }
@@ -374,14 +374,14 @@ struct GitRepo
         string msg = "merge this";
         std.file.write(msgPath, msg);
 
-        assert(repo.mergeMessage == msg);
+        assert(repo.mergeMsg == msg);
 
         // verify removal of merge message
-        repo.removeMergeMessage();
-        assert(repo.mergeMessage is null);
+        repo.removeMergeMsg();
+        assert(repo.mergeMsg is null);
 
         // verify removing file which doesn't exist throws
-        assertThrown!GitException(repo.removeMergeMessage());
+        assertThrown!GitException(repo.removeMergeMsg());
     }
 
 private:
