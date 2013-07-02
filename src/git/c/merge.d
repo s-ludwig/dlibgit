@@ -49,7 +49,7 @@ enum git_merge_automerge_flags {
 mixin _ExportEnumMembers!git_merge_automerge_flags;
 
 struct git_merge_tree_opts {
-	uint version_;
+	uint version_ = GIT_MERGE_TREE_OPTS_VERSION;
 	git_merge_tree_flag_t flags;
 
 	/** Similarity to consider a file renamed (default 50) */

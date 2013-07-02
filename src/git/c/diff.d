@@ -329,7 +329,7 @@ alias git_diff_notify_cb = int function(
  * - `notify_payload` is the payload data to pass to the `notify_cb` function
  */
 struct git_diff_options {
-	uint version_;      /**< version for the struct */
+	uint version_ = GIT_DIFF_OPTIONS_VERSION;      /**< version for the struct */
 	uint32_t flags;            /**< defaults to GIT_DIFF_NORMAL */
 	uint16_t context_lines;    /**< defaults to 3 */
 	uint16_t interhunk_lines;  /**< defaults to 0 */
@@ -511,7 +511,7 @@ struct git_diff_similarity_metric {
  * and binary data, and is pretty fast with fixed memory overhead.
  */
 struct git_diff_find_options {
-	uint version_;
+	uint version_ = GIT_DIFF_FIND_OPTIONS_VERSION;
 
 	/** Combination of git_diff_find_t values (default FIND_RENAMES) */
 	uint32_t flags;

@@ -212,14 +212,9 @@ alias git_checkout_progress_cb = void function(
 
 /**
  * Checkout options structure
- *
- * Zero out for defaults.  Initialize with `GIT_CHECKOUT_OPTS_INIT` macro to
- * correctly set the `version` field.  E.g.
- *
- *		git_checkout_opts opts = GIT_CHECKOUT_OPTS_INIT;
  */
 struct git_checkout_opts {
-	uint version_;
+	uint version_ = GIT_CHECKOUT_OPTS_VERSION;
 
 	uint checkout_strategy; /** default will be a dry run */
 

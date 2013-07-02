@@ -19,7 +19,7 @@ dlibgit has been updated and now targets libgit v0.19.0.
 - Enums members can now be accessed both with their fully qualified name (e.g. `auto x = git_otype.GIT_OBJ_ANY`),
     and as if they were defined in module scope (e.g. `auto x = GIT_OBJ_ANY`).
 
-## Bugs
+## Notes
 
 - Currently the opaque structs are defined as structs with a disabled default ctor, and a disabled
     copy ctor. Ordinarily opaque structs are defined via the `struct S;` syntax, however due to

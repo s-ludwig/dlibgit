@@ -60,7 +60,7 @@ struct git_reference_iterator {
 
 /** An instance for a custom backend */
 struct git_refdb_backend {
-	uint version_;
+	uint version_ = GIT_ODB_BACKEND_VERSION;
 
 	/**
 	 * Queries the refdb backend to determine if the given ref_name

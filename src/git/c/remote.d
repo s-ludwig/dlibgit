@@ -405,7 +405,7 @@ mixin _ExportEnumMembers!git_remote_completion_type;
  * Set the calbacks to be called by the remote.
  */
 struct git_remote_callbacks {
-	uint version_;
+	uint version_ = GIT_REMOTE_CALLBACKS_VERSION;
 	void function(const(char)* str, int len, void *data) progress;
 	int function(git_remote_completion_type type, void *data) completion;
 	int function(const(char)* refname, const(git_oid)* a, const(git_oid)* b, void *data) update_tips;

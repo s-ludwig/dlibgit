@@ -24,7 +24,7 @@ extern (C):
  * Controls the behavior of a git_push object.
  */
 struct git_push_options {
-	uint version_;
+	uint version_ = GIT_PUSH_OPTIONS_VERSION;
 
 	/**
 	 * If the transport being used to push to the remote requires the creation
