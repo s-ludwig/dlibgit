@@ -123,6 +123,33 @@ struct GitRepo
         assert(!repo1.isHeadOrphan());
     }
 
+    /**
+        Check if this repository is empty.
+
+        An empty repository is one which has just been
+        initialized and contains no references.
+    */
+    @property bool isEmpty()
+    {
+        auto result = git_repository_is_empty(_data._payload);
+        require(result == 1 || result == 0);
+        return result == 1;
+    }
+
+    ///
+    unittest
+    {
+        // existing repo is non-empty
+        auto repo1 = GitRepo(_testRepo);
+        assert(!repo1.isEmpty());
+
+        // new repo is empty
+        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
+        auto repo2 = initRepo(repoPath);
+        assert(repo2.isEmpty());
+        rmdirRecurse(repoPath);
+    }
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -423,18 +450,6 @@ int git_repository_init_ext(
         git_repository **out_,
         const(char)* repo_path,
         git_repository_init_options *opts);
-
-/**
- * Check if a repository is empty
- *
- * An empty repository has just been initialized and contains
- * no references.
- *
- * @param repo Repo to test
- * @return 1 if the repository is empty, 0 if it isn't, error code
- * if the repository is corrupted
- */
-int git_repository_is_empty(git_repository *repo);
 
 /**
  * Get the path of this repository
