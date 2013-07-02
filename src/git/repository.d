@@ -353,6 +353,37 @@ struct GitRepo
 
         assert(repo.mergeMessage == msg);
     }
+
+    /**
+        Remove the prepared message for this repository.
+        If the message file does not exist $(D GitException) is thrown.
+    */
+    void removeMergeMessage()
+    {
+        require(git_repository_message_remove(_data._payload) == 0);
+    }
+
+    ///
+    unittest
+    {
+        // write a merge message file and verify it can be read
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string msgPath = buildPath(repo.path, "MERGE_MSG");
+        string msg = "merge this";
+        std.file.write(msgPath, msg);
+
+        assert(repo.mergeMessage == msg);
+
+        // verify removal of merge message
+        repo.removeMergeMessage();
+        assert(repo.mergeMessage is null);
+
+        // verify removing file which doesn't exist throws
+        assertThrown!GitException(repo.removeMergeMessage());
+    }
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -533,13 +564,6 @@ unittest
 }
 
 extern (C):
-
-/**
- * Remove git's prepared message.
- *
- * Remove the message that `git_repository_message` retrieves.
- */
-int git_repository_message_remove(git_repository *repo);
 
 /**
  * Remove all the metadata associated with an ongoing git merge, including
