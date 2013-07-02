@@ -122,7 +122,7 @@ private:
     Data _data;
 }
 
-/// Used in the call to $(D GitRepo.discoverRepo)
+/// Used to specify whether to continue search on a file system change.
 enum AcrossFS
 {
     /// Stop searching on file system change.
