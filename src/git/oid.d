@@ -88,7 +88,7 @@ struct GitOid
     }
 
     // internal
-    package this(git_oid oid)
+    package this(inout(git_oid) oid)
     {
         _oid = oid;
     }
@@ -96,8 +96,11 @@ struct GitOid
     ///
     unittest
     {
-        git_oid c_git_oid;
-        auto oid = GitOid(c_git_oid);
+        git_oid oid1;
+        const(git_oid) oid2;
+
+        GitOid(oid1);
+        GitOid(oid2);
     }
 
     /**
@@ -130,6 +133,21 @@ struct GitOid
         const hex = "4932";
         const oid = GitOid(hex);
         assert(oid.toHex == "4932000000000000000000000000000000000000");
+    }
+
+    /// Return the string representation of this Oid, in hex form.
+    string toString() const
+    {
+        return format("GitOid(%s)", toHex.toUpper);
+    }
+
+    ///
+    unittest
+    {
+        // convert hex to oid and back to hex
+        const hex = "49322bb17d3acc9146f98c97d078513228bbf3c0";
+        const oid = GitOid(hex);
+        assert(to!string(oid) == format("GitOid(%s)", hex.toUpper));
     }
 
 private:
