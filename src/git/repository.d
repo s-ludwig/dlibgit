@@ -31,6 +31,7 @@ version(unittest)
 {
     enum _baseTestDir = "../test";
     enum _testRepo = "../test/repo/.git";
+    string _userRepo = buildPath(_baseTestDir, "_myTestRepo");
 }
 
 /**
@@ -101,10 +102,9 @@ struct GitRepo
         assert(repo1.isHeadDetached());
 
         // new repo does not have a detached head
-        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-        auto repo2 = initRepo(repoPath);
+        auto repo2 = initRepo(_userRepo);
         assert(!repo2.isHeadDetached());
-        rmdirRecurse(repoPath);
+        rmdirRecurse(_userRepo);
     }
 
     /**
@@ -125,10 +125,9 @@ struct GitRepo
         assert(!repo1.isHeadOrphan());
 
         // new repo has orphan branch
-        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-        auto repo2 = initRepo(repoPath);
+        auto repo2 = initRepo(_userRepo);
         assert(repo2.isHeadOrphan());
-        rmdirRecurse(repoPath);
+        rmdirRecurse(_userRepo);
     }
 
     /**
@@ -150,22 +149,19 @@ struct GitRepo
         assert(!repo1.isEmpty());
 
         // new repo is empty
-        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-        auto repo2 = initRepo(repoPath);
+        auto repo2 = initRepo(_userRepo);
         assert(repo2.isEmpty());
-        rmdirRecurse(repoPath);
+        rmdirRecurse(_userRepo);
     }
 
     /**
-     * Check if this repository is a bare repository.
-     *
-     * @param repo Repo to test
-     * @return 1 if the repository is bare, 0 otherwise.
-     */
+        Check if this repository is a bare repository.
+    */
     @property bool isBare()
     {
         return requireBool(git_repository_is_bare(_data._payload));
     }
+
     ///
     unittest
     {
@@ -173,17 +169,44 @@ struct GitRepo
         auto repo1 = GitRepo(_testRepo);
         assert(!repo1.isBare());
 
-        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-
         // new bare repo is bare
-        auto repo2 = initRepo(repoPath, OpenBare.yes);
+        auto repo2 = initRepo(_userRepo, OpenBare.yes);
         assert(repo2.isBare());
-        rmdirRecurse(repoPath);
+        rmdirRecurse(_userRepo);
 
         // new non-bare repo is not bare
-        auto repo3 = initRepo(repoPath, OpenBare.no);
+        auto repo3 = initRepo(_userRepo, OpenBare.no);
         assert(!repo3.isBare());
-        rmdirRecurse(repoPath);
+        rmdirRecurse(_userRepo);
+    }
+
+    /**
+        Get the path of this repository.
+
+        This is the path of the `.git` folder for normal repositories,
+        or of the repository itself for bare repositories.
+    */
+    @property string path()
+    {
+        return to!string(git_repository_path(_data._payload));
+    }
+
+    ///
+    unittest
+    {
+        // existing repo is not bare
+        auto repo1 = GitRepo(_testRepo);
+        assert(repo1.path().relativePath.toPosixPath == "../.git/modules/test/repo");
+
+        // new bare repo path is the path of the repo itself
+        auto repo2 = initRepo(_userRepo, OpenBare.yes);
+        assert(repo2.path().relativePath.toPosixPath == "../test/_myTestRepo");
+        rmdirRecurse(_userRepo);
+
+        //~ // new non-bare repo is not bare
+        //~ auto repo3 = initRepo(_userRepo, OpenBare.no);
+        //~ assert(!repo3.isBare());
+        //~ rmdirRecurse(_userRepo);
     }
 
 private:
@@ -288,11 +311,11 @@ unittest
         repository location.
     */
     string path = buildPath(_testRepo.dirName, "a");
-    string repoPath = discoverRepo(path);
-    assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
+    string _userRepo = discoverRepo(path);
+    assert(_userRepo.relativePath.toPosixPath == "../.git/modules/test/repo");
 
     // verify the repo can be opened
-    auto repo = GitRepo(repoPath);
+    auto repo = GitRepo(_userRepo);
 }
 
 ///
@@ -351,20 +374,18 @@ GitRepo initRepo(string path, OpenBare openBare = OpenBare.no)
 unittest
 {
     // create a bare test repository and ensure the HEAD file exists
-    string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-    auto repo = initRepo(repoPath, OpenBare.yes);
-    assert(buildPath(repoPath, "HEAD").exists);
-    rmdirRecurse(repoPath);
+    auto repo = initRepo(_userRepo, OpenBare.yes);
+    assert(buildPath(_userRepo, "HEAD").exists);
+    rmdirRecurse(_userRepo);
 }
 
 ///
 unittest
 {
     // create a non-bare test repository and ensure the .git/HEAD file exists
-    string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-    auto repo = initRepo(repoPath, OpenBare.no);
-    assert(buildPath(repoPath, ".git/HEAD").exists);
-    rmdirRecurse(repoPath);
+    auto repo = initRepo(_userRepo, OpenBare.no);
+    assert(buildPath(_userRepo, ".git/HEAD").exists);
+    rmdirRecurse(_userRepo);
 }
 
 extern (C):
@@ -486,17 +507,6 @@ int git_repository_init_ext(
         git_repository **out_,
         const(char)* repo_path,
         git_repository_init_options *opts);
-
-/**
- * Get the path of this repository
- *
- * This is the path of the `.git` folder for normal repositories,
- * or of the repository itself for bare repositories.
- *
- * @param repo A repository object
- * @return the path to the repository
- */
-const(char)*  git_repository_path(git_repository *repo);
 
 /**
  * Get the path of the working directory for this repository
