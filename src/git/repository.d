@@ -203,10 +203,10 @@ struct GitRepo
         assert(repo2.path().relativePath.toPosixPath == "../test/_myTestRepo");
         rmdirRecurse(_userRepo);
 
-        //~ // new non-bare repo is not bare
-        //~ auto repo3 = initRepo(_userRepo, OpenBare.no);
-        //~ assert(!repo3.isBare());
-        //~ rmdirRecurse(_userRepo);
+        // new non-bare repo path is the path of the .git directory
+        auto repo3 = initRepo(_userRepo, OpenBare.no);
+        assert(repo3.path().relativePath.toPosixPath == "../test/_myTestRepo/.git");
+        rmdirRecurse(_userRepo);
     }
 
 private:
