@@ -82,6 +82,27 @@ struct GitRepo
         auto repo2 = GitRepo(_testRepo.dirName);
     }
 
+    /**
+        Check if this repository's HEAD is detached.
+
+        A repository's HEAD is detached when it
+        points directly to a commit instead of a branch.
+    */
+    @property bool isHeadDetached()
+    {
+        auto result = git_repository_head_detached(_data._payload);
+        require(result == 1 || result == 0);
+        return result == 1;
+    }
+
+    ///
+    unittest
+    {
+        // by default test repo's HEAD is pointing to a commit
+        auto repo1 = GitRepo(_testRepo);
+        assert(repo1.isHeadDetached());
+    }
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -184,18 +205,18 @@ unittest
         repository location.
     */
     string path = buildPath(_testRepo.dirName, "a");
-    string repoPath = discoverRepo(path).relativePath.toPosixPath;
-    assert(repoPath == "../.git/modules/test/repo");
+    string repoPath = discoverRepo(path);
+    assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
 
     // verify the repo can be opened
-    GitRepo(repoPath);
+    auto repo = GitRepo(repoPath);
 }
 
 ///
 unittest
 {
     // ceiling dir is found before any git repository
-    string path = buildPath(_testRepo.dirName, "a").absolutePath.buildNormalizedPath;
+    string path = buildPath(_testRepo.dirName, "a");
     string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
     assertThrown!GitException(discoverRepo(path, ceils));
 }
@@ -382,45 +403,6 @@ int git_repository_init_ext(
         git_repository **out_,
         const(char)* repo_path,
         git_repository_init_options *opts);
-
-/**
- * Retrieve and resolve the reference pointed at by HEAD.
- *
- * The returned `git_reference` will be owned by caller and
- * `git_reference_free()` must be called when done with it to release the
- * allocated memory and prevent a leak.
- *
- * @param out pointer to the reference which will be retrieved
- * @param repo a repository object
- *
- * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
- * branch, GIT_ENOTFOUND when HEAD is missing; an error code otherwise
- */
-int git_repository_head(git_reference **out_, git_repository *repo);
-
-/**
- * Check if a repository's HEAD is detached
- *
- * A repository's HEAD is detached when it points directly to a commit
- * instead of a branch.
- *
- * @param repo Repo to test
- * @return 1 if HEAD is detached, 0 if it's not; error code if there
- * was an error.
- */
-int git_repository_head_detached(git_repository *repo);
-
-/**
- * Check if the current branch is an orphan
- *
- * An orphan branch is one named from HEAD but which doesn't exist in
- * the refs namespace, because it doesn't have any commit to point to.
- *
- * @param repo Repo to test
- * @return 1 if the current branch is an orphan, 0 if it's not; error
- * code if there was an error
- */
-int git_repository_head_orphan(git_repository *repo);
 
 /**
  * Check if a repository is empty
@@ -786,7 +768,6 @@ int git_repository_is_shallow(git_repository *repo);
 // todo: wrap git_odb before wrapping this function
 int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
 
-
 /**
  * Open a bare repository on the serverside.
  *
@@ -798,4 +779,21 @@ int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
  * @param bare_path Direct path to the bare repository
  * @return 0 on success, or an error code
  */
+// todo: when we figure out on which dirs we can open this
 int git_repository_open_bare(git_repository **out_, const(char)* bare_path);
+
+/**
+ * Retrieve and resolve the reference pointed at by HEAD.
+ *
+ * The returned `git_reference` will be owned by caller and
+ * `git_reference_free()` must be called when done with it to release the
+ * allocated memory and prevent a leak.
+ *
+ * @param out pointer to the reference which will be retrieved
+ * @param repo a repository object
+ *
+ * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
+ * branch, GIT_ENOTFOUND when HEAD is missing; an error code otherwise
+ */
+// todo: when git_reference is ported
+int git_repository_head(git_reference **out_, git_repository *repo);
