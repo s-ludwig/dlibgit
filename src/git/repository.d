@@ -114,8 +114,8 @@ struct GitRepo
 
         // new repo does not have a detached head
         auto repo2 = initRepo(_userRepo);
+        scope(exit) rmdirRecurse(_userRepo);
         assert(!repo2.isHeadDetached);
-        rmdirRecurse(_userRepo);
     }
 
     /**
@@ -137,8 +137,8 @@ struct GitRepo
 
         // new repo has orphan branch
         auto repo2 = initRepo(_userRepo);
+        scope(exit) rmdirRecurse(_userRepo);
         assert(repo2.isHeadOrphan);
-        rmdirRecurse(_userRepo);
     }
 
     /**
@@ -161,8 +161,8 @@ struct GitRepo
 
         // new repo is empty
         auto repo2 = initRepo(_userRepo);
+        scope(exit) rmdirRecurse(_userRepo);
         assert(repo2.isEmpty);
-        rmdirRecurse(_userRepo);
     }
 
     /**
@@ -177,18 +177,26 @@ struct GitRepo
     unittest
     {
         // existing repo is not bare
-        auto repo1 = GitRepo(_testRepo);
-        assert(!repo1.isBare);
+        auto repo = GitRepo(_testRepo);
+        assert(!repo.isBare);
+    }
 
+    ///
+    unittest
+    {
         // new bare repo is bare
-        auto repo2 = initRepo(_userRepo, OpenBare.yes);
-        assert(repo2.isBare);
-        rmdirRecurse(_userRepo);
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.isBare);
+    }
 
+    ///
+    unittest
+    {
         // new non-bare repo is not bare
-        auto repo3 = initRepo(_userRepo, OpenBare.no);
-        assert(!repo3.isBare);
-        rmdirRecurse(_userRepo);
+        auto repo = initRepo(_userRepo, OpenBare.no);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(!repo.isBare);
     }
 
     /**
@@ -209,18 +217,26 @@ struct GitRepo
     unittest
     {
         // existing repo path
-        auto repo1 = GitRepo(_testRepo);
-        assert(repo1.path.relativePath.toPosixPath == "../.git/modules/test/repo");
+        auto repo = GitRepo(_testRepo);
+        assert(repo.path.relativePath.toPosixPath == "../.git/modules/test/repo");
+    }
 
+    ///
+    unittest
+    {
         // new bare repo path is the path of the repo itself
-        auto repo2 = initRepo(_userRepo, OpenBare.yes);
-        assert(repo2.path.relativePath.toPosixPath == "../test/_myTestRepo");
-        rmdirRecurse(_userRepo);
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.path.relativePath.toPosixPath == "../test/_myTestRepo");
+    }
 
+    ///
+    unittest
+    {
         // new non-bare repo path is the path of the .git directory
-        auto repo3 = initRepo(_userRepo, OpenBare.no);
-        assert(repo3.path.relativePath.toPosixPath == "../test/_myTestRepo/.git");
-        rmdirRecurse(_userRepo);
+        auto repo = initRepo(_userRepo, OpenBare.no);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.path.relativePath.toPosixPath == "../test/_myTestRepo/.git");
     }
 
     /**
@@ -241,18 +257,26 @@ struct GitRepo
     {
         // existing repo work path is different to the path of the .git directory,
         // since this repo is a submodule
-        auto repo1 = GitRepo(_testRepo);
-        assert(repo1.workPath.relativePath.toPosixPath == "../test/repo");
+        auto repo = GitRepo(_testRepo);
+        assert(repo.workPath.relativePath.toPosixPath == "../test/repo");
+    }
 
+    ///
+    unittest
+    {
         // new bare repo work path is empty
-        auto repo2 = initRepo(_userRepo, OpenBare.yes);
-        assert(repo2.workPath.relativePath.toPosixPath is null);
-        rmdirRecurse(_userRepo);
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.workPath.relativePath.toPosixPath is null);
+    }
 
+    ///
+    unittest
+    {
         // new non-bare repo work path is by default the directory path of the .git directory
-        auto repo3 = initRepo(_userRepo, OpenBare.no);
-        assert(repo3.workPath.relativePath.toPosixPath == "../test/_myTestRepo");
-        rmdirRecurse(_userRepo);
+        auto repo = initRepo(_userRepo, OpenBare.no);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.workPath.relativePath.toPosixPath == "../test/_myTestRepo");
     }
 
     /**
@@ -281,6 +305,7 @@ struct GitRepo
     {
         // new bare repo work path is empty
         auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
         assert(repo.workPath.relativePath.toPosixPath is null);
         assert(repo.isBare);
 
@@ -289,8 +314,6 @@ struct GitRepo
         repo.setWorkPath("../test");
         assert(repo.workPath.relativePath.toPosixPath == "../test");
         assert(!repo.isBare);
-
-        rmdirRecurse(_userRepo);
     }
 
     /**
@@ -320,8 +343,15 @@ struct GitRepo
     ///
     unittest
     {
-        auto repo = GitRepo(_testRepo);
-        assert(repo.mergeMessage is null);
+        // write a merge message file and verify it can be read
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string msgPath = buildPath(repo.path, "MERGE_MSG");
+        string msg = "merge this";
+        std.file.write(msgPath, msg);
+
+        assert(repo.mergeMessage == msg);
     }
 private:
 
@@ -425,11 +455,11 @@ unittest
         repository location.
     */
     string path = buildPath(_testRepo.dirName, "a");
-    string _userRepo = discoverRepo(path);
-    assert(_userRepo.relativePath.toPosixPath == "../.git/modules/test/repo");
+    string repoPath = discoverRepo(path);
+    assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
 
     // verify the repo can be opened
-    auto repo = GitRepo(_userRepo);
+    auto repo = GitRepo(repoPath);
 }
 
 ///
@@ -489,8 +519,8 @@ unittest
 {
     // create a bare test repository and ensure the HEAD file exists
     auto repo = initRepo(_userRepo, OpenBare.yes);
+    scope(exit) rmdirRecurse(_userRepo);
     assert(buildPath(_userRepo, "HEAD").exists);
-    rmdirRecurse(_userRepo);
 }
 
 ///
@@ -498,8 +528,8 @@ unittest
 {
     // create a non-bare test repository and ensure the .git/HEAD file exists
     auto repo = initRepo(_userRepo, OpenBare.no);
+    scope(exit) rmdirRecurse(_userRepo);
     assert(buildPath(_userRepo, ".git/HEAD").exists);
-    rmdirRecurse(_userRepo);
 }
 
 extern (C):
