@@ -33,16 +33,6 @@ version(unittest)
     enum _testRepo = "../test/repo/.git";
 }
 
-/// Used in the call to $(D GitRepo.discoverRepo)
-enum AcrossFS
-{
-    /// Stop searching on file system change.
-    no,
-
-    /// Continue searching on file system change.
-    yes
-}
-
 /**
     The structure representing a git repository.
 */
@@ -132,13 +122,13 @@ private:
     Data _data;
 }
 
-/// Used to specify whether to open a bare repository
-enum OpenBare
+/// Used in the call to $(D GitRepo.discoverRepo)
+enum AcrossFS
 {
-    /// Open a non-bare repository
+    /// Stop searching on file system change.
     no,
 
-    /// Open a bare repository
+    /// Continue searching on file system change.
     yes
 }
 
@@ -216,6 +206,16 @@ unittest
     // all ceiling paths must be absolute
     string[] ceils = ["../.."];
     assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
+}
+
+/// Used to specify whether to open a bare repository
+enum OpenBare
+{
+    /// Open a non-bare repository
+    no,
+
+    /// Open a bare repository
+    yes
 }
 
 /**
