@@ -34,6 +34,16 @@ version(unittest)
     string _userRepo = buildPath(_baseTestDir, "_myTestRepo");
 }
 
+/// Used to specify whether to continue search on a file system change.
+enum UpdateGitlink
+{
+    /// Stop searching on file system change.
+    no,
+
+    /// Continue searching on file system change.
+    yes
+}
+
 /**
     The structure representing a git repository.
 */
@@ -99,11 +109,11 @@ struct GitRepo
     {
         // by default test repo's HEAD is pointing to a commit
         auto repo1 = GitRepo(_testRepo);
-        assert(repo1.isHeadDetached());
+        assert(repo1.isHeadDetached);
 
         // new repo does not have a detached head
         auto repo2 = initRepo(_userRepo);
-        assert(!repo2.isHeadDetached());
+        assert(!repo2.isHeadDetached);
         rmdirRecurse(_userRepo);
     }
 
@@ -122,11 +132,11 @@ struct GitRepo
     unittest
     {
         auto repo1 = GitRepo(_testRepo);
-        assert(!repo1.isHeadOrphan());
+        assert(!repo1.isHeadOrphan);
 
         // new repo has orphan branch
         auto repo2 = initRepo(_userRepo);
-        assert(repo2.isHeadOrphan());
+        assert(repo2.isHeadOrphan);
         rmdirRecurse(_userRepo);
     }
 
@@ -146,11 +156,11 @@ struct GitRepo
     {
         // existing repo is non-empty
         auto repo1 = GitRepo(_testRepo);
-        assert(!repo1.isEmpty());
+        assert(!repo1.isEmpty);
 
         // new repo is empty
         auto repo2 = initRepo(_userRepo);
-        assert(repo2.isEmpty());
+        assert(repo2.isEmpty);
         rmdirRecurse(_userRepo);
     }
 
@@ -167,16 +177,16 @@ struct GitRepo
     {
         // existing repo is not bare
         auto repo1 = GitRepo(_testRepo);
-        assert(!repo1.isBare());
+        assert(!repo1.isBare);
 
         // new bare repo is bare
         auto repo2 = initRepo(_userRepo, OpenBare.yes);
-        assert(repo2.isBare());
+        assert(repo2.isBare);
         rmdirRecurse(_userRepo);
 
         // new non-bare repo is not bare
         auto repo3 = initRepo(_userRepo, OpenBare.no);
-        assert(!repo3.isBare());
+        assert(!repo3.isBare);
         rmdirRecurse(_userRepo);
     }
 
@@ -199,16 +209,16 @@ struct GitRepo
     {
         // existing repo path
         auto repo1 = GitRepo(_testRepo);
-        assert(repo1.path().relativePath.toPosixPath == "../.git/modules/test/repo");
+        assert(repo1.path.relativePath.toPosixPath == "../.git/modules/test/repo");
 
         // new bare repo path is the path of the repo itself
         auto repo2 = initRepo(_userRepo, OpenBare.yes);
-        assert(repo2.path().relativePath.toPosixPath == "../test/_myTestRepo");
+        assert(repo2.path.relativePath.toPosixPath == "../test/_myTestRepo");
         rmdirRecurse(_userRepo);
 
         // new non-bare repo path is the path of the .git directory
         auto repo3 = initRepo(_userRepo, OpenBare.no);
-        assert(repo3.path().relativePath.toPosixPath == "../test/_myTestRepo/.git");
+        assert(repo3.path.relativePath.toPosixPath == "../test/_myTestRepo/.git");
         rmdirRecurse(_userRepo);
     }
 
@@ -231,16 +241,54 @@ struct GitRepo
         // existing repo work path is different to the path of the .git directory,
         // since this repo is a submodule
         auto repo1 = GitRepo(_testRepo);
-        assert(repo1.workPath().relativePath.toPosixPath == "../test/repo");
+        assert(repo1.workPath.relativePath.toPosixPath == "../test/repo");
 
         // new bare repo work path is empty
         auto repo2 = initRepo(_userRepo, OpenBare.yes);
-        assert(repo2.workPath().relativePath.toPosixPath is null);
+        assert(repo2.workPath.relativePath.toPosixPath is null);
         rmdirRecurse(_userRepo);
 
         // new non-bare repo work path is by default the directory path of the .git directory
         auto repo3 = initRepo(_userRepo, OpenBare.no);
-        assert(repo3.workPath().relativePath.toPosixPath == "../test/_myTestRepo");
+        assert(repo3.workPath.relativePath.toPosixPath == "../test/_myTestRepo");
+        rmdirRecurse(_userRepo);
+    }
+
+    /**
+        Set the work path of this repository.
+
+        The work path doesn't need to be the same one
+        that contains the `.git` folder for this repository.
+
+        If this repository is bare, setting its work path
+        will turn it into a normal repository capable of performing
+        all the common workdir operations (checkout, status, index
+        manipulation, etc).
+
+        If $(D updateGitlink) equals $(D UpdateGitlink.yes), gitlink
+        will be created or updated in the work path. Additionally if
+        the work path is not the parent of the $(B .git) directory
+        the $(B core.worktree) option will be set in the configuration.
+    */
+    void setWorkPath(string newWorkPath, UpdateGitlink updateGitlink = UpdateGitlink.no)
+    {
+        require(git_repository_set_workdir(_data._payload, newWorkPath.toStringz, cast(int)updateGitlink) == 0);
+    }
+
+    ///
+    unittest
+    {
+        // new bare repo work path is empty
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        assert(repo.workPath.relativePath.toPosixPath is null);
+        assert(repo.isBare);
+
+        // set a new work path for the bare repo, verify it's set, and also
+        // verify repo is no longer a bare repo
+        repo.setWorkPath("../test");
+        assert(repo.workPath.relativePath.toPosixPath == "../test");
+        assert(!repo.isBare);
+
         rmdirRecurse(_userRepo);
     }
 
@@ -542,26 +590,6 @@ int git_repository_init_ext(
         git_repository **out_,
         const(char)* repo_path,
         git_repository_init_options *opts);
-
-/**
- * Set the path to the working directory for this repository
- *
- * The working directory doesn't need to be the same one
- * that contains the `.git` folder for this repository.
- *
- * If this repository is bare, setting its working directory
- * will turn it into a normal repository, capable of performing
- * all the common workdir operations (checkout, status, index
- * manipulation, etc).
- *
- * @param repo A repository object
- * @param workdir The path to a working directory
- * @param update_gitlink Create/update gitlink in workdir and set config
- *        "core.worktree" (if workdir is not the parent of the .git directory)
- * @return 0, or an error code
- */
-int git_repository_set_workdir(
-        git_repository *repo, const(char)* workdir, int update_gitlink);
 
 /**
  * Get the configuration file for this repository.
