@@ -10,6 +10,8 @@
   Passing null pointers to Git functions usually results in access violations.
 - make build script avoid using -unittest if test\repo dir is missing, and issue
   a warning that the user should update the submodules in order to test the library
+- Use checkout commands before testing isHeadDetached and isHeadOrphan to improve
+  the sample code.
 
 ## bugs to file to libgit2 (or pulls to make-
 - git_repository_discover dosc reference base_path instead of start_path

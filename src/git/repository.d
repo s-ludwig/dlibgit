@@ -103,6 +103,26 @@ struct GitRepo
         assert(repo1.isHeadDetached());
     }
 
+    /**
+        Check if the current branch is an orphan.
+
+        An orphan branch is one named from HEAD but which doesn't exist in
+        the refs namespace, because it doesn't have any commit to point to.
+    */
+    @property bool isHeadOrphan()
+    {
+        auto result = git_repository_head_orphan(_data._payload);
+        require(result == 1 || result == 0);
+        return result == 1;
+    }
+
+    ///
+    unittest
+    {
+        auto repo1 = GitRepo(_testRepo);
+        assert(!repo1.isHeadOrphan());
+    }
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
