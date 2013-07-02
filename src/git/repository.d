@@ -50,6 +50,12 @@ struct GitRepo
     /// Default-construction is disabled
     @disable this();
 
+    // internal
+    private this(git_repository* payload)
+    {
+        _data = Data(payload);
+    }
+
     ///
     unittest
     {
@@ -88,6 +94,11 @@ private:
     /** Payload for the $(D git_repository) object which should be refcounted. */
     struct Payload
     {
+        this(git_repository* payload)
+        {
+            _payload = payload;
+        }
+
         this(const(char)[] path)
         {
             require(git_repository_open(&_payload, path.toStringz) == 0);
@@ -204,9 +215,26 @@ unittest
     assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
 }
 
-//~ GitRepo initRepo(string path, OpenBare openBare)
-//~ {
-//~ }
+/**
+ * Create a new Git repository in the given folder.
+ *
+ * TODO:
+ *	- Reinit the repository
+ *
+ * @param path the path to the repository
+ * @param is_bare if true, a Git repository without a working directory is
+ *		created at the pointed path. If false, provided path will be
+ *		considered as the working directory into which the .git directory
+ *		will be created.
+ *
+ * @return 0 or an error code
+ */
+GitRepo initRepo(string path, OpenBare openBare)
+{
+    git_repository* repo;
+    git_repository_init(&repo, path.toStringz, cast(bool)openBare);
+    return GitRepo(repo);
+}
 
 extern (C):
 
