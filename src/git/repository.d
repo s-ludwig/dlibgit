@@ -225,10 +225,10 @@ struct GitRepo
     /**
         Get the path of the working directory of this repository.
 
+        If the repository is bare, this function will return $(D null).
+
         $(B Note): Unlike $(D path), this function is not affected
         by whether this repository is a submodule of another repository.
-
-        If the repository is bare, this function will return $(D null).
     */
     @property string workPath()
     {
