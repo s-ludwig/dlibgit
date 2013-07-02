@@ -101,6 +101,12 @@ struct GitRepo
         // by default test repo's HEAD is pointing to a commit
         auto repo1 = GitRepo(_testRepo);
         assert(repo1.isHeadDetached());
+
+        // new repo does not have a detached head
+        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
+        auto repo2 = initRepo(repoPath);
+        assert(!repo2.isHeadDetached());
+        rmdirRecurse(repoPath);
     }
 
     /**
@@ -121,6 +127,12 @@ struct GitRepo
     {
         auto repo1 = GitRepo(_testRepo);
         assert(!repo1.isHeadOrphan());
+
+        // new repo has orphan branch
+        string repoPath = buildPath(_baseTestDir, "_myTestRepo");
+        auto repo2 = initRepo(repoPath);
+        assert(repo2.isHeadOrphan());
+        rmdirRecurse(repoPath);
     }
 
     /**
