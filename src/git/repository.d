@@ -51,16 +51,16 @@ struct GitRepo
     /// Default-construction is disabled
     @disable this();
 
-    // internal
-    private this(git_repository* payload)
-    {
-        _data = Data(payload);
-    }
-
     ///
     unittest
     {
         static assert(!__traits(compiles, GitRepo()));
+    }
+
+    // internal
+    private this(git_repository* payload)
+    {
+        _data = Data(payload);
     }
 
     /**
