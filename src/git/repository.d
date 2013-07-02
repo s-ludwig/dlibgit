@@ -83,82 +83,6 @@ struct GitRepo
         GitRepo(_testRepo.dirName);
     }
 
-    /**
-        Discover a git repository and return its path if found.
-
-        The lookup starts from $(D startPath) and continues searching across
-        parent directories. The lookup stops when one of the following
-        becomes true:
-
-        $(LI a git repository is found.)
-        $(LI a directory referenced in $(D ceilingDirs) has been reached.)
-        $(LI the filesystem changed (if acrossFS is equal to $(D AcrossFS.no).))
-
-        Parameters:
-
-        $(D startPath): The base path where the lookup starts.
-
-        $(D ceilingDirs): An array of absolute paths which are symbolic-link-free.
-        If any of these paths are reached a $(D GitException) will be thrown.
-
-        $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will
-        continue when a filesystem device change is detected while exploring
-        parent directories, otherwise $(D GitException) is thrown.
-
-        $(B Note:) The lookup always performs on $(D startPath) even if
-        $(D startPath) is listed in $(D ceilingDirs).
-     */
-    static string discoverRepo(string startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
-    {
-        char[4096] buffer;
-        const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
-
-        version(assert)
-        {
-            foreach (path; ceilingDirs)
-                assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
-        }
-
-        require(git_repository_discover(buffer.ptr, buffer.length, startPath.toStringz, cast(bool)acrossFS, c_ceilDirs) == 0);
-
-        return to!string(buffer.ptr);
-    }
-
-    ///
-    unittest
-    {
-        /**
-            look for the .git repo in "../test/repo/a/".
-            The .git file will be found one dir up, and will contain
-            the line 'gitdir: ../../.git/modules/test/repo'.
-            The function will expand this line and return the true
-            repository location.
-        */
-        string path = buildPath(_testRepo.dirName, "a");
-        string repoPath = discoverRepo(path).relativePath.toPosixPath;
-        assert(repoPath == "../.git/modules/test/repo");
-
-        // verify the repo can be opened
-        GitRepo(repoPath);
-    }
-
-    ///
-    unittest
-    {
-        // ceiling dir is found before any git repository
-        string path = buildPath(_testRepo.dirName, "a").absolutePath.buildNormalizedPath;
-        string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
-        assertThrown!GitException(discoverRepo(path, ceils));
-    }
-
-    ///
-    unittest
-    {
-        // all ceiling paths must be absolute
-        string[] ceils = ["../.."];
-        assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
-    }
-
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -193,6 +117,96 @@ private:
     alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
     Data _data;
 }
+
+/// Used to specify whether to open a bare repository
+enum OpenBare
+{
+    /// Open a non-bare repository
+    no,
+
+    /// Open a bare repository
+    yes
+}
+
+/**
+    Discover a git repository and return its path if found.
+
+    The lookup starts from $(D startPath) and continues searching across
+    parent directories. The lookup stops when one of the following
+    becomes true:
+
+    $(LI a git repository is found.)
+    $(LI a directory referenced in $(D ceilingDirs) has been reached.)
+    $(LI the filesystem changed (if acrossFS is equal to $(D AcrossFS.no).))
+
+    Parameters:
+
+    $(D startPath): The base path where the lookup starts.
+
+    $(D ceilingDirs): An array of absolute paths which are symbolic-link-free.
+    If any of these paths are reached a $(D GitException) will be thrown.
+
+    $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will
+    continue when a filesystem device change is detected while exploring
+    parent directories, otherwise $(D GitException) is thrown.
+
+    $(B Note:) The lookup always performs on $(D startPath) even if
+    $(D startPath) is listed in $(D ceilingDirs).
+ */
+string discoverRepo(string startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
+{
+    char[4096] buffer;
+    const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
+
+    version(assert)
+    {
+        foreach (path; ceilingDirs)
+            assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
+    }
+
+    require(git_repository_discover(buffer.ptr, buffer.length, startPath.toStringz, cast(bool)acrossFS, c_ceilDirs) == 0);
+
+    return to!string(buffer.ptr);
+}
+
+///
+unittest
+{
+    /**
+        look for the .git repo in "../test/repo/a/".
+        The .git file will be found one dir up, and will contain
+        the line 'gitdir: ../../.git/modules/test/repo'.
+        The function will expand this line and return the true
+        repository location.
+    */
+    string path = buildPath(_testRepo.dirName, "a");
+    string repoPath = discoverRepo(path).relativePath.toPosixPath;
+    assert(repoPath == "../.git/modules/test/repo");
+
+    // verify the repo can be opened
+    GitRepo(repoPath);
+}
+
+///
+unittest
+{
+    // ceiling dir is found before any git repository
+    string path = buildPath(_testRepo.dirName, "a").absolutePath.buildNormalizedPath;
+    string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
+    assertThrown!GitException(discoverRepo(path, ceils));
+}
+
+///
+unittest
+{
+    // all ceiling paths must be absolute
+    string[] ceils = ["../.."];
+    assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
+}
+
+//~ GitRepo initRepo(string path, OpenBare openBare)
+//~ {
+//~ }
 
 extern (C):
 
