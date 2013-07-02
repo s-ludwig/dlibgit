@@ -85,7 +85,7 @@ struct GitRepo
     }
 
     /**
-        Discover a git repository and return its path.
+        Discover a git repository and return its path if found.
 
         The lookup starts from $(D startPath) and continues searching across
         parent directories. The lookup stops when one of the following
