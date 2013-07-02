@@ -53,7 +53,6 @@ struct GitRepo
     ///
     unittest
     {
-        // default construction is disabled
         static assert(!__traits(compiles, GitRepo()));
     }
 
@@ -196,74 +195,6 @@ private:
 }
 
 extern (C):
-
-/**
- * Option flags for `git_repository_open_ext`.
- *
- * * GIT_REPOSITORY_OPEN_NO_SEARCH - Only open the repository if it can be
- *   immediately found in the start_path.  Do not walk up from the
- *   start_path looking at parent directories.
- * * GIT_REPOSITORY_OPEN_CROSS_FS - Unless this flag is set, open will not
- *   continue searching across filesystem boundaries (i.e. when `st_dev`
- *   changes from the `stat` system call).  (E.g. Searching in a user's home
- *   directory "/home/user/source/" will not return "/.git/" as the found
- *   repo if "/" is a different filesystem than "/home".)
- */
-//~ enum git_repository_open_flag_t {
-	//~ GIT_REPOSITORY_OPEN_NO_SEARCH = (1 << 0),
-	//~ GIT_REPOSITORY_OPEN_CROSS_FS  = (1 << 1),
-//~ } ;
-
-//~ mixin _ExportEnumMembers!git_repository_open_flag_t;
-
-/**
- * Find and open a repository with extended controls.
- *
- * @param out Pointer to the repo which will be opened.  This can
- *        actually be NULL if you only want to use the error code to
- *        see if a repo at this path could be opened.
- * @param path Path to open as git repository.  If the flags
- *        permit "searching", then this can be a path to a subdirectory
- *        inside the working directory of the repository.
- * @param flags A combination of the GIT_REPOSITORY_OPEN flags above.
- * @param ceiling_dirs A GIT_PATH_LIST_SEPARATOR delimited list of path
- *        prefixes at which the search for a containing repository should
- *        terminate.
- * @return 0 on success, GIT_ENOTFOUND if no repository could be found,
- *        or -1 if there was a repository but open failed for some reason
- *        (such as repo corruption or system errors).
- */
-int git_repository_open_ext(
-	git_repository **out_,
-	const(char)* path,
-	uint flags,
-	const(char)* ceiling_dirs);
-
-/**
- * Open a bare repository on the serverside.
- *
- * This is a fast open for bare repositories that will come in handy
- * if you're e.g. hosting git repositories and need to access them
- * efficiently
- *
- * @param out Pointer to the repo which will be opened.
- * @param bare_path Direct path to the bare repository
- * @return 0 on success, or an error code
- */
-int git_repository_open_bare(git_repository **out_, const(char)* bare_path);
-
-/**
- * Free a previously allocated repository
- *
- * Note that after a repository is free'd, all the objects it has spawned
- * will still exist until they are manually closed by the user
- * with `git_object_free`, but accessing any of the attributes of
- * an object without a backing repository will result in undefined
- * behavior
- *
- * @param repo repository handle to close. If NULL nothing occurs.
- */
-void git_repository_free(git_repository *repo);
 
 /**
  * Creates a new Git repository in the given folder.
@@ -789,7 +720,7 @@ const(char)*  git_repository_get_namespace(git_repository *repo);
 int git_repository_is_shallow(git_repository *repo);
 
 /**
-    Functions to wrap later:
+    TODO: Functions to wrap later:
 */
 
 /**
@@ -805,3 +736,17 @@ int git_repository_is_shallow(git_repository *repo);
  */
 // todo: wrap git_odb before wrapping this function
 int git_repository_wrap_odb(git_repository **out_, git_odb *odb);
+
+
+/**
+ * Open a bare repository on the serverside.
+ *
+ * This is a fast open for bare repositories that will come in handy
+ * if you're e.g. hosting git repositories and need to access them
+ * efficiently
+ *
+ * @param out Pointer to the repo which will be opened.
+ * @param bare_path Direct path to the bare repository
+ * @return 0 on success, or an error code
+ */
+int git_repository_open_bare(git_repository **out_, const(char)* bare_path);
