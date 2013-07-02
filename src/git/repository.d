@@ -68,7 +68,7 @@ struct GitRepo
 
         Parameters:
 
-        $(D path) must either be a path to a .git file or the
+        $(D path) must either be a path to a .git file or a
         path to the directory where the .git file is located.
 
         If $(D path) does not exist or if the .git file is not
@@ -86,10 +86,10 @@ struct GitRepo
         assertThrown!GitException(GitRepo(r".\invalid\path\.git"));
 
         // open path of .git file
-        GitRepo(_testRepo);
+        auto repo1 = GitRepo(_testRepo);
 
         // open path of .git directory
-        GitRepo(_testRepo.dirName);
+        auto repo2 = GitRepo(_testRepo.dirName);
     }
 
 private:
