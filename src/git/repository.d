@@ -29,6 +29,7 @@ import git.util;
 
 version(unittest)
 {
+    enum _baseTestDir = "../test";
     enum _testRepo = "../test/repo/.git";
 }
 
@@ -64,6 +65,8 @@ struct GitRepo
 
     /**
         Open a git repository.
+
+        Parameters:
 
         $(D path) must either be a path to a .git file or the
         path to the directory where the .git file is located.
@@ -216,24 +219,48 @@ unittest
 }
 
 /**
- * Create a new Git repository in the given folder.
- *
- * TODO:
- *	- Reinit the repository
- *
- * @param path the path to the repository
- * @param is_bare if true, a Git repository without a working directory is
- *		created at the pointed path. If false, provided path will be
- *		considered as the working directory into which the .git directory
- *		will be created.
- *
- * @return 0 or an error code
- */
-GitRepo initRepo(string path, OpenBare openBare)
+    Create a new Git repository in the given folder.
+
+    Parameters:
+
+    $(D path): the path to the git repository.
+
+    $(D openBare): if equal to $(D OpenBare.yes), a Git
+    repository without a working directory is created at the
+    pointed path.
+
+    Otherwise, the provided path will be considered as the
+    working directory into which the .git directory will be
+    created.
+
+    todo:
+        - Reinit the repository
+*/
+GitRepo initRepo(string path, OpenBare openBare = OpenBare.no)
 {
     git_repository* repo;
-    git_repository_init(&repo, path.toStringz, cast(bool)openBare);
+    require(git_repository_init(&repo, path.toStringz, cast(bool)openBare) == 0);
     return GitRepo(repo);
+}
+
+///
+unittest
+{
+    // create a non-bare test repository and ensure HEAD file exists
+    string repoPath = buildPath(_baseTestDir, "_myTestRepo");
+    auto repo = initRepo(repoPath, OpenBare.no);
+    assert(buildPath(repoPath, ".git/HEAD").exists);
+    rmdirRecurse(repoPath);
+}
+
+///
+unittest
+{
+    // create a bare test repository and ensure HEAD file exists
+    string repoPath = buildPath(_baseTestDir, "_myTestRepo");
+    auto repo = initRepo(repoPath, OpenBare.yes);
+    assert(buildPath(repoPath, "HEAD").exists);
+    rmdirRecurse(repoPath);
 }
 
 extern (C):
@@ -242,21 +269,21 @@ extern (C):
  * Creates a new Git repository in the given folder.
  *
  * TODO:
- *	- Reinit the repository
+ *      - Reinit the repository
  *
  * @param out pointer to the repo which will be created or reinitialized
  * @param path the path to the repository
  * @param is_bare if true, a Git repository without a working directory is
- *		created at the pointed path. If false, provided path will be
- *		considered as the working directory into which the .git directory
- *		will be created.
+ *              created at the pointed path. If false, provided path will be
+ *              considered as the working directory into which the .git directory
+ *              will be created.
  *
  * @return 0 or an error code
  */
 int git_repository_init(
-	git_repository **out_,
-	const(char)* path,
-	uint is_bare);
+        git_repository **out_,
+        const(char)* path,
+        uint is_bare);
 
 /**
  * Option flags for `git_repository_init_ext`.
@@ -285,12 +312,12 @@ int git_repository_init(
  *        "/usr/share/git-core/templates" if it exists.
  */
 //~ enum git_repository_init_flag_t {
-	//~ GIT_REPOSITORY_INIT_BARE              = (1u << 0),
-	//~ GIT_REPOSITORY_INIT_NO_REINIT         = (1u << 1),
-	//~ GIT_REPOSITORY_INIT_NO_DOTGIT_DIR     = (1u << 2),
-	//~ GIT_REPOSITORY_INIT_MKDIR             = (1u << 3),
-	//~ GIT_REPOSITORY_INIT_MKPATH            = (1u << 4),
-	//~ GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE = (1u << 5),
+        //~ GIT_REPOSITORY_INIT_BARE              = (1u << 0),
+        //~ GIT_REPOSITORY_INIT_NO_REINIT         = (1u << 1),
+        //~ GIT_REPOSITORY_INIT_NO_DOTGIT_DIR     = (1u << 2),
+        //~ GIT_REPOSITORY_INIT_MKDIR             = (1u << 3),
+        //~ GIT_REPOSITORY_INIT_MKPATH            = (1u << 4),
+        //~ GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE = (1u << 5),
 //~ } ;
 
 //~ mixin _ExportEnumMembers!git_repository_init_flag_t;
@@ -309,9 +336,9 @@ int git_repository_init(
  * * Anything else - Set to custom value.
  */
 //~ enum git_repository_init_mode_t {
-	//~ GIT_REPOSITORY_INIT_SHARED_UMASK = octal!0,
-	//~ GIT_REPOSITORY_INIT_SHARED_GROUP = octal!2775,
-	//~ GIT_REPOSITORY_INIT_SHARED_ALL   = octal!2777,
+        //~ GIT_REPOSITORY_INIT_SHARED_UMASK = octal!0,
+        //~ GIT_REPOSITORY_INIT_SHARED_GROUP = octal!2775,
+        //~ GIT_REPOSITORY_INIT_SHARED_ALL   = octal!2777,
 //~ } ;
 
 //~ mixin _ExportEnumMembers!git_repository_init_mode_t;
@@ -345,14 +372,14 @@ int git_repository_init(
  *        will be added pointing to this URL.
  */
 struct git_repository_init_options {
-	uint version_;
-	uint32_t    flags;
-	uint32_t    mode;
-	const(char)* workdir_path;
-	const(char)* description;
-	const(char)* template_path;
-	const(char)* initial_head;
-	const(char)* origin_url;
+        uint version_;
+        uint32_t    flags;
+        uint32_t    mode;
+        const(char)* workdir_path;
+        const(char)* description;
+        const(char)* template_path;
+        const(char)* initial_head;
+        const(char)* origin_url;
 } ;
 
 enum GIT_REPOSITORY_INIT_OPTIONS_VERSION = 1;
@@ -372,9 +399,9 @@ enum git_repository_init_options GIT_REPOSITORY_INIT_OPTIONS_INIT = { GIT_REPOSI
  * @return 0 or an error code on failure.
  */
 int git_repository_init_ext(
-	git_repository **out_,
-	const(char)* repo_path,
-	git_repository_init_options *opts);
+        git_repository **out_,
+        const(char)* repo_path,
+        git_repository_init_options *opts);
 
 /**
  * Retrieve and resolve the reference pointed at by HEAD.
@@ -467,7 +494,7 @@ const(char)*  git_repository_workdir(git_repository *repo);
  * @return 0, or an error code
  */
 int git_repository_set_workdir(
-	git_repository *repo, const(char)* workdir, int update_gitlink);
+        git_repository *repo, const(char)* workdir, int update_gitlink);
 
 /**
  * Check if a repository is bare
@@ -586,10 +613,10 @@ int git_repository_message_remove(git_repository *repo);
 int git_repository_merge_cleanup(git_repository *repo);
 
 alias git_repository_fetchhead_foreach_cb = int function(const(char)* ref_name,
-	const(char)* remote_url,
-	const(git_oid)* oid,
-	uint is_merge,
-	void *payload);
+        const(char)* remote_url,
+        const(git_oid)* oid,
+        uint is_merge,
+        void *payload);
 
 /**
  * Call callback 'callback' for each entry in the given FETCH_HEAD file.
@@ -600,11 +627,11 @@ alias git_repository_fetchhead_foreach_cb = int function(const(char)* ref_name,
  * @return 0 on success, GIT_ENOTFOUND, GIT_EUSER or error
  */
 int git_repository_fetchhead_foreach(git_repository *repo,
-	git_repository_fetchhead_foreach_cb callback,
-	void *payload);
+        git_repository_fetchhead_foreach_cb callback,
+        void *payload);
 
 alias git_repository_mergehead_foreach_cb = int function(const(git_oid)* oid,
-	void *payload);
+        void *payload);
 
 /**
  * If a merge is in progress, call callback 'cb' for each commit ID in the
@@ -616,8 +643,8 @@ alias git_repository_mergehead_foreach_cb = int function(const(git_oid)* oid,
  * @return 0 on success, GIT_ENOTFOUND, GIT_EUSER or error
  */
 int git_repository_mergehead_foreach(git_repository *repo,
-	git_repository_mergehead_foreach_cb callback,
-	void *payload);
+        git_repository_mergehead_foreach_cb callback,
+        void *payload);
 
 /**
  * Calculate hash of file using repository filtering rules.
@@ -638,11 +665,11 @@ int git_repository_mergehead_foreach(git_repository *repo,
  *             applied when calculating the hash.
  */
 int git_repository_hashfile(
-	git_oid *out_,
-	git_repository *repo,
-	const(char)* path,
-	git_otype type,
-	const(char)* as_path);
+        git_oid *out_,
+        git_repository *repo,
+        const(char)* path,
+        git_otype type,
+        const(char)* as_path);
 
 /**
  * Make the repository HEAD point to the specified reference.
@@ -663,8 +690,8 @@ int git_repository_hashfile(
  * @return 0 on success, or an error code
  */
 int git_repository_set_head(
-	git_repository* repo,
-	const(char)* refname);
+        git_repository* repo,
+        const(char)* refname);
 
 /**
  * Make the repository HEAD directly point to the Commit.
@@ -683,8 +710,8 @@ int git_repository_set_head(
  * @return 0 on success, or an error code
  */
 int git_repository_set_head_detached(
-	git_repository* repo,
-	const(git_oid)* commitish);
+        git_repository* repo,
+        const(git_oid)* commitish);
 
 /**
  * Detach the HEAD.
@@ -704,19 +731,19 @@ int git_repository_set_head_detached(
  * branch or an error code
  */
 int git_repository_detach_head(
-	git_repository* repo);
+        git_repository* repo);
 
 //~ enum git_repository_state_t {
-	//~ GIT_REPOSITORY_STATE_NONE,
-	//~ GIT_REPOSITORY_STATE_MERGE,
-	//~ GIT_REPOSITORY_STATE_REVERT,
-	//~ GIT_REPOSITORY_STATE_CHERRY_PICK,
-	//~ GIT_REPOSITORY_STATE_BISECT,
-	//~ GIT_REPOSITORY_STATE_REBASE,
-	//~ GIT_REPOSITORY_STATE_REBASE_INTERACTIVE,
-	//~ GIT_REPOSITORY_STATE_REBASE_MERGE,
-	//~ GIT_REPOSITORY_STATE_APPLY_MAILBOX,
-	//~ GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE,
+        //~ GIT_REPOSITORY_STATE_NONE,
+        //~ GIT_REPOSITORY_STATE_MERGE,
+        //~ GIT_REPOSITORY_STATE_REVERT,
+        //~ GIT_REPOSITORY_STATE_CHERRY_PICK,
+        //~ GIT_REPOSITORY_STATE_BISECT,
+        //~ GIT_REPOSITORY_STATE_REBASE,
+        //~ GIT_REPOSITORY_STATE_REBASE_INTERACTIVE,
+        //~ GIT_REPOSITORY_STATE_REBASE_MERGE,
+        //~ GIT_REPOSITORY_STATE_APPLY_MAILBOX,
+        //~ GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE,
 //~ } ;
 
 //~ mixin _ExportEnumMembers!git_repository_state_t;
@@ -738,9 +765,9 @@ int git_repository_state(git_repository *repo);
  *
  * @param repo The repo
  * @param nmspace The namespace. This should not include the refs
- *	folder, e.g. to namespace all references under `refs/namespaces/foo/`,
- *	use `foo` as the namespace.
- *	@return 0 on success, -1 on error
+ *      folder, e.g. to namespace all references under `refs/namespaces/foo/`,
+ *      use `foo` as the namespace.
+ *      @return 0 on success, -1 on error
  */
 int git_repository_set_namespace(git_repository *repo, const(char)* nmspace);
 
