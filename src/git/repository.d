@@ -90,9 +90,7 @@ struct GitRepo
     */
     @property bool isHeadDetached()
     {
-        auto result = git_repository_head_detached(_data._payload);
-        require(result == 1 || result == 0);
-        return result == 1;
+        return requireBool(git_repository_head_detached(_data._payload));
     }
 
     ///
@@ -117,9 +115,7 @@ struct GitRepo
     */
     @property bool isHeadOrphan()
     {
-        auto result = git_repository_head_orphan(_data._payload);
-        require(result == 1 || result == 0);
-        return result == 1;
+        return requireBool(git_repository_head_orphan(_data._payload));
     }
 
     ///
@@ -143,9 +139,7 @@ struct GitRepo
     */
     @property bool isEmpty()
     {
-        auto result = git_repository_is_empty(_data._payload);
-        require(result == 1 || result == 0);
-        return result == 1;
+        return requireBool(git_repository_is_empty(_data._payload));
     }
 
     ///
@@ -160,6 +154,17 @@ struct GitRepo
         auto repo2 = initRepo(repoPath);
         assert(repo2.isEmpty());
         rmdirRecurse(repoPath);
+    }
+
+    /**
+     * Check if this repository is a bare repository.
+     *
+     * @param repo Repo to test
+     * @return 1 if the repository is bare, 0 otherwise.
+     */
+    @property bool isBare()
+    {
+        return requireBool(git_repository_is_bare(_data._payload));
     }
 
 private:
@@ -504,14 +509,6 @@ const(char)*  git_repository_workdir(git_repository *repo);
  */
 int git_repository_set_workdir(
         git_repository *repo, const(char)* workdir, int update_gitlink);
-
-/**
- * Check if a repository is bare
- *
- * @param repo Repo to test
- * @return 1 if the repository is bare, 0 otherwise.
- */
-int git_repository_is_bare(git_repository *repo);
 
 /**
  * Get the configuration file for this repository.

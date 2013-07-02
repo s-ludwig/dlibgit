@@ -20,6 +20,16 @@ import git.c.errors;
 import git.exception;
 
 /**
+    Require the result to be either 1 or 0. If it is, return the boolean value,
+    otherwise throw a GitException.
+*/
+package bool requireBool(int result, string file = __FILE__, size_t line = __LINE__)
+{
+    require(result == 0 || result == 1);
+    return result == 1;
+}
+
+/**
     Call this function when an error code is returned from a git function.
     It will retrieve the last error and throw a GitException.
 
