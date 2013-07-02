@@ -229,9 +229,9 @@ unittest
     repository without a working directory is created at the
     pointed path.
 
-    Otherwise, the provided path will be considered as the
-    working directory into which the .git directory will be
-    created.
+    If equal to $(D OpenBare.no), the provided path will be
+    considered as the working directory into which the .git
+    directory will be created.
 
     todo:
         - Reinit the repository
@@ -246,20 +246,20 @@ GitRepo initRepo(string path, OpenBare openBare = OpenBare.no)
 ///
 unittest
 {
-    // create a non-bare test repository and ensure HEAD file exists
+    // create a bare test repository and ensure HEAD file exists
     string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-    auto repo = initRepo(repoPath, OpenBare.no);
-    assert(buildPath(repoPath, ".git/HEAD").exists);
+    auto repo = initRepo(repoPath, OpenBare.yes);
+    assert(buildPath(repoPath, "HEAD").exists);
     rmdirRecurse(repoPath);
 }
 
 ///
 unittest
 {
-    // create a bare test repository and ensure HEAD file exists
+    // create a non-bare test repository and ensure .git/HEAD file exists
     string repoPath = buildPath(_baseTestDir, "_myTestRepo");
-    auto repo = initRepo(repoPath, OpenBare.yes);
-    assert(buildPath(repoPath, "HEAD").exists);
+    auto repo = initRepo(repoPath, OpenBare.no);
+    assert(buildPath(repoPath, ".git/HEAD").exists);
     rmdirRecurse(repoPath);
 }
 
