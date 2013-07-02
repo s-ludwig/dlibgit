@@ -87,6 +87,19 @@ struct GitOid
         assertThrown!AssertError(GitOid(bigHex));
     }
 
+    // internal
+    package this(git_oid oid)
+    {
+        _oid = oid;
+    }
+
+    ///
+    unittest
+    {
+        git_oid c_git_oid;
+        auto oid = GitOid(c_git_oid);
+    }
+
     /**
         Convert this GitOid into a hex string.
 
