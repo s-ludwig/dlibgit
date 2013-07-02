@@ -68,10 +68,10 @@ struct GitRepo
 
         Parameters:
 
-        $(D path) must either be a path to a .git file or a
-        path to the directory where the .git file is located.
+        $(D path) must either be a path to the .git directory or
+        the base path of the .git directory.
 
-        If $(D path) does not exist or if the .git file is not
+        If $(D path) does not exist or if the .git directory is not
         found in $(D path), a $(D GitException) is thrown.
      */
     this(const(char)[] path)
@@ -85,10 +85,10 @@ struct GitRepo
         // throw when path does not exist
         assertThrown!GitException(GitRepo(r".\invalid\path\.git"));
 
-        // open path of .git file
+        // open using the path of the .git directory
         auto repo1 = GitRepo(_testRepo);
 
-        // open path of .git directory
+        // open using the base path of the .git directory
         auto repo2 = GitRepo(_testRepo.dirName);
     }
 
@@ -188,8 +188,8 @@ unittest
 {
     /**
         look for the .git repo in "../test/repo/a/".
-        The .git file will be found one dir up, and will contain
-        the line 'gitdir: ../../.git/modules/test/repo'.
+        The .git directory will be found one dir up, and will
+        contain the line 'gitdir: ../../.git/modules/test/repo'.
         The function will expand this line and return the true
         repository location.
     */
@@ -246,7 +246,7 @@ GitRepo initRepo(string path, OpenBare openBare = OpenBare.no)
 ///
 unittest
 {
-    // create a bare test repository and ensure HEAD file exists
+    // create a bare test repository and ensure the HEAD file exists
     string repoPath = buildPath(_baseTestDir, "_myTestRepo");
     auto repo = initRepo(repoPath, OpenBare.yes);
     assert(buildPath(repoPath, "HEAD").exists);
@@ -256,7 +256,7 @@ unittest
 ///
 unittest
 {
-    // create a non-bare test repository and ensure .git/HEAD file exists
+    // create a non-bare test repository and ensure the .git/HEAD file exists
     string repoPath = buildPath(_baseTestDir, "_myTestRepo");
     auto repo = initRepo(repoPath, OpenBare.no);
     assert(buildPath(repoPath, ".git/HEAD").exists);
