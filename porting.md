@@ -3,6 +3,7 @@ Fully ported modules:
 - git.c.common
 - git.c.oid
 - git.c.trace
+- git.c.ignore (folded into GitRepo)
 
 Partially ported modules:
 
