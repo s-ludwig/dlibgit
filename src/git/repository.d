@@ -675,6 +675,36 @@ struct GitRepo
         assert(!repo.isShallow);
     }
 
+    /**
+        Remove all the metadata associated with an ongoing git merge, including
+        MERGE_HEAD, MERGE_MSG, etc.
+    */
+    void cleanupMerge()
+    {
+        require(git_repository_merge_cleanup(_data._payload) == 0);
+    }
+
+    ///
+    unittest
+    {
+        // write a merge message file and verify it can be read
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string msgPath = buildPath(repo.path, "MERGE_MSG");
+        string msg = "merge this";
+        std.file.write(msgPath, msg);
+
+        assert(repo.mergeMsg == msg);
+
+        // verify removal of merge message
+        repo.cleanupMerge();
+        assert(repo.mergeMsg is null);
+
+        // verify throwing when removing file which doesn't exist
+        assertThrown!GitException(repo.removeMergeMsg());
+    }
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -852,15 +882,6 @@ unittest
 }
 
 extern (C):
-
-/**
- * Remove all the metadata associated with an ongoing git merge, including
- * MERGE_HEAD, MERGE_MSG, etc.
- *
- * @param repo A repository object
- * @return 0 on success, or error
- */
-int git_repository_merge_cleanup(git_repository *repo);
 
 //~ b0d66b5110faaeb395610ba43b6eb70a18ab5e25        branch 'master' of git://git.kernel.org/pub/scm/git/git
 //~ a9004c5cb2204cf950debab328e86de5eefb9da4        branch 'next' of git://git.kernel.org/pub/scm/git/git
