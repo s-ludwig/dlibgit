@@ -741,9 +741,6 @@ enum OpenBare
     If equal to $(D OpenBare.no), the provided path will be
     considered as the working directory into which the .git
     directory will be created.
-
-    todo:
-        - Reinit the repository
 */
 GitRepo initRepo(in char[] path, OpenBare openBare)
 {
