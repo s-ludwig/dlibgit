@@ -721,6 +721,71 @@ struct GitRepo
         static assert(__traits(compiles, repo.walkMergeHead(&walkDelegate) ));
     }
 
+    /// Walk the $(B MERGE_HEAD) file with a function.
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string[] mergeHeadItems = [
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n",
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "MERGE_HEAD"), mergeHeadItems.join());
+
+        static ContinueWalk walkFunc(GitOid oid)
+        {
+            static int count;
+            count++;
+
+            assert(count != 2);  // we're stopping after the first iteration
+
+            assert(oid == GitOid("e496660174425e3147a0593ced2954f3ddbf65ca"));
+
+            return ContinueWalk.no;
+        }
+
+        repo.walkMergeHead(&walkFunc);
+    }
+
+    /// Walk the $(B MERGE_HEAD) file with a delegate.
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string[] mergeHeadItems = [
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n",
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "MERGE_HEAD"), mergeHeadItems.join());
+
+        struct S
+        {
+            size_t count;
+
+            // delegate walker
+            ContinueWalk walker(GitOid oid)
+            {
+                string line = mergeHeadItems[count++];
+                string commitHex = line.split[0];
+                assert(oid == GitOid(commitHex));
+
+                return ContinueWalk.yes;
+            }
+
+            ~this()
+            {
+                assert(count == 2);  // verify we've walked through all the items
+            }
+        }
+
+        S s;
+        repo.walkMergeHead(&s.walker);
+    }
+
     private void walkMergeHeadImpl(Callback)(Callback callback)
         if (is(Callback == MergeHeadFunction) || is(Callback == MergeHeadDelegate))
     {
@@ -728,8 +793,9 @@ struct GitRepo
         {
             Callback callback = *cast(Callback*)payload;
 
-            // return 1 to stop iteration
-            return callback(GitOid(*oid)) == ContinueWalk.no;
+            // return < 1 to stop iteration, see:
+            // https://github.com/libgit2/libgit2/issues/1703
+            return callback(GitOid(*oid)) == ContinueWalk.no ? -1 : 0;
         }
 
         auto result = git_repository_mergehead_foreach(_data._payload, &c_callback, &callback);
