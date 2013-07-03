@@ -512,34 +512,74 @@ struct GitRepo
         walkFetchHeadImpl(callback);
     }
 
-    ///
+    /// Walk the $(B FETCH_HEAD) file with a function.
     unittest
     {
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
 
-        static ContinueWalk staticWalker(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
+        string[] fetchHeadItems = [
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
+
+        static ContinueWalk walkFunc(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
         {
-            import std.stdio;
-            writefln("Function walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
-                     refName, remoteURL, oid, isMerge);
+            static int count;
+            count++;
+
+            assert(count != 2);  // we're stopping after the first iteration
+
+            assert(refName == "refs/heads/master");
+            assert(remoteURL == "git://github.com/D-Programming-Language/dmd");
+            assert(oid == GitOid("23C3C6ADD8162693F85B3B41C9BF6550A71A57D3"));
+
             return ContinueWalk.no;
         }
 
-        static assert(__traits(compiles, repo.walkFetchHead(&staticWalker) ));
+        repo.walkFetchHead(&walkFunc);
+    }
 
-        int x;
+    /// Walk the $(B FETCH_HEAD) file with a delegate.
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
 
-        ContinueWalk walker(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
+        string[] fetchHeadItems = [
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
+
+        struct S
         {
-            x++;  // make it a delegate
-            import std.stdio;
-            writefln("Delegate walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
-                     refName, remoteURL, oid, isMerge);
-            return ContinueWalk.yes;
+            size_t count;
+
+            // delegate walker
+            ContinueWalk walker(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
+            {
+                string line = fetchHeadItems[count++];
+                string commitHex = line.split[0];
+
+                assert(refName == "refs/heads/master");
+                assert(remoteURL == "git://github.com/D-Programming-Language/dmd");
+                assert(oid == GitOid(commitHex));
+
+                return ContinueWalk.yes;
+            }
+
+            ~this()
+            {
+                assert(count == 2);  // verify we've walked through all the items
+            }
         }
 
-        static assert(__traits(compiles, repo.walkFetchHead(&walker) ));
+        S s;
+        repo.walkFetchHead(&s.walker);
     }
 
     private void walkFetchHeadImpl(Callback)(Callback callback)
@@ -579,7 +619,22 @@ struct GitRepo
     {
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
-        static assert(__traits(compiles, repo.getFetchHeadItems() ));
+
+        string[] fetchHeadItems = [
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
+
+        foreach (string line, FetchHeadItem item; lockstep(fetchHeadItems, repo.getFetchHeadItems()))
+        {
+            string commitHex = line.split[0];
+
+            assert(item.refName == "refs/heads/master");
+            assert(item.remoteURL == "git://github.com/D-Programming-Language/dmd");
+            assert(item.oid == GitOid(commitHex));
+        }
     }
 
     /**
@@ -599,7 +654,24 @@ struct GitRepo
     {
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
-        static assert(__traits(compiles, repo.getFetchHeadItems(appender!(FetchHeadItem[])) ));
+
+        string[] fetchHeadItems = [
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
+
+        auto buffer = repo.getFetchHeadItems(appender!(FetchHeadItem[]));
+
+        foreach (string line, FetchHeadItem item; lockstep(fetchHeadItems, buffer.data))
+        {
+            string commitHex = line.split[0];
+
+            assert(item.refName == "refs/heads/master");
+            assert(item.remoteURL == "git://github.com/D-Programming-Language/dmd");
+            assert(item.oid == GitOid(commitHex));
+        }
     }
 
     /**
@@ -627,18 +699,18 @@ struct GitRepo
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
 
-        static ContinueWalk staticWalker(GitOid oid)
+        static ContinueWalk walkFunc(GitOid oid)
         {
             import std.stdio;
             writefln("Function walking - oid: %s", oid);
             return ContinueWalk.no;
         }
 
-        static assert(__traits(compiles, repo.walkMergeHead(&staticWalker) ));
+        static assert(__traits(compiles, repo.walkMergeHead(&walkFunc) ));
 
         int x;
 
-        ContinueWalk walker(GitOid oid)
+        ContinueWalk walkDelegate(GitOid oid)
         {
             x++;  // make it a delegate
             import std.stdio;
@@ -646,7 +718,7 @@ struct GitRepo
             return ContinueWalk.yes;
         }
 
-        static assert(__traits(compiles, repo.walkMergeHead(&walker) ));
+        static assert(__traits(compiles, repo.walkMergeHead(&walkDelegate) ));
     }
 
     private void walkMergeHeadImpl(Callback)(Callback callback)
@@ -844,6 +916,70 @@ struct GitRepo
         auto oid = repo.hashFile(objPath, GitType.blob);
     }
 
+    /**
+     * Make the repository HEAD point to the specified reference.
+     *
+     * If the provided reference points to a Tree or a Blob, the HEAD is
+     * unaltered and -1 is returned.
+     *
+     * If the provided reference points to a branch, the HEAD will point
+     * to that branch, staying attached, or become attached if it isn't yet.
+     * If the branch doesn't exist yet, no error will be return. The HEAD
+     * will then be attached to an unborn branch.
+     *
+     * Otherwise, the HEAD will be detached and will directly point to
+     * the Commit.
+     *
+     * @param repo Repository pointer
+     * @param refname Canonical name of the reference the HEAD should point at
+     * @return 0 on success, or an error code
+     */
+    // todo: add overload that takes an actual reference, and then call .toname
+    // on it once references are ported
+    //~ int git_repository_set_head(
+            //~ git_repository* repo,
+            //~ const(char)* refname);
+
+    /**
+     * Make the repository HEAD directly point to the Commit.
+     *
+     * If the provided commit_oid cannot be found in the repository, the HEAD
+     * is unaltered and GIT_ENOTFOUND is returned.
+     *
+     * If the provided commit_oid cannot be peeled into a commit, the HEAD
+     * is unaltered and -1 is returned.
+     *
+     * Otherwise, the HEAD will eventually be detached and will directly point to
+     * the peeled Commit.
+     *
+     * @param repo Repository pointer
+     * @param commit_oid Object id of the Commit the HEAD should point to
+     * @return 0 on success, or an error code
+     */
+    //~ int git_repository_set_head_detached(
+            //~ git_repository* repo,
+            //~ const(git_oid)* commit_oid);
+
+    /**
+     * Detach the HEAD.
+     *
+     * If the HEAD is already detached and points to a Commit, 0 is returned.
+     *
+     * If the HEAD is already detached and points to a Tag, the HEAD is
+     * updated into making it point to the peeled Commit, and 0 is returned.
+     *
+     * If the HEAD is already detached and points to a non-commit oid, the HEAD is
+     * unaltered, and -1 is returned.
+     *
+     * Otherwise, the HEAD will be detached and point to the peeled Commit.
+     *
+     * @param repo Repository pointer
+     * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
+     * branch or an error code
+     */
+    //~ int git_repository_detach_head(
+            //~ git_repository* repo);
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -1021,68 +1157,6 @@ unittest
 }
 
 extern (C):
-
-/**
- * Make the repository HEAD point to the specified reference.
- *
- * If the provided reference points to a Tree or a Blob, the HEAD is
- * unaltered and -1 is returned.
- *
- * If the provided reference points to a branch, the HEAD will point
- * to that branch, staying attached, or become attached if it isn't yet.
- * If the branch doesn't exist yet, no error will be return. The HEAD
- * will then be attached to an unborn branch.
- *
- * Otherwise, the HEAD will be detached and will directly point to
- * the Commit.
- *
- * @param repo Repository pointer
- * @param refname Canonical name of the reference the HEAD should point at
- * @return 0 on success, or an error code
- */
-int git_repository_set_head(
-        git_repository* repo,
-        const(char)* refname);
-
-/**
- * Make the repository HEAD directly point to the Commit.
- *
- * If the provided commit_oid cannot be found in the repository, the HEAD
- * is unaltered and GIT_ENOTFOUND is returned.
- *
- * If the provided commit_oid cannot be peeled into a commit, the HEAD
- * is unaltered and -1 is returned.
- *
- * Otherwise, the HEAD will eventually be detached and will directly point to
- * the peeled Commit.
- *
- * @param repo Repository pointer
- * @param commit_oid Object id of the Commit the HEAD should point to
- * @return 0 on success, or an error code
- */
-int git_repository_set_head_detached(
-        git_repository* repo,
-        const(git_oid)* commit_oid);
-
-/**
- * Detach the HEAD.
- *
- * If the HEAD is already detached and points to a Commit, 0 is returned.
- *
- * If the HEAD is already detached and points to a Tag, the HEAD is
- * updated into making it point to the peeled Commit, and 0 is returned.
- *
- * If the HEAD is already detached and points to a non-commit oid, the HEAD is
- * unaltered, and -1 is returned.
- *
- * Otherwise, the HEAD will be detached and point to the peeled Commit.
- *
- * @param repo Repository pointer
- * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
- * branch or an error code
- */
-int git_repository_detach_head(
-        git_repository* repo);
 
 /**
     TODO: Functions to wrap later:
