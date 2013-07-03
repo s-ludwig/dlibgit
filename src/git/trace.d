@@ -6,8 +6,12 @@
  */
 module git.trace;
 
+import std.conv;
+
 import git.c.trace;
-module git.util;
+
+import git.exception;
+import git.util;
 
 /**
     Available tracing levels.  When tracing is set to a particular level,
@@ -48,9 +52,11 @@ alias TraceDelegate = void delegate(TraceLevel level, in char[] msg);
     specified callback.  When system events occur at a level equal to, or
     lower than, the given level they will be reported to the given callback.
 
-    $(BLUE Note:) If libgit2 is not built with tracing support this becomes
-    a no-op function. Make sure $(B -DGIT_TRACE) is set when building libgit2
-    to enable tracing support, or look at the provided cmakefiles.
+    $(BLUE Note:) If libgit2 is not built with tracing support calling this
+    function will throw a $(D GitException).
+
+    Make sure $(B -DGIT_TRACE) is set when building libgit2
+    to enable tracing support, or look at the libgit2 build instructions.
 */
 void setGitTracer(TraceLevel level, TraceFunction callback)
 {
@@ -58,7 +64,7 @@ void setGitTracer(TraceLevel level, TraceFunction callback)
 }
 
 /// ditto
-void setGitTracer(TraceLevel level, TraceFunction callback)
+void setGitTracer(TraceLevel level, TraceDelegate callback)
 {
     setGitTracerImpl(level, callback);
 }
@@ -66,31 +72,68 @@ void setGitTracer(TraceLevel level, TraceFunction callback)
 /// test callback function
 unittest
 {
-    assert(0);
-    //~ static void callback(TraceLevel level, in char[] msg)
-    //~ {
-        //~ import std.stdio;
-        //~ writefln("Level(%s): %s", level, msg);
-    //~ }
+    static void tracer(TraceLevel level, in char[] msg)
+    {
+        import std.stdio;
+        stderr.writefln("Level(%s): %s", level, msg);
+    }
 
-    //~ setGitTracer(TraceLevel.trace, &callback);
+    try
+    {
+        setGitTracer(TraceLevel.trace, &tracer);
+    }
+    catch (GitException exc)
+    {
+        assert(exc.msg == _noTraceMsg, exc.msg);
+    }
 }
 
-private void setGitTracerImpl(Callback)(level, Callback callback)
+/// test callback delegate
+unittest
+{
+    struct S
+    {
+        size_t line = 1;
+
+        void tracer(TraceLevel level, in char[] msg)
+        {
+            import std.stdio;
+            stderr.writefln("Level(%s): Line %s - %s", line++, level, msg);
+        }
+    }
+
+    S s;
+
+    try
+    {
+        setGitTracer(TraceLevel.trace, &s.tracer);
+    }
+    catch (GitException exc)
+    {
+        assert(exc.msg == _noTraceMsg, exc.msg);
+    }
+}
+
+version(unittest)
+{
+    enum _noTraceMsg = "Git error (GITERR_INVALID): This version of libgit2 was not built with tracing..";
+}
+
+private void setGitTracerImpl(Callback)(TraceLevel level, Callback callback)
     if (is(Callback == TraceFunction) || is(Callback == TraceDelegate))
 {
-    //~ private struct Tracer(TraceType)
-    //~ {
-        //~ extern(C) void tracer(git_trace_level_t level, const(char)* msg)
-        //~ {
-            //~ callback(cast(TraceLevel)level, to!(const(char)[])(msg));
-        //~ }
+    struct Tracer
+    {
+        extern(C) void tracer(git_trace_level_t level, const(char)* msg)
+        {
+            callback(cast(TraceLevel)level, to!(const(char)[])(msg));
+        }
 
-    //~ private:
-        //~ /// The currently active callback
-        //~ static Callback callback;
-    //~ }
+    private:
+        /// The currently active callback
+        static Callback callback;
+    }
 
-    //~ Tracer.callback = callback;
-    //~ require(git_trace_set(cast(git_trace_level_t)level, &Tracer.tracer) == 0);
+    Tracer.callback = callback;
+    require(git_trace_set(cast(git_trace_level_t)level, &Tracer.tracer) == 0);
 }
