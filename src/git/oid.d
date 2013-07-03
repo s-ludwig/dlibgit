@@ -150,6 +150,10 @@ struct GitOid
         assert(to!string(oid) == format("GitOid(%s)", hex.toUpper));
     }
 
+package:
+    // internal use only
+    git_oid _get_oid() { return _oid; }
+
 private:
     git_oid _oid;
 }

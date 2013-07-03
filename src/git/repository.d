@@ -13,6 +13,7 @@ import std.conv;
 import std.exception;
 import std.file;
 import std.path;
+import std.process;
 import std.range;
 import std.stdio;
 import std.string;
@@ -854,6 +855,7 @@ struct GitRepo
     ///
     unittest
     {
+        // todo: test all states
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
         assert(repo.state == RepoState.none);
@@ -984,23 +986,60 @@ struct GitRepo
     }
 
     /**
-     * Make the repository HEAD point to the specified reference.
-     *
-     * If the provided reference points to a Tree or a Blob, the HEAD is
-     * unaltered and -1 is returned.
-     *
-     * If the provided reference points to a branch, the HEAD will point
-     * to that branch, staying attached, or become attached if it isn't yet.
-     * If the branch doesn't exist yet, no error will be return. The HEAD
-     * will then be attached to an unborn branch.
-     *
-     * Otherwise, the HEAD will be detached and will directly point to
-     * the Commit.
-     *
-     * @param repo Repository pointer
-     * @param refname Canonical name of the reference the HEAD should point at
-     * @return 0 on success, or an error code
-     */
+        Make the repository HEAD point to the specified reference.
+
+        If the provided reference points to a Tree or a Blob, the HEAD is
+        unaltered and -1 is returned.
+
+        If the provided reference points to a branch, the HEAD will point
+        to that branch, staying attached, or become attached if it isn't yet.
+        If the branch doesn't exist yet, no error will be return. The HEAD
+        will then be attached to an unborn branch.
+
+        Otherwise, the HEAD will be detached and will directly point to
+        the Commit.
+
+        @param repo Repository pointer
+        @param refname Canonical name of the reference the HEAD should point at
+        @return 0 on success, or an error code
+    */
+    version(none)
+    void setHead(in char[] refName)  // todo: provide GitRef overload
+    {
+        require(git_repository_set_head(_data._payload, refName.toStringz) == 0);
+    }
+
+    ///
+    version(none)
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.no);
+
+        scope(exit)
+        {
+            // workaround for Issue 10529:
+            // http://d.puremagic.com/issues/show_bug.cgi?id=10529
+            version(Windows)
+                executeShell(format("rmdir /q /s %s", _userRepo.absolutePath.buildNormalizedPath));
+            else
+                rmdirRecurse(_userRepo);
+        }
+
+        // create a blob file in the work path
+        string blobPath = buildPath(repo.workPath, "foo.text");
+        std.file.write(blobPath, "blob");
+
+        import git.c.blob;
+        git_oid _oid;
+        require(0 == git_blob_create_fromworkdir(&_oid, repo._data._payload, "/foo.text"));
+
+        import git.c.refs;
+        git_reference* ptr;
+        require(0 == git_reference_create(&ptr, repo._data._payload, "MY_REF", &_oid, false));
+
+        repo.setHead("MY_REF");
+    }
+
     // todo: add overload that takes an actual reference, and then call .toname
     // on it once references are ported
     //~ int git_repository_set_head(
