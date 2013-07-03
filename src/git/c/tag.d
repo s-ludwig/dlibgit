@@ -347,7 +347,3 @@ int git_tag_foreach(
 int git_tag_peel(
 	git_object **tag_target_out,
 	const(git_tag)* tag);
-
-
-
-

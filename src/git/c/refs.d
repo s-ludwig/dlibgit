@@ -551,8 +551,3 @@ int git_reference_is_valid_name(const(char)* refname);
  * @return the human-readable version of the name
  */
 const(char)*  git_reference_shorthand(git_reference *ref_);
-
-
-
-
-

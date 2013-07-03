@@ -656,9 +656,3 @@ int git_index_conflict_next(
  */
 void git_index_conflict_iterator_free(
 	git_index_conflict_iterator *iterator);
-
-/**@}*/
-
-
-
-//#endif

@@ -52,10 +52,3 @@ void git_strarray_free(git_strarray *array);
  * @return 0 on success, < 0 on allocation failure
  */
 int git_strarray_copy(git_strarray *tgt, const(git_strarray)* src);
-
-
-
-
-
-
-

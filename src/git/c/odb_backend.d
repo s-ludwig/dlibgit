@@ -91,7 +91,3 @@ struct git_odb_writepack
 	int  function(git_odb_writepack *writepack, git_transfer_progress *stats) commit;
 	void function(git_odb_writepack *writepack) free;
 }
-
-
-
-

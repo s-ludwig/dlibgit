@@ -82,7 +82,3 @@ int git_reset_default(
 	git_repository *repo,
 	git_object *target,
 	git_strarray* pathspecs);
-
-
-
-

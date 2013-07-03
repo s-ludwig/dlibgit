@@ -129,7 +129,3 @@ int git_push_status_foreach(
  * @param push The push object
  */
 void git_push_free(git_push *push);
-
-
-
-

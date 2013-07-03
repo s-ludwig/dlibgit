@@ -72,8 +72,3 @@ int git_ignore_path_is_ignored(
 	int *ignored,
 	git_repository *repo,
 	const(char)* path);
-
-
-
-
-

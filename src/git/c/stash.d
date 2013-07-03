@@ -120,7 +120,3 @@ int git_stash_foreach(
 int git_stash_drop(
 	git_repository *repo,
 	size_t index);
-
-
-
-

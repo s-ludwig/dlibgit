@@ -47,8 +47,3 @@ int git_cred_userpass(
 		const(char)* user_from_url,
 		uint allowed_types,
 		void *payload);
-
-
-
-
-//#endif

@@ -1111,10 +1111,3 @@ int git_diff_patch_from_blob_and_buffer(
 	size_t buffer_len,
 	const(char)* buffer_as_path,
 	const(git_diff_options)* opts);
-
-
-
-
-
-
-//#endif

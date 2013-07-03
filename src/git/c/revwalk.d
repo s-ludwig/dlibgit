@@ -247,7 +247,3 @@ void git_revwalk_free(git_revwalk *walk);
  * @return the repository being walked
  */
 git_repository * git_revwalk_repository(git_revwalk *walk);
-
-
-
-

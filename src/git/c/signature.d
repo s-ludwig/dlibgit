@@ -71,7 +71,3 @@ git_signature * git_signature_dup(const(git_signature)* sig);
  * @param sig signature to free
  */
 void git_signature_free(git_signature *sig);
-
-
-
-
