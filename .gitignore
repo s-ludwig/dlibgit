@@ -8,5 +8,6 @@
 *.a
 *.dll
 *.lib
-bin
+bin/*.dll
+bin/*.lib
 docs/*.html
