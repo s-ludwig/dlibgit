@@ -661,36 +661,19 @@ struct GitRepo
         assert(repo.namespace == "foobar");
     }
 
-    /**
-     * Get the currently active namespace for this repository
-     *
-     * @param repo The repo
-     * @return the active namespace, or NULL if there isn't one
-     */
-    //~ const(char)*  git_repository_get_namespace(git_repository *repo);
+    /** Determine if this repository is a shallow clone. */
+    @property bool isShallow()
+    {
+        return git_repository_is_shallow(_data._payload) == 1;
+    }
 
-
-    /**
-     * Sets the active namespace for this Git Repository
-     *
-     * This namespace affects all reference operations for the repo.
-     * See `man gitnamespaces`
-     *
-     * @param repo The repo
-     * @param nmspace The namespace. This should not include the refs
-     *      folder, e.g. to namespace all references under `refs/namespaces/foo/`,
-     *      use `foo` as the namespace.
-     *      @return 0 on success, -1 on error
-     */
-    //~ int git_repository_set_namespace(git_repository *repo, const(char)* nmspace);
-
-    /**
-     * Determine if the repository was a shallow clone
-     *
-     * @param repo The repository
-     * @return 1 if shallow, zero if not
-     */
-    //~ int git_repository_is_shallow(git_repository *repo);
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(!repo.isShallow);
+    }
 
 private:
 
