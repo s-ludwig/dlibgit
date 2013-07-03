@@ -64,7 +64,7 @@ void setGitTracer(TraceLevel level, TraceFunction callback)
 }
 
 /// ditto
-void setGitTracer(TraceLevel level, TraceDelegate callback)
+void setGitTracer(TraceLevel level, scope TraceDelegate callback)
 {
     setGitTracerImpl(level, callback);
 }
