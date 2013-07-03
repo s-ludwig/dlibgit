@@ -80,6 +80,21 @@ alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] rem
 /// ditto
 alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
 
+/// The various states a repository can be in.
+enum RepoState
+{
+    none, ///
+    merge, ///
+    revert, ///
+    cherry_pick, ///
+    bisect, ///
+    rebase, ///
+    rebase_interactive, ///
+    rebase_merge, ///
+    apply_mailbox, ///
+    apply_mailbox_or_rebase, ///
+}
+
 /**
     The structure representing a git repository.
 */
@@ -591,6 +606,92 @@ struct GitRepo
         //~ writeln(buffer.data);
     }
 
+    /**
+        Return the current state this repository,
+        e.g. whether an operation such as merge is in progress.
+    */
+    @property RepoState state()
+    {
+        return to!RepoState(git_repository_state(_data._payload));
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.state == RepoState.none);
+    }
+
+    /** Get the currently active namespace for this repository. */
+    @property string namespace()
+    {
+        return to!string(git_repository_get_namespace(_data._payload));
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(repo.namespace is null);
+    }
+
+    /**
+        Set the active namespace for this repository.
+
+        This namespace affects all reference operations for the repo.
+        See $(B man gitnamespaces).
+
+        The namespace should not include the refs folder,
+        e.g. to namespace all references under $(B refs/namespaces/foo/)
+        use $(B foo) as the namespace.
+    */
+    @property void namespace(in char[] nspace)
+    {
+        require(git_repository_set_namespace(_data._payload, nspace.toStringz) == 0);
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        repo.namespace = "foobar";
+        assert(repo.namespace == "foobar");
+    }
+
+    /**
+     * Get the currently active namespace for this repository
+     *
+     * @param repo The repo
+     * @return the active namespace, or NULL if there isn't one
+     */
+    //~ const(char)*  git_repository_get_namespace(git_repository *repo);
+
+
+    /**
+     * Sets the active namespace for this Git Repository
+     *
+     * This namespace affects all reference operations for the repo.
+     * See `man gitnamespaces`
+     *
+     * @param repo The repo
+     * @param nmspace The namespace. This should not include the refs
+     *      folder, e.g. to namespace all references under `refs/namespaces/foo/`,
+     *      use `foo` as the namespace.
+     *      @return 0 on success, -1 on error
+     */
+    //~ int git_repository_set_namespace(git_repository *repo, const(char)* nmspace);
+
+    /**
+     * Determine if the repository was a shallow clone
+     *
+     * @param repo The repository
+     * @return 1 if shallow, zero if not
+     */
+    //~ int git_repository_is_shallow(git_repository *repo);
+
 private:
 
     /** Payload for the $(D git_repository) object which should be refcounted. */
@@ -883,61 +984,6 @@ int git_repository_set_head_detached(
  */
 int git_repository_detach_head(
         git_repository* repo);
-
-//~ enum git_repository_state_t {
-        //~ GIT_REPOSITORY_STATE_NONE,
-        //~ GIT_REPOSITORY_STATE_MERGE,
-        //~ GIT_REPOSITORY_STATE_REVERT,
-        //~ GIT_REPOSITORY_STATE_CHERRY_PICK,
-        //~ GIT_REPOSITORY_STATE_BISECT,
-        //~ GIT_REPOSITORY_STATE_REBASE,
-        //~ GIT_REPOSITORY_STATE_REBASE_INTERACTIVE,
-        //~ GIT_REPOSITORY_STATE_REBASE_MERGE,
-        //~ GIT_REPOSITORY_STATE_APPLY_MAILBOX,
-        //~ GIT_REPOSITORY_STATE_APPLY_MAILBOX_OR_REBASE,
-//~ } ;
-
-//~ mixin _ExportEnumMembers!git_repository_state_t;
-
-/**
- * Determines the status of a git repository - ie, whether an operation
- * (merge, cherry-pick, etc) is in progress.
- *
- * @param repo Repository pointer
- * @return The state of the repository
- */
-int git_repository_state(git_repository *repo);
-
-/**
- * Sets the active namespace for this Git Repository
- *
- * This namespace affects all reference operations for the repo.
- * See `man gitnamespaces`
- *
- * @param repo The repo
- * @param nmspace The namespace. This should not include the refs
- *      folder, e.g. to namespace all references under `refs/namespaces/foo/`,
- *      use `foo` as the namespace.
- *      @return 0 on success, -1 on error
- */
-int git_repository_set_namespace(git_repository *repo, const(char)* nmspace);
-
-/**
- * Get the currently active namespace for this repository
- *
- * @param repo The repo
- * @return the active namespace, or NULL if there isn't one
- */
-const(char)*  git_repository_get_namespace(git_repository *repo);
-
-
-/**
- * Determine if the repository was a shallow clone
- *
- * @param repo The repository
- * @return 1 if shallow, zero if not
- */
-int git_repository_is_shallow(git_repository *repo);
 
 /**
     TODO: Functions to wrap later:

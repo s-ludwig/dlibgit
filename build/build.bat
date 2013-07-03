@@ -11,8 +11,8 @@ for /r %%i in (src\git\*.d) do set files=%%i !files!
 for /r %%i in (src\git\c\*.d) do set files=%%i !files!
 for /r %%i in (src\git\c\sys\*.d) do set files=%%i !files!
 
-set compiler=dmd.exe
-rem set compiler=dmd_msc.exe
+rem set compiler=dmd.exe
+set compiler=dmd_msc.exe
 rem set compiler=ldmd2.exe
 
 set "flags=%binPath%\libgit2_implib.lib"
