@@ -9,6 +9,7 @@ module git;
 public
 {
     import git.common;
+    import git.config;
     import git.exception;
     import git.oid;
     import git.repository;
