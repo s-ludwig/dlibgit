@@ -8,7 +8,18 @@ module git.common;
 
 // todo: port more of these from git.c.common
 
+import std.array;
+import std.conv;
+import std.exception;
+import std.stdio;
+import std.string;
+import std.traits;
+
 import git.c.common;
+
+import git.config;
+import git.exception;
+import git.util;
 
 package
 {
@@ -28,30 +39,188 @@ enum MaxGitPathLen = GIT_PATH_MAX;
  */
 enum GitOid_HexZero = GIT_OID_HEX_ZERO;
 
-//~ /**
- //~ * Combinations of these values describe the capabilities of libgit2.
- //~ */
-//~ enum git_cap_t
-//~ {
-	//~ GIT_CAP_THREADS			= ( 1 << 0 ),
-	//~ GIT_CAP_HTTPS			= ( 1 << 1 )
-//~ }
+/**
+    The capabilities of libgit2.
+*/
+struct GitFeatures
+{
+    /**
+        Libgit2 was compiled with thread support. Note that thread support is
+        still to be seen as a 'work in progress' - basic object lookups are
+        believed to be threadsafe, but other operations may not be.
+    */
+    bool usesThreads;
 
-//~ /**
- //~ * Query compile time options for libgit2.
+    /**
+        Libgit2 supports the https:// protocol. This requires the openssl
+        library to be found when compiling libgit2.
+    */
+    bool usesSSL;
+}
+
+/**
+    Get the capabilities of the runtime $(D libgit2) library.
+*/
+GitFeatures getLibGitFeatures()
+{
+    typeof(return) result;
+
+    int flags = git_libgit2_capabilities();
+
+    if (flags | GIT_CAP_THREADS)
+        result.usesThreads = true;
+
+    if (flags | GIT_CAP_HTTPS)
+        result.usesSSL = true;
+
+    return result;
+}
+
+///
+unittest
+{
+    auto features = getLibGitFeatures();
+    if (features.usesSSL) { }
+}
+
+/**
+    Static functions to query or set global libgit2 options.
+*/
+struct globalOpts
+{
+static:
+    /// Get the maximum mmap window size.
+    @property size_t mwindowSize()
+    {
+        typeof(return) result;
+        git_libgit2_opts(GIT_OPT_GET_MWINDOW_SIZE, &result);
+        return result;
+    }
+
+    /// Set the maximum mmap window size.
+    @property void mwindowSize(size_t size)
+    {
+        git_libgit2_opts(GIT_OPT_SET_MWINDOW_SIZE, size);
+    }
+
+    ///
+    unittest
+    {
+        auto oldSize = globalOpts.mwindowSize;
+        scope(exit) globalOpts.mwindowSize = oldSize;
+
+        globalOpts.mwindowSize = 1;
+        assert(globalOpts.mwindowSize == 1);
+    }
+
+    /// Get the maximum memory in bytes that will be mapped in total by the library.
+    @property size_t mwindowMappedLimit()
+    {
+        typeof(return) result;
+        git_libgit2_opts(GIT_OPT_GET_MWINDOW_MAPPED_LIMIT, &result);
+        return result;
+    }
+
+    /// Set the maximum amount of memory in bytes that can be mapped at any time by the library.
+    @property void mwindowMappedLimit(size_t limit)
+    {
+        git_libgit2_opts(GIT_OPT_SET_MWINDOW_MAPPED_LIMIT, limit);
+    }
+
+    ///
+    unittest
+    {
+        auto oldLimit = globalOpts.mwindowMappedLimit;
+        scope(exit) globalOpts.mwindowMappedLimit = oldLimit;
+
+        globalOpts.mwindowMappedLimit = 1;
+        assert(globalOpts.mwindowMappedLimit == 1);
+    }
+
+    /**
+        Get the search paths for a given level of config data.
+
+        $(B Note:) $(D configLevel) must be one of $(D GitConfigLevel.system),
+        $(D GitConfigLevel.xdg), or $(D GitConfigLevel.global).
+    */
+    string[] getSearchPaths(GitConfigLevel configLevel)
+    {
+        int level = cast(int)configLevel;
+        char[MaxGitPathLen] buffer;
+
+        require(git_libgit2_opts(GIT_OPT_GET_SEARCH_PATH, level, &buffer, buffer.length) == 0);
+        return to!string(buffer.ptr).split(GitPathSep);
+    }
+
+    /**
+        Set the search paths for a given level of config data.
+
+        $(B Note:) Use the magic path $(B "$PATH") to include the old value
+        of the path. This is useful for prepending or appending paths.
+
+        $(B Note:) Passing a null or empty array of paths will reset the
+        paths to their defaults (based on environment variables).
+
+        $(B Note:) $(D configLevel) must be one of $(D GitConfigLevel.system),
+        $(D GitConfigLevel.xdg), or $(D GitConfigLevel.global).
+    */
+    void setSearchPaths(GitConfigLevel configLevel, string[] paths)
+    {
+        int level = cast(int)configLevel;
+        const(char)* cPaths = paths.join(GitPathSep).toStringz();
+        require(git_libgit2_opts(GIT_OPT_SET_SEARCH_PATH, level, cPaths) == 0);
+    }
+
+    ///
+    unittest
+    {
+        foreach (config; EnumMembers!GitConfigLevel)
+        {
+            if (config == GitConfigLevel.local
+                || config == GitConfigLevel.app
+                || config == GitConfigLevel.highest)
+            {
+                assertThrown!GitException(getSearchPaths(config));
+                assertThrown!GitException(setSearchPaths(config, []));
+                continue;
+            }
+
+            auto oldPaths = getSearchPaths(config);
+            scope(exit) setSearchPaths(config, oldPaths);
+
+            auto newPaths = ["/foo", "$PATH", "/foo/bar"];
+            setSearchPaths(config, newPaths);
+
+            auto chained = newPaths[0] ~ oldPaths ~ newPaths[2];
+            assert(getSearchPaths(config) == chained);
+
+            setSearchPaths(config, []);
+            assert(getSearchPaths(config) == oldPaths);
+        }
+    }
+}
+
+ //~ *	* opts(GIT_OPT_GET_SEARCH_PATH, int level, char *out, size_t len)
  //~ *
- //~ * @return A combination of GIT_CAP_* values.
+ //~ *		> Get the search path for a given level of config data.  "level" must
+ //~ *		> be one of `GIT_CONFIG_LEVEL_SYSTEM`, `GIT_CONFIG_LEVEL_GLOBAL`, or
+ //~ *		> `GIT_CONFIG_LEVEL_XDG`.  The search path is written to the `out`
+ //~ *		> buffer up to size `len`.  Returns GIT_EBUFS if buffer is too small.
  //~ *
- //~ * - GIT_CAP_THREADS
- //~ *   Libgit2 was compiled with thread support. Note that thread support is
- //~ *   still to be seen as a 'work in progress' - basic object lookups are
- //~ *   believed to be threadsafe, but other operations may not be.
+ //~ *	* opts(GIT_OPT_SET_SEARCH_PATH, int level, const(char)* path)
  //~ *
- //~ * - GIT_CAP_HTTPS
- //~ *   Libgit2 supports the https:// protocol. This requires the openssl
- //~ *   library to be found when compiling libgit2.
- //~ */
-//~ int git_libgit2_capabilities();
+ //~ *		> Set the search path for a level of config data.  The search path
+ //~ *		> applied to shared attributes and ignore files, too.
+ //~ *		>
+ //~ *		> - `path` lists directories delimited by GIT_PATH_LIST_SEPARATOR.
+ //~ *		>   Pass NULL to reset to the default (generally based on environment
+ //~ *		>   variables).  Use magic path `$PATH` to include the old value
+ //~ *		>   of the path (if you want to prepend or append, for instance).
+ //~ *		>
+ //~ *		> - `level` must be GIT_CONFIG_LEVEL_SYSTEM, GIT_CONFIG_LEVEL_GLOBAL,
+ //~ *		>   or GIT_CONFIG_LEVEL_XDG.
+
+
 
 //~ enum git_libgit2_opt_t
 //~ {
