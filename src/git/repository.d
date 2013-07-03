@@ -61,9 +61,16 @@ enum ContinueWalk
 /** A single item in the list of the $(B FETCH_HEAD) file. */
 struct FetchHeadItem
 {
+    ///
     const(char)[] refName;
+
+    ///
     const(char)[] remoteURL;
+
+    ///
     GitOid oid;
+
+    ///
     bool isMerge;
 }
 
@@ -345,7 +352,35 @@ struct GitRepo
     }
 
     /**
-        Retrieve git's prepared message for this repository.
+        Check if the merge message file exists for this repository.
+    */
+    @property bool mergeMsgExists()
+    {
+        auto result = git_repository_message(null, 0, _data._payload);
+
+        if (result == GIT_ENOTFOUND)
+            return false;
+
+        require(result >= 0);
+        return true;
+    }
+
+    ///
+    unittest
+    {
+        // write a merge message file and verify it can be read
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(!repo.mergeMsgExists);
+
+        string msgPath = buildPath(repo.path, "MERGE_MSG");
+        std.file.write(msgPath, "");
+        assert(repo.mergeMsgExists);
+        assert(repo.mergeMsg !is null && repo.mergeMsg.length == 0);
+    }
+
+    /**
+        Retrieve the merge message for this repository.
 
         Operations such as git revert/cherry-pick/merge with the -n option
         stop just short of creating a commit with the changes and save
@@ -353,8 +388,15 @@ struct GitRepo
         execution can present it to the user for them to amend if they
         wish.
 
-        Use this function to get the contents of this file. Don't forget to
-        remove the file after you create the commit.
+        Use this function to get the contents of this file.
+
+        $(B Note:) Remember to remove the file after you create the commit
+        by calling $(D removeMergeMsg).
+
+        $(B Note:) This function returns an empty string when the message
+        file is empty, but returns $(D null) if the message file cannot be found.
+        Use $(D mergeMsgExists) if you want to explicitly check for the existence
+        of the merge message file.
     */
     @property string mergeMsg()
     {
@@ -365,7 +407,12 @@ struct GitRepo
             return null;
 
         require(result >= 0);
-        return to!string(buffer.ptr);
+
+        string msg = to!string(buffer.ptr);
+        if (msg is null)
+            msg = "";
+
+        return msg;
     }
 
     ///
@@ -376,15 +423,21 @@ struct GitRepo
         scope(exit) rmdirRecurse(_userRepo);
 
         string msgPath = buildPath(repo.path, "MERGE_MSG");
+
         string msg = "merge this";
         std.file.write(msgPath, msg);
-
         assert(repo.mergeMsg == msg);
+
+        msg = "";
+        std.file.write(msgPath, msg);
+        assert(repo.mergeMsg !is null && repo.mergeMsg == msg);
     }
 
     /**
         Remove the prepared message for this repository.
         If the message file does not exist $(D GitException) is thrown.
+        Use $(D mergeMsgExists) to check whether the merge message
+        file exists.
     */
     void removeMergeMsg()
     {
@@ -498,34 +551,13 @@ struct GitRepo
     }
 
     /**
-        Write all the items in the $(B FETCH_HEAD) file
-        to the output range $(D sink).
-    */
-    void writeFetchHeadItems(Range)(Range sink)
-        if (isOutputRange!(Range, FetchHeadItem))
-    {
-        alias Params = ParameterTypeTuple!FetchHeadFunction;
-        walkFetchHead( (Params params) { sink.put(FetchHeadItem(params)); return ContinueWalk.yes; } );
-    }
-
-    ///
-    unittest
-    {
-        // todo: remove hardcoding
-        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
-        auto buffer = appender!(FetchHeadItem[]);
-        repo.writeFetchHeadItems(buffer);
-        //~ writeln(buffer.data);
-    }
-
-    /**
         Return the list of items in the $(B FETCH_HEAD) file as
         an array of $(D FetchHeadItem)'s.
     */
     FetchHeadItem[] getFetchHeadItems()
     {
         auto buffer = appender!(typeof(return));
-        writeFetchHeadItems(buffer);
+        getFetchHeadItems(buffer);
         return buffer.data;
     }
 
@@ -536,6 +568,27 @@ struct GitRepo
         auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
         auto items = repo.getFetchHeadItems;
         //~ writeln(items);
+    }
+
+    /**
+        Read each item in the $(B FETCH_HEAD) file to
+        the output range $(D sink), and return the $(D sink).
+    */
+    Range getFetchHeadItems(Range)(Range sink)
+        if (isOutputRange!(Range, FetchHeadItem))
+    {
+        alias Params = ParameterTypeTuple!FetchHeadFunction;
+        walkFetchHead( (Params params) { sink.put(FetchHeadItem(params)); return ContinueWalk.yes; } );
+        return sink;
+    }
+
+    ///
+    unittest
+    {
+        // todo: remove hardcoding
+        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
+        auto buffer = repo.getFetchHeadItems(appender!(FetchHeadItem[]));
+        //~ writeln(buffer.data);
     }
 
 private:
@@ -730,25 +783,6 @@ int git_repository_merge_cleanup(git_repository *repo);
 
 //~ b0d66b5110faaeb395610ba43b6eb70a18ab5e25        branch 'master' of git://git.kernel.org/pub/scm/git/git
 //~ a9004c5cb2204cf950debab328e86de5eefb9da4        branch 'next' of git://git.kernel.org/pub/scm/git/git
-
-
-alias git_repository_fetchhead_foreach_cb = int function(const(char)* ref_name,
-        const(char)* remote_url,
-        const(git_oid)* oid,
-        uint is_merge,
-        void *payload);
-
-/**
- * Call callback 'callback' for each entry in the given FETCH_HEAD file.
- *
- * @param repo A repository object
- * @param callback Callback function
- * @param payload Pointer to callback data (optional)
- * @return 0 on success, GIT_ENOTFOUND, GIT_EUSER or error
- */
-int git_repository_fetchhead_foreach(git_repository *repo,
-        git_repository_fetchhead_foreach_cb callback,
-        void *payload);
 
 alias git_repository_mergehead_foreach_cb = int function(const(git_oid)* oid,
         void *payload);
