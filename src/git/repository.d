@@ -48,7 +48,7 @@ enum UpdateGitlink
     yes
 }
 
-/// The return type of the callback for the $(D walkFetchHead) function.
+/// The return type of a callback used in e.g. the $(D walkFetchHead) function.
 enum ContinueWalk
 {
     /// Stop walk
@@ -314,7 +314,7 @@ struct GitRepo
         the work path is not the parent of the $(B .git) directory
         the $(B core.worktree) option will be set in the configuration.
     */
-    void setWorkPath(string newWorkPath, UpdateGitlink updateGitlink = UpdateGitlink.no)
+    void setWorkPath(in char[] newWorkPath, UpdateGitlink updateGitlink = UpdateGitlink.no)
     {
         require(git_repository_set_workdir(_data._payload, newWorkPath.toStringz, cast(int)updateGitlink) == 0);
     }
@@ -576,7 +576,7 @@ enum AcrossFS
     $(B Note:) The lookup always performs on $(D startPath) even if
     $(D startPath) is listed in $(D ceilingDirs).
  */
-string discoverRepo(string startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
+string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
 {
     char[4096] buffer;
     const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
@@ -655,7 +655,7 @@ enum OpenBare
     todo:
         - Reinit the repository
 */
-GitRepo initRepo(string path, OpenBare openBare)
+GitRepo initRepo(in char[] path, OpenBare openBare)
 {
     git_repository* repo;
     require(git_repository_init(&repo, path.toStringz, cast(bool)openBare) == 0);
