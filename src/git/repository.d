@@ -58,6 +58,15 @@ enum ContinueWalk
     yes
 }
 
+/** A single item in the list of the $(B FETCH_HEAD) file. */
+struct FetchHeadItem
+{
+    const(char)[] refName;
+    const(char)[] remoteURL;
+    GitOid oid;
+    bool isMerge;
+}
+
 /// The function or delegate type that $(D walkFetchHead) can take as the callback.
 alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
 
@@ -417,35 +426,9 @@ struct GitRepo
     }
 
     /// ditto
-    void walkFetchHead(FetchHeadDelegate callback)
+    void walkFetchHead(scope FetchHeadDelegate callback)
     {
         walkFetchHeadImpl(callback);
-    }
-
-    private void walkFetchHeadImpl(Callback)(Callback callback)
-        if (is(Callback == FetchHeadFunction) || is(Callback == FetchHeadDelegate))
-    {
-        /**
-            This C function retrieves the callback function or delegate through the payload parameter,
-            it converts arguments received from the library into types the callback understands,
-            and then calls the function and returns its return value to the C library.
-        */
-        static extern(C) int c_callback(
-            const(char)* refName,
-            const(char)* remoteURL,
-            const(git_oid)* oid,
-            uint isMerge,
-            void *payload)
-        {
-            alias toSlice = to!(const(char)[]);
-            Callback callback = *cast(Callback*)payload;
-
-            // return 1 to stop iteration
-            return callback(toSlice(refName), toSlice(remoteURL), GitOid(*oid), isMerge == 1) == ContinueWalk.no;
-        }
-
-        auto result = git_repository_fetchhead_foreach(_data._payload, &c_callback, &callback);
-        require(result == GIT_EUSER || result == 0);
     }
 
     ///
@@ -488,18 +471,72 @@ struct GitRepo
         repo.walkFetchHead(&walker);  // todo: open a proper repository with actual objects
     }
 
-    /**
-     * Call callback 'callback' for each entry in the given FETCH_HEAD file.
-     *
-     * @param repo A repository object
-     * @param callback Callback function
-     * @param payload Pointer to callback data (optional)
-     * @return 0 on success, GIT_ENOTFOUND, GIT_EUSER or error
-     */
-    //~ int git_repository_fetchhead_foreach(git_repository *repo,
-            //~ git_repository_fetchhead_foreach_cb callback,
-            //~ void *payload);
+    private void walkFetchHeadImpl(Callback)(Callback callback)
+        if (is(Callback == FetchHeadFunction) || is(Callback == FetchHeadDelegate))
+    {
+        /**
+            This C function retrieves the callback function or delegate through the payload parameter,
+            it converts arguments received from the library into types the callback understands,
+            and then calls the function and returns its return value to the C library.
+        */
+        static extern(C) int c_callback(
+            const(char)* refName,
+            const(char)* remoteURL,
+            const(git_oid)* oid,
+            uint isMerge,
+            void *payload)
+        {
+            alias toSlice = to!(const(char)[]);
+            Callback callback = *cast(Callback*)payload;
 
+            // return 1 to stop iteration
+            return callback(toSlice(refName), toSlice(remoteURL), GitOid(*oid), isMerge == 1) == ContinueWalk.no;
+        }
+
+        auto result = git_repository_fetchhead_foreach(_data._payload, &c_callback, &callback);
+        require(result == GIT_EUSER || result == 0);
+    }
+
+    /**
+        Write all the items in the $(B FETCH_HEAD) file
+        to the output range $(D sink).
+    */
+    void writeFetchHeadItems(Range)(Range sink)
+        if (isOutputRange!(Range, FetchHeadItem))
+    {
+        alias Params = ParameterTypeTuple!FetchHeadFunction;
+        walkFetchHead( (Params params) { sink.put(FetchHeadItem(params)); return ContinueWalk.yes; } );
+    }
+
+    ///
+    unittest
+    {
+        // todo: remove hardcoding
+        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
+        auto buffer = appender!(FetchHeadItem[]);
+        repo.writeFetchHeadItems(buffer);
+        //~ writeln(buffer.data);
+    }
+
+    /**
+        Return the list of items in the $(B FETCH_HEAD) file as
+        an array of $(D FetchHeadItem)'s.
+    */
+    FetchHeadItem[] getFetchHeadItems()
+    {
+        auto buffer = appender!(typeof(return));
+        writeFetchHeadItems(buffer);
+        return buffer.data;
+    }
+
+    ///
+    unittest
+    {
+        // todo: remove hardcoding
+        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
+        auto items = repo.getFetchHeadItems;
+        //~ writeln(items);
+    }
 
 private:
 
