@@ -31,6 +31,7 @@ import git.exception;
 import git.oid;
 import git.types;
 import git.util;
+import git.version_;
 
 version(unittest)
 {
@@ -693,34 +694,6 @@ struct GitRepo
         walkMergeHeadImpl(callback);
     }
 
-    ///
-    unittest
-    {
-        auto repo = initRepo(_userRepo, OpenBare.yes);
-        scope(exit) rmdirRecurse(_userRepo);
-
-        static ContinueWalk walkFunc(GitOid oid)
-        {
-            import std.stdio;
-            writefln("Function walking - oid: %s", oid);
-            return ContinueWalk.no;
-        }
-
-        static assert(__traits(compiles, repo.walkMergeHead(&walkFunc) ));
-
-        int x;
-
-        ContinueWalk walkDelegate(GitOid oid)
-        {
-            x++;  // make it a delegate
-            import std.stdio;
-            writefln("Delegate walking - oid: %s", oid);
-            return ContinueWalk.yes;
-        }
-
-        static assert(__traits(compiles, repo.walkMergeHead(&walkDelegate) ));
-    }
-
     /// Walk the $(B MERGE_HEAD) file with a function.
     unittest
     {
@@ -793,8 +766,10 @@ struct GitRepo
         {
             Callback callback = *cast(Callback*)payload;
 
-            // return < 1 to stop iteration, see:
+            // return < 1 to stop iteration. Bug in v0.19.0
             // https://github.com/libgit2/libgit2/issues/1703
+            static assert(LibGitVersion.text == "0.19.0",
+                "Return value must be updated for new API due to libgit Issue 1703.");
             return callback(GitOid(*oid)) == ContinueWalk.no ? -1 : 0;
         }
 
@@ -818,7 +793,19 @@ struct GitRepo
     {
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
-        static assert(__traits(compiles, repo.getMergeHeadItems() ));
+
+        string[] mergeHeadItems = [
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n",
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "MERGE_HEAD"), mergeHeadItems.join());
+
+        foreach (string line, MergeHeadItem item; lockstep(mergeHeadItems, repo.getMergeHeadItems()))
+        {
+            string commitHex = line.split[0];
+            assert(item.oid == GitOid(commitHex));
+        }
     }
 
     /**
@@ -838,7 +825,21 @@ struct GitRepo
     {
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
-        static assert(__traits(compiles, repo.getMergeHeadItems(appender!(MergeHeadItem[])) ));
+
+        string[] mergeHeadItems = [
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n",
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "MERGE_HEAD"), mergeHeadItems.join());
+
+        auto buffer = repo.getMergeHeadItems(appender!(MergeHeadItem[]));
+
+        foreach (string line, MergeHeadItem item; lockstep(mergeHeadItems, buffer.data))
+        {
+            string commitHex = line.split[0];
+            assert(item.oid == GitOid(commitHex));
+        }
     }
 
     /**
