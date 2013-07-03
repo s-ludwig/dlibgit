@@ -11,3 +11,10 @@ Partially ported modules:
 - git.c.repository (dependencies on other APIs not yet ported)
 - git.c.types
 - git.c.version_
+
+Doesn't need porting:
+
+- git.c.errors (using exceptions)
+- git.c.threads (default init/deinit happens in shared module ctor/dtor)
+- git.c.message (just one prettifier function)
+-
