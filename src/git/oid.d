@@ -46,7 +46,7 @@ struct GitOid
         $(D hex) must be at least the size of $(D MinHexSize),
         but not larger than $(D MaxHexSize).
     */
-    this(const(char)[] hex)
+    this(in char[] hex)
     {
         assert(hex.length >= MinHexSize && hex.length <= MaxHexSize);
         require(git_oid_fromstrn(&_oid, hex.ptr, hex.length) == 0);
@@ -213,7 +213,7 @@ struct GitOidShorten
 
         Attempting to go over this limit will throw a $(D GitException).
     */
-    void add(const(char)[] hex)
+    void add(in char[] hex)
     {
         enforceEx!GitException(hex.length == GitOid.MaxHexSize,
                                format("Error: Hex string size must be equal to '%s' (GitOid.MaxHexSize), not '%s'", GitOid.MaxHexSize, hex.length));

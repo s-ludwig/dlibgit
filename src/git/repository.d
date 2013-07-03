@@ -95,7 +95,7 @@ struct GitRepo
         If $(D path) does not exist or if the .git directory is not
         found in $(D path), a $(D GitException) is thrown.
      */
-    this(const(char)[] path)
+    this(in char[] path)
     {
         _data = Data(path);
     }
@@ -511,7 +511,7 @@ private:
             _payload = payload;
         }
 
-        this(const(char)[] path)
+        this(in char[] path)
         {
             require(git_repository_open(&_payload, path.toStringz) == 0);
         }
