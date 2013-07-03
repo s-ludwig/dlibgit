@@ -61,7 +61,7 @@ unittest
     assertThrown!GitException(require(git_oid_fromstr(&oid, "foobar") == 0));
 }
 
-/** Return a posix-native path, replacing back slashes with forward slashes. */
+/** Return a posix-native path, replacing backslashes with forward slashes. */
 string toPosixPath(string input)
 {
     return input.replace(r"\", "/");
