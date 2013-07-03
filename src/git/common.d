@@ -98,7 +98,7 @@ enum CacheMode
 /**
     Static functions with which to query or set global libgit2 options.
 */
-struct globalOpts
+struct globalOptions
 {
 static:
     /// Get the maximum mmap window size.
@@ -118,11 +118,11 @@ static:
     ///
     unittest
     {
-        auto oldSize = globalOpts.mwindowSize;
-        scope(exit) globalOpts.mwindowSize = oldSize;
+        auto oldSize = globalOptions.mwindowSize;
+        scope(exit) globalOptions.mwindowSize = oldSize;
 
-        globalOpts.mwindowSize = 1;
-        assert(globalOpts.mwindowSize == 1);
+        globalOptions.mwindowSize = 1;
+        assert(globalOptions.mwindowSize == 1);
     }
 
     /// Get the maximum memory in bytes that will be mapped in total by the library.
@@ -142,11 +142,11 @@ static:
     ///
     unittest
     {
-        auto oldLimit = globalOpts.mwindowMappedLimit;
-        scope(exit) globalOpts.mwindowMappedLimit = oldLimit;
+        auto oldLimit = globalOptions.mwindowMappedLimit;
+        scope(exit) globalOptions.mwindowMappedLimit = oldLimit;
 
-        globalOpts.mwindowMappedLimit = 1;
-        assert(globalOpts.mwindowMappedLimit == 1);
+        globalOptions.mwindowMappedLimit = 1;
+        assert(globalOptions.mwindowMappedLimit == 1);
     }
 
     /**
