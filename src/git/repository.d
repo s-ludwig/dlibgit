@@ -80,6 +80,18 @@ alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] rem
 /// ditto
 alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
 
+/** A single item in the list of the $(B MERGE_HEAD) file. */
+struct MergeHeadItem
+{
+    GitOid oid;
+}
+
+/// The function or delegate type that $(D walkMergeHead) can take as the callback.
+alias MergeHeadFunction = ContinueWalk function(GitOid oid);
+
+/// ditto
+alias MergeHeadDelegate = ContinueWalk delegate(GitOid oid);
+
 /// The various states a repository can be in.
 enum RepoState
 {
@@ -502,28 +514,18 @@ struct GitRepo
     ///
     unittest
     {
-        // todo: remove hardcoding
-        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
-        //~ scope(exit) rmdirRecurse(_userRepo);
-
-        //~ string fetchPath = buildPath(repo.path, "FETCH_HEAD");
-        //~ string[] heads =
-        //~ [
-            //~ "b0d66b5110faaeb395610ba43b6eb70a18ab5e25        branch 'master' of git://git.kernel.org/pub/scm/git/git",
-            //~ "a9004c5cb2204cf950debab328e86de5eefb9da4        branch 'master' of git://git.kernel.org/pub/scm/git/sit"
-        //~ ];
-
-        //~ std.file.write(fetchPath, heads.join("\n"));
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
 
         static ContinueWalk staticWalker(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge)
         {
             import std.stdio;
-            //~ writefln("Function walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
-                     //~ refName, remoteURL, oid, isMerge);
+            writefln("Function walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
+                     refName, remoteURL, oid, isMerge);
             return ContinueWalk.no;
         }
 
-        repo.walkFetchHead(&staticWalker);  // todo: open a proper repository with actual objects
+        static assert(__traits(compiles, repo.walkFetchHead(&staticWalker) ));
 
         int x;
 
@@ -531,22 +533,17 @@ struct GitRepo
         {
             x++;  // make it a delegate
             import std.stdio;
-            //~ writefln("Delegate walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
-                     //~ refName, remoteURL, oid, isMerge);
+            writefln("Delegate walking - refName: %s, remoteURL: %s, oid: %s, isMerge: %s",
+                     refName, remoteURL, oid, isMerge);
             return ContinueWalk.yes;
         }
 
-        repo.walkFetchHead(&walker);  // todo: open a proper repository with actual objects
+        static assert(__traits(compiles, repo.walkFetchHead(&walker) ));
     }
 
     private void walkFetchHeadImpl(Callback)(Callback callback)
         if (is(Callback == FetchHeadFunction) || is(Callback == FetchHeadDelegate))
     {
-        /**
-            This C function retrieves the callback function or delegate through the payload parameter,
-            it converts arguments received from the library into types the callback understands,
-            and then calls the function and returns its return value to the C library.
-        */
         static extern(C) int c_callback(
             const(char)* refName,
             const(char)* remoteURL,
@@ -579,10 +576,9 @@ struct GitRepo
     ///
     unittest
     {
-        // todo: remove hardcoding
-        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
-        auto items = repo.getFetchHeadItems();
-        //~ writeln(items);
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        static assert(__traits(compiles, repo.getFetchHeadItems() ));
     }
 
     /**
@@ -600,10 +596,110 @@ struct GitRepo
     ///
     unittest
     {
-        // todo: remove hardcoding
-        auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
-        auto buffer = repo.getFetchHeadItems(appender!(FetchHeadItem[]));
-        //~ writeln(buffer.data);
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        static assert(__traits(compiles, repo.getFetchHeadItems(appender!(FetchHeadItem[])) ));
+    }
+
+    /**
+        Call the $(D callback) function for each entry in the $(B MERGE_HEAD) file in this repository.
+
+        The $(D callback) type must be either $(D MergeHeadFunction) or $(D MergeHeadDelegate).
+
+        This function will return when either all entries are exhausted or when the $(D callback)
+        returns $(D ContinueWalk.no).
+    */
+    void walkMergeHead(MergeHeadFunction callback)
+    {
+        walkMergeHeadImpl(callback);
+    }
+
+    /// ditto
+    void walkMergeHead(scope MergeHeadDelegate callback)
+    {
+        walkMergeHeadImpl(callback);
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        static ContinueWalk staticWalker(GitOid oid)
+        {
+            import std.stdio;
+            writefln("Function walking - oid: %s", oid);
+            return ContinueWalk.no;
+        }
+
+        static assert(__traits(compiles, repo.walkMergeHead(&staticWalker) ));
+
+        int x;
+
+        ContinueWalk walker(GitOid oid)
+        {
+            x++;  // make it a delegate
+            import std.stdio;
+            writefln("Delegate walking - oid: %s", oid);
+            return ContinueWalk.yes;
+        }
+
+        static assert(__traits(compiles, repo.walkMergeHead(&walker) ));
+    }
+
+    private void walkMergeHeadImpl(Callback)(Callback callback)
+        if (is(Callback == MergeHeadFunction) || is(Callback == MergeHeadDelegate))
+    {
+        static extern(C) int c_callback(const(git_oid)* oid, void* payload)
+        {
+            Callback callback = *cast(Callback*)payload;
+
+            // return 1 to stop iteration
+            return callback(GitOid(*oid)) == ContinueWalk.no;
+        }
+
+        auto result = git_repository_mergehead_foreach(_data._payload, &c_callback, &callback);
+        require(result == GIT_EUSER || result == 0);
+    }
+
+    /**
+        Return the list of items in the $(B MERGE_HEAD) file as
+        an array of $(D MergeHeadItem)'s.
+    */
+    MergeHeadItem[] getMergeHeadItems()
+    {
+        auto buffer = appender!(typeof(return));
+        getMergeHeadItems(buffer);
+        return buffer.data;
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        static assert(__traits(compiles, repo.getMergeHeadItems() ));
+    }
+
+    /**
+        Read each item in the $(B MERGE_HEAD) file to
+        the output range $(D sink), and return the $(D sink).
+    */
+    Range getMergeHeadItems(Range)(Range sink)
+        if (isOutputRange!(Range, MergeHeadItem))
+    {
+        alias Params = ParameterTypeTuple!MergeHeadFunction;
+        walkMergeHead( (Params params) { sink.put(MergeHeadItem(params)); return ContinueWalk.yes; } );
+        return sink;
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+        static assert(__traits(compiles, repo.getMergeHeadItems(appender!(MergeHeadItem[])) ));
     }
 
     /**
@@ -676,8 +772,8 @@ struct GitRepo
     }
 
     /**
-        Remove all the metadata associated with an ongoing git merge, including
-        MERGE_HEAD, MERGE_MSG, etc.
+        Remove all the metadata associated with an ongoing git merge,
+        including MERGE_HEAD, MERGE_MSG, etc.
     */
     void cleanupMerge()
     {
@@ -882,25 +978,6 @@ unittest
 }
 
 extern (C):
-
-//~ b0d66b5110faaeb395610ba43b6eb70a18ab5e25        branch 'master' of git://git.kernel.org/pub/scm/git/git
-//~ a9004c5cb2204cf950debab328e86de5eefb9da4        branch 'next' of git://git.kernel.org/pub/scm/git/git
-
-alias git_repository_mergehead_foreach_cb = int function(const(git_oid)* oid,
-        void *payload);
-
-/**
- * If a merge is in progress, call callback 'cb' for each commit ID in the
- * MERGE_HEAD file.
- *
- * @param repo A repository object
- * @param callback Callback function
- * @param payload Pointer to callback data (optional)
- * @return 0 on success, GIT_ENOTFOUND, GIT_EUSER or error
- */
-int git_repository_mergehead_foreach(git_repository *repo,
-        git_repository_mergehead_foreach_cb callback,
-        void *payload);
 
 /**
  * Calculate hash of file using repository filtering rules.
