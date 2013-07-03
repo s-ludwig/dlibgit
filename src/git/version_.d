@@ -12,6 +12,8 @@ import std.string;
 import git.c.common;
 import git.c.version_;
 
+import git.common;
+
 /**
     Contains version information.
 */
@@ -85,17 +87,21 @@ VersionInfo getLibGitVersion()
 
 shared static this()
 {
-    verifyLibgitVersion();
+    verifyCompatibleLibgit();
 }
 
 /**
     Verify at runtime that the loaded version of libgit is the
-    one supported by this version of dlibgit.
+    one supported by this version of dlibgit, and that it
+    has features which are required by dlibgit.
 */
-void verifyLibgitVersion()
+void verifyCompatibleLibgit()
 {
     auto libgitVersion = getLibGitVersion();
     enforce(libgitVersion == targetLibGitVersion,
             format("Error: dlibgit (%s) requires libgit2 (%s).\nCurrently loaded libgit2 version is (%s).",
                    dlibgitVersion, targetLibGitVersion, libgitVersion));
+
+    auto features = getLibGitFeatures();
+    enforce(features.usesSSL, "Error: dlibgit requires libgit2 compiled with SSL support.");
 }
