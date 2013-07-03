@@ -84,7 +84,7 @@ unittest
 }
 
 /**
-    Static functions to query or set global libgit2 options.
+    Static functions with which to query or set global libgit2 options.
 */
 struct globalOpts
 {
@@ -176,9 +176,9 @@ static:
     {
         foreach (config; EnumMembers!GitConfigLevel)
         {
-            if (config == GitConfigLevel.local
-                || config == GitConfigLevel.app
-                || config == GitConfigLevel.highest)
+            if (config != GitConfigLevel.system
+                && config != GitConfigLevel.xdg
+                && config != GitConfigLevel.global)
             {
                 assertThrown!GitException(getSearchPaths(config));
                 assertThrown!GitException(setSearchPaths(config, []));
@@ -200,84 +200,14 @@ static:
     }
 }
 
- //~ *	* opts(GIT_OPT_GET_SEARCH_PATH, int level, char *out, size_t len)
- //~ *
- //~ *		> Get the search path for a given level of config data.  "level" must
- //~ *		> be one of `GIT_CONFIG_LEVEL_SYSTEM`, `GIT_CONFIG_LEVEL_GLOBAL`, or
- //~ *		> `GIT_CONFIG_LEVEL_XDG`.  The search path is written to the `out`
- //~ *		> buffer up to size `len`.  Returns GIT_EBUFS if buffer is too small.
- //~ *
- //~ *	* opts(GIT_OPT_SET_SEARCH_PATH, int level, const(char)* path)
- //~ *
- //~ *		> Set the search path for a level of config data.  The search path
- //~ *		> applied to shared attributes and ignore files, too.
- //~ *		>
- //~ *		> - `path` lists directories delimited by GIT_PATH_LIST_SEPARATOR.
- //~ *		>   Pass NULL to reset to the default (generally based on environment
- //~ *		>   variables).  Use magic path `$PATH` to include the old value
- //~ *		>   of the path (if you want to prepend or append, for instance).
- //~ *		>
- //~ *		> - `level` must be GIT_CONFIG_LEVEL_SYSTEM, GIT_CONFIG_LEVEL_GLOBAL,
- //~ *		>   or GIT_CONFIG_LEVEL_XDG.
-
-
-
 //~ enum git_libgit2_opt_t
 //~ {
-	//~ GIT_OPT_GET_MWINDOW_SIZE,
-	//~ GIT_OPT_SET_MWINDOW_SIZE,
-	//~ GIT_OPT_GET_MWINDOW_MAPPED_LIMIT,
-	//~ GIT_OPT_SET_MWINDOW_MAPPED_LIMIT,
-	//~ GIT_OPT_GET_SEARCH_PATH,
-	//~ GIT_OPT_SET_SEARCH_PATH,
 	//~ GIT_OPT_SET_CACHE_OBJECT_LIMIT,
 	//~ GIT_OPT_SET_CACHE_MAX_SIZE,
 	//~ GIT_OPT_ENABLE_CACHING,
 	//~ GIT_OPT_GET_CACHED_MEMORY
 //~ }
 
-//~ /**
- //~ * Set or query a library global option
- //~ *
- //~ * Available options:
- //~ *
- //~ *	* opts(GIT_OPT_GET_MWINDOW_SIZE, size_t *):
- //~ *
- //~ *		> Get the maximum mmap window size
- //~ *
- //~ *	* opts(GIT_OPT_SET_MWINDOW_SIZE, size_t):
- //~ *
- //~ *		> Set the maximum mmap window size
- //~ *
- //~ *	* opts(GIT_OPT_GET_MWINDOW_MAPPED_LIMIT, size_t *):
- //~ *
- //~ *		> Get the maximum memory that will be mapped in total by the library
- //~ *
- //~ *	* opts(GIT_OPT_SET_MWINDOW_MAPPED_LIMIT, size_t):
- //~ *
- //~ *		>Set the maximum amount of memory that can be mapped at any time
- //~ *		by the library
- //~ *
- //~ *	* opts(GIT_OPT_GET_SEARCH_PATH, int level, char *out, size_t len)
- //~ *
- //~ *		> Get the search path for a given level of config data.  "level" must
- //~ *		> be one of `GIT_CONFIG_LEVEL_SYSTEM`, `GIT_CONFIG_LEVEL_GLOBAL`, or
- //~ *		> `GIT_CONFIG_LEVEL_XDG`.  The search path is written to the `out`
- //~ *		> buffer up to size `len`.  Returns GIT_EBUFS if buffer is too small.
- //~ *
- //~ *	* opts(GIT_OPT_SET_SEARCH_PATH, int level, const(char)* path)
- //~ *
- //~ *		> Set the search path for a level of config data.  The search path
- //~ *		> applied to shared attributes and ignore files, too.
- //~ *		>
- //~ *		> - `path` lists directories delimited by GIT_PATH_LIST_SEPARATOR.
- //~ *		>   Pass NULL to reset to the default (generally based on environment
- //~ *		>   variables).  Use magic path `$PATH` to include the old value
- //~ *		>   of the path (if you want to prepend or append, for instance).
- //~ *		>
- //~ *		> - `level` must be GIT_CONFIG_LEVEL_SYSTEM, GIT_CONFIG_LEVEL_GLOBAL,
- //~ *		>   or GIT_CONFIG_LEVEL_XDG.
- //~ *
  //~ *	* opts(GIT_OPT_SET_CACHE_OBJECT_LIMIT, git_otype type, size_t size)
  //~ *
  //~ *		> Set the maximum data size for the given type of object to be
