@@ -1,5 +1,7 @@
 module git.c.common;
 
+import git.c.util;
+
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
  *
@@ -61,6 +63,8 @@ enum git_cap_t
 	GIT_CAP_HTTPS			= ( 1 << 1 )
 }
 
+mixin _ExportEnumMembers!git_cap_t;
+
 /**
  * Query compile time options for libgit2.
  *
@@ -90,6 +94,8 @@ enum git_libgit2_opt_t
 	GIT_OPT_ENABLE_CACHING,
 	GIT_OPT_GET_CACHED_MEMORY
 }
+
+mixin _ExportEnumMembers!git_libgit2_opt_t;
 
 /**
  * Set or query a library global option
