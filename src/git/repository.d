@@ -29,6 +29,7 @@ import git.c.types;
 import git.common;
 import git.exception;
 import git.oid;
+import git.types;
 import git.util;
 
 version(unittest)
@@ -783,7 +784,7 @@ struct GitRepo
     ///
     unittest
     {
-        // write a merge message file and verify it can be read
+        // write a merge message file
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
 
@@ -799,6 +800,48 @@ struct GitRepo
 
         // verify throwing when removing file which doesn't exist
         assertThrown!GitException(repo.removeMergeMsg());
+    }
+
+    /**
+        Calculate hash of file using repository filtering rules.
+
+        If you simply want to calculate the hash of a file on disk with no filters,
+        you can use the global $(D hashFile) function. However, if you want to
+        hash a file in the repository and you want to apply filtering rules (e.g.
+        $(B crlf) filters) before generating the SHA, then use this function.
+
+        Parameters:
+
+        $(D path): Path to file on disk whose contents should be hashed.
+                   This can be a relative path.
+
+        $(D type): The object type to hash the file as (e.g. $(D GitType.blob))
+
+        $(D asPath): The path to use to look up filtering rules.
+                     If this is $(D null), then the $(D path) parameter will be
+                     used instead. If this is passed as the empty string, then no
+                     filters will be applied when calculating the hash.
+    */
+    GitOid hashFile(in char[] path, GitType type, in char[] asPath = null)
+    {
+        git_oid _git_oid;
+
+        require(git_repository_hashfile(&_git_oid, _data._payload, path.toStringz, cast(git_otype)type, asPath.toStringz) == 0);
+
+        return GitOid(_git_oid);
+    }
+
+    ///
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string objPath = buildPath(repo.path, "test.d");
+        string text = "import std.stdio;";
+        std.file.write(objPath, text);
+
+        auto oid = repo.hashFile(objPath, GitType.blob);
     }
 
 private:
@@ -980,31 +1023,6 @@ unittest
 extern (C):
 
 /**
- * Calculate hash of file using repository filtering rules.
- *
- * If you simply want to calculate the hash of a file on disk with no filters,
- * you can just use the `git_odb_hashfile()` API.  However, if you want to
- * hash a file in the repository and you want to apply filtering rules (e.g.
- * crlf filters) before generating the SHA, then use this function.
- *
- * @param out Output value of calculated SHA
- * @param repo Repository pointer
- * @param path Path to file on disk whose contents should be hashed. If the
- *             repository is not NULL, this can be a relative path.
- * @param type The object type to hash as (e.g. GIT_OBJ_BLOB)
- * @param as_path The path to use to look up filtering rules. If this is
- *             NULL, then the `path` parameter will be used instead. If
- *             this is passed as the empty string, then no filters will be
- *             applied when calculating the hash.
- */
-int git_repository_hashfile(
-        git_oid *out_,
-        git_repository *repo,
-        const(char)* path,
-        git_otype type,
-        const(char)* as_path);
-
-/**
  * Make the repository HEAD point to the specified reference.
  *
  * If the provided reference points to a Tree or a Blob, the HEAD is
@@ -1071,6 +1089,7 @@ int git_repository_detach_head(
 */
 
 
+// todo: complicated init option
 /**
  * Option flags for `git_repository_init_ext`.
  *

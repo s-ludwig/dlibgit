@@ -15,6 +15,8 @@
 - Replace static asserts in unittests with normal asserts and calls. We have to
   create several repositories with interesting state before the e.g. walker
   functions can operate on.
+- Add global hashFile function that redirects to git_odb_hashfile, it's referenced in
+  GitRepo.hashFile which uses filtering.
 
 ## bugs to file to libgit2 (or pulls to make-
 - git_repository_discover dosc reference base_path instead of start_path
