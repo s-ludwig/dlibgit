@@ -430,7 +430,7 @@ struct GitRepo
     */
     @property string mergeMsg()
     {
-        char[4096] buffer;
+        char[MaxGitPathLen] buffer;
         auto result = git_repository_message(buffer.ptr, buffer.length, _data._payload);
 
         if (result == GIT_ENOTFOUND)
@@ -769,7 +769,7 @@ struct GitRepo
 
             // return < 1 to stop iteration. Bug in v0.19.0
             // https://github.com/libgit2/libgit2/issues/1703
-            static assert(LibGitVersion.text == "0.19.0",
+            static assert(targetLibGitVersion.text == "0.19.0",
                 "Return value must be updated for new API due to libgit Issue 1703.");
             return callback(GitOid(*oid)) == ContinueWalk.no ? -1 : 0;
         }
@@ -1003,14 +1003,15 @@ struct GitRepo
         @param refname Canonical name of the reference the HEAD should point at
         @return 0 on success, or an error code
     */
-    version(none)
-    void setHead(in char[] refName)  // todo: provide GitRef overload
+    // todo: add overload that takes an actual reference, and then call .toname
+    version(none)  // todo: implement when commit, blob, and refs APIs are in place
+    void setHead(in char[] refName)
     {
         require(git_repository_set_head(_data._payload, refName.toStringz) == 0);
     }
 
     ///
-    version(none)
+    version(none)  // todo: implement when commit, blob, and refs APIs are in place
     unittest
     {
         auto repo = initRepo(_userRepo, OpenBare.no);
@@ -1039,12 +1040,6 @@ struct GitRepo
 
         repo.setHead("MY_REF");
     }
-
-    // todo: add overload that takes an actual reference, and then call .toname
-    // on it once references are ported
-    //~ int git_repository_set_head(
-            //~ git_repository* repo,
-            //~ const(char)* refname);
 
     /**
      * Make the repository HEAD directly point to the Commit.
@@ -1163,7 +1158,7 @@ enum AcrossFS
  */
 string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
 {
-    char[4096] buffer;
+    char[MaxGitPathLen] buffer;
     const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
 
     version(assert)

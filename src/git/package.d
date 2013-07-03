@@ -8,6 +8,7 @@ module git;
 
 public
 {
+    import git.common;
     import git.exception;
     import git.oid;
     import git.repository;
@@ -18,6 +19,5 @@ public
 private
 {
     import git.c;
-    import git.common;
     import git.util;
 }

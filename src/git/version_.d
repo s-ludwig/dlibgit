@@ -6,51 +6,96 @@
  */
 module git.version_;
 
+import std.exception;
 import std.string;
 
+import git.c.common;
 import git.c.version_;
 
 /**
-    Version information of $(LIBGIT2)
-    which this binding is based on.
+    Contains version information.
 */
-struct LibGitVersion
+struct VersionInfo
 {
-    /// Text representation of version, e.g. "0.19.1"
-    enum string text = LIBGIT2_VERSION;
+    ///
+    this(int major, int minor, int revision)
+    {
+        this.major = major;
+        this.minor = minor;
+        this.revision = revision;
+        this.text = format("%s.%s.%s", major, minor, revision);
+    }
+
+    ///
+    this(int major, int minor, int revision, string text)
+    {
+        this.major = major;
+        this.minor = minor;
+        this.revision = revision;
+        this.text = text;
+    }
 
     /// Major version, e.g. 0.19.1 -> 0
-    enum int major = LIBGIT2_VER_MAJOR;
+    int major;
 
     /// Minor version, e.g. 0.19.1 -> 19
-    enum int minor = LIBGIT2_VER_MINOR;
+    int minor;
 
     /// Revision version, e.g. 0.19.1 -> 1
-    enum int revision = LIBGIT2_VER_REVISION;
+    int revision;
+
+    /// Text representation of version, e.g. "0.19.1"
+    string text;
+
+    string toString()
+    {
+        return format("v%s", text);
+    }
 }
 
 /**
-    Version information of the $(D dlibgit) binding.
-    $(RED Note:) The $(D dlibgit) version specification
-    is separate from the $(LIBGIT2) version.
+    Target version this binding is based on.
 */
-struct DLibGitVersion
-{
-    /// Text representation of version, e.g. "0.19.1"
-    enum string text = format("%s.%s.%s", major, minor, revision);
+enum targetLibGitVersion = VersionInfo(LIBGIT2_VER_MAJOR, LIBGIT2_VER_MINOR, LIBGIT2_VER_REVISION, LIBGIT2_VERSION);
 
-    /// Major version, e.g. 0.19.1 -> 0
-    enum int major = 0;
-
-    /// Minor version, e.g. 0.19.1 -> 19
-    enum int minor = 1;
-
-    /// Revision version, e.g. 0.19.1 -> 1
-    enum int revision = 0;
-}
+/**
+    The current version of dlibgit.
+*/
+enum dlibgitVersion = VersionInfo(0, 1, 0);
 
 /// The libgit2 version this binding is based on
-static assert(LibGitVersion.text == "0.19.0");
+static assert(targetLibGitVersion.text == "0.19.0");
 
 /// The version of the binding itself
-static assert(DLibGitVersion.text == "0.1.0");
+static assert(dlibgitVersion.text == "0.1.0");
+
+/**
+    Return the runtime version of the libgit2 library
+    that has been linked with.
+*/
+VersionInfo getLibGitVersion()
+{
+    int major;
+    int minor;
+    int revision;
+    git_libgit2_version(&major, &minor, &revision);
+
+    return VersionInfo(major, minor, revision);
+}
+
+shared static this()
+{
+    verifyLibgitVersion();
+}
+
+/**
+    Verify at runtime that the loaded version of libgit is the
+    one supported by this version of dlibgit.
+*/
+void verifyLibgitVersion()
+{
+    auto libgitVersion = getLibGitVersion();
+    enforce(libgitVersion == targetLibGitVersion,
+            format("Error: dlibgit (%s) requires libgit2 (%s).\nCurrently loaded libgit2 version is (%s).",
+                   dlibgitVersion, targetLibGitVersion, libgitVersion));
+}
