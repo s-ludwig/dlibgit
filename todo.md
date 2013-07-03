@@ -12,6 +12,9 @@
   a warning that the user should update the submodules in order to test the library
 - Use checkout commands before testing isHeadDetached and isHeadOrphan to improve
   the sample code.
+- Replace static asserts in unittests with normal asserts and calls. We have to
+  create several repositories with interesting state before the e.g. walker
+  functions can operate on.
 
 ## bugs to file to libgit2 (or pulls to make-
 - git_repository_discover dosc reference base_path instead of start_path
