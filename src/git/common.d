@@ -16,9 +16,11 @@ import std.string;
 import std.traits;
 
 import git.c.common;
+import git.c.types;
 
 import git.config;
 import git.exception;
+import git.types;
 import git.util;
 
 package
@@ -81,6 +83,16 @@ unittest
 {
     auto features = getLibGitFeatures();
     if (features.usesSSL) { }
+}
+
+/** Memory caching mode for libgit2. */
+enum CacheMode
+{
+    ///
+    disabled,
+
+    ///
+    enabled
 }
 
 /**
@@ -198,47 +210,97 @@ static:
             assert(getSearchPaths(config) == oldPaths);
         }
     }
+
+    /**
+        Set the maximum data size for the given type of object to be
+        considered eligible for caching in memory.  Setting to value to
+        zero means that that type of object will not be cached.
+
+        Defaults to 0 for $(D GitType.blob) (i.e. won't cache blobs) and 4k
+        for $(D GitType.commit), $(D GitType.tree), and $(D GitType.tag).
+    */
+    void setCacheObjectLimit(GitType type, size_t size)
+    {
+        require(git_libgit2_opts(GIT_OPT_SET_CACHE_OBJECT_LIMIT, cast(git_otype)type, size) == 0);
+    }
+
+    ///
+    unittest
+    {
+        setCacheObjectLimit(GitType.commit, 4096);
+    }
+
+    /**
+        Set the maximum total data size that will be cached in memory
+        across all repositories before libgit2 starts evicting objects
+        from the cache.  This is a soft limit, in that the library might
+        briefly exceed it, but will start aggressively evicting objects
+        from cache when that happens.
+
+        The default cache size is 256Mb.
+    */
+    void setCacheMaxSize(ptrdiff_t maxStorageBytes)
+    {
+        require(git_libgit2_opts(GIT_OPT_SET_CACHE_MAX_SIZE, maxStorageBytes) == 0);
+    }
+
+    /** Return the default cache size - 256Mb. */
+    @property ptrdiff_t defaultCacheMaxSize()
+    {
+        return 256 * 1024 * 1024;
+    }
+
+    ///
+    unittest
+    {
+        setCacheMaxSize(defaultCacheMaxSize);
+    }
+
+    /**
+        Enable or disable caching completely.
+
+        Since caches are repository-specific, disabling the cache
+        cannot immediately clear all the cached objects, but each cache
+        will be cleared on the next attempt to update anything in it.
+    */
+    void setCacheMode(CacheMode mode)
+    {
+        require(git_libgit2_opts(GIT_OPT_ENABLE_CACHING, cast(int)mode) == 0);
+    }
+
+    ///
+    unittest
+    {
+        setCacheMode(CacheMode.disabled);
+        setCacheMode(CacheMode.enabled);
+    }
+
+    /** The cache status of libgit2. */
+    struct CacheMemory
+    {
+        /// current bytes in the cache.
+        ptrdiff_t currentSize;
+
+        /// the maximum bytes allowed in the cache.
+        ptrdiff_t maxSize;
+    }
+
+    /** Get the current status of the cache. */
+    CacheMemory getCacheMemory()
+    {
+        ptrdiff_t current;
+        ptrdiff_t allowed;
+        require(git_libgit2_opts(GIT_OPT_GET_CACHED_MEMORY, &current, &allowed) == 0);
+
+        return CacheMemory(current, allowed);
+    }
+
+    ///
+    unittest
+    {
+        auto cache = getCacheMemory();
+    }
+
+    /// alternate spelling
+    alias getCachedMemory = getCacheMemory;
 }
-
-//~ enum git_libgit2_opt_t
-//~ {
-	//~ GIT_OPT_SET_CACHE_OBJECT_LIMIT,
-	//~ GIT_OPT_SET_CACHE_MAX_SIZE,
-	//~ GIT_OPT_ENABLE_CACHING,
-	//~ GIT_OPT_GET_CACHED_MEMORY
-//~ }
-
- //~ *	* opts(GIT_OPT_SET_CACHE_OBJECT_LIMIT, git_otype type, size_t size)
- //~ *
- //~ *		> Set the maximum data size for the given type of object to be
- //~ *		> considered eligible for caching in memory.  Setting to value to
- //~ *		> zero means that that type of object will not be cached.
- //~ *		> Defaults to 0 for GIT_OBJ_BLOB (i.e. won't cache blobs) and 4k
- //~ *		> for GIT_OBJ_COMMIT, GIT_OBJ_TREE, and GIT_OBJ_TAG.
- //~ *
- //~ *	* opts(GIT_OPT_SET_CACHE_MAX_SIZE, ssize_t max_storage_bytes)
- //~ *
- //~ *		> Set the maximum total data size that will be cached in memory
- //~ *		> across all repositories before libgit2 starts evicting objects
- //~ *		> from the cache.  This is a soft limit, in that the library might
- //~ *		> briefly exceed it, but will start aggressively evicting objects
- //~ *		> from cache when that happens.  The default cache size is 256Mb.
- //~ *
- //~ *	* opts(GIT_OPT_ENABLE_CACHING, int enabled)
- //~ *
- //~ *		> Enable or disable caching completely.
- //~ *		>
- //~ *		> Because caches are repository-specific, disabling the cache
- //~ *		> cannot immediately clear all cached objects, but each cache will
- //~ *		> be cleared on the next attempt to update anything in it.
- //~ *
- //~ *	* opts(GIT_OPT_GET_CACHED_MEMORY, ssize_t *current, ssize_t *allowed)
- //~ *
- //~ *		> Get the current bytes in cache and the maximum that would be
- //~ *		> allowed in the cache.
- //~ *
- //~ * @param option Option key
- //~ * @param ... value to set the option
- //~ * @return 0 on success, <0 on failure
- //~ */
-//~ int git_libgit2_opts(int option, ...);
