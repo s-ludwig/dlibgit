@@ -23,6 +23,7 @@ import std.typetuple;
 
 import git.c.common;
 import git.c.errors;
+import git.c.ignore;
 import git.c.oid;
 import git.c.repository;
 import git.c.types;
@@ -521,8 +522,8 @@ struct GitRepo
         scope(exit) rmdirRecurse(_userRepo);
 
         string[] fetchHeadItems = [
-            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
-            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3           branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09           branch 'master' of git://github.com/D-Programming-Language/dmd\n"
         ];
 
         std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
@@ -551,8 +552,8 @@ struct GitRepo
         scope(exit) rmdirRecurse(_userRepo);
 
         string[] fetchHeadItems = [
-            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
-            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3           branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09           branch 'master' of git://github.com/D-Programming-Language/dmd\n"
         ];
 
         std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
@@ -623,8 +624,8 @@ struct GitRepo
         scope(exit) rmdirRecurse(_userRepo);
 
         string[] fetchHeadItems = [
-            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
-            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3           branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09           branch 'master' of git://github.com/D-Programming-Language/dmd\n"
         ];
 
         std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
@@ -658,8 +659,8 @@ struct GitRepo
         scope(exit) rmdirRecurse(_userRepo);
 
         string[] fetchHeadItems = [
-            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
-            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3           branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09           branch 'master' of git://github.com/D-Programming-Language/dmd\n"
         ];
 
         std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
@@ -1080,6 +1081,64 @@ struct GitRepo
      */
     //~ int git_repository_detach_head(
             //~ git_repository* repo);
+
+
+    /**
+        Add ignore rules for this repository.
+
+        Excludesfile rules (i.e. .gitignore rules) are generally read from
+        .gitignore files in the repository tree, or from a shared system file
+        only if a $(B core.excludesfile) config value is set.  The library also
+        keeps a set of per-repository internal ignores that can be configured
+        in-memory and will not persist. This function allows you to add to
+        that internal rules list.
+    */
+    //~ void addIgnoreRules(const(char)[][] rules...)
+    //~ {
+        //~ require(git_ignore_add_rule(_data._payload, rules.join("\n").toStringz) == 0);
+    //~ }
+
+    //~ int git_ignore_add_rule(
+        //~ git_repository *repo,
+        //~ const(char)* rules)
+    //~ {
+        //~ *     error = git_ignore_add_rule(myrepo, "*.c\ndir/\nFile with space\n");
+    //~ }
+
+    /**
+     * Clear ignore rules that were explicitly added.
+     *
+     * Resets to the default internal ignore rules.  This will not turn off
+     * rules in .gitignore files that actually exist in the filesystem.
+     *
+     * The default internal ignores ignore ".", ".." and ".git" entries.
+     *
+     * @param repo The repository to remove ignore rules from.
+     * @return 0 on success
+     */
+    //~ int git_ignore_clear_internal_rules(
+        //~ git_repository *repo);
+
+    /**
+     * Test if the ignore rules apply to a given path.
+     *
+     * This function checks the ignore rules to see if they would apply to the
+     * given file.  This indicates if the file would be ignored regardless of
+     * whether the file is already in the index or committed to the repository.
+     *
+     * One way to think of this is if you were to do "git add ." on the
+     * directory containing the file, would it be added or not?
+     *
+     * @param ignored boolean returning 0 if the file is not ignored, 1 if it is
+     * @param repo a repository object
+     * @param path the file to check ignores for, relative to the repo's workdir.
+     * @return 0 if ignore rules could be processed for the file (regardless
+     *         of whether it exists or not), or an error < 0 if they could not.
+     */
+    //~ int git_ignore_path_is_ignored(
+        //~ int *ignored,
+        //~ git_repository *repo,
+        //~ const(char)* path);
 
 private:
 
