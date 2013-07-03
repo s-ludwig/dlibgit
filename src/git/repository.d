@@ -390,13 +390,13 @@ struct GitRepo
 
         Use this function to get the contents of this file.
 
-        $(B Note:) Remember to remove the file after you create the commit
-        by calling $(D removeMergeMsg).
+        $(B Note:) Remember to remove the merge message file after you
+        create the commit, by calling $(D removeMergeMsg).
+        Use $(D mergeMsgExists) if you want to explicitly check for the
+        existence of the merge message file.
 
         $(B Note:) This function returns an empty string when the message
         file is empty, but returns $(D null) if the message file cannot be found.
-        Use $(D mergeMsgExists) if you want to explicitly check for the existence
-        of the merge message file.
     */
     @property string mergeMsg()
     {
@@ -410,7 +410,7 @@ struct GitRepo
 
         string msg = to!string(buffer.ptr);
         if (msg is null)
-            msg = "";
+            msg = "";  // null signals a missing file
 
         return msg;
     }
@@ -434,7 +434,7 @@ struct GitRepo
     }
 
     /**
-        Remove the prepared message for this repository.
+        Remove the merge message file for this repository.
         If the message file does not exist $(D GitException) is thrown.
         Use $(D mergeMsgExists) to check whether the merge message
         file exists.
@@ -461,12 +461,12 @@ struct GitRepo
         repo.removeMergeMsg();
         assert(repo.mergeMsg is null);
 
-        // verify removing file which doesn't exist throws
+        // verify throwing when removing file which doesn't exist
         assertThrown!GitException(repo.removeMergeMsg());
     }
 
     /**
-        Call the $(D callback) for each entry in the $(B FETCH_HEAD) file in this repository.
+        Call the $(D callback) function for each entry in the $(B FETCH_HEAD) file in this repository.
 
         The $(D callback) type must be either $(D FetchHeadFunction) or $(D FetchHeadDelegate).
 
@@ -566,7 +566,7 @@ struct GitRepo
     {
         // todo: remove hardcoding
         auto repo = GitRepo(r"C:\dev\projects\libgit2\.git");
-        auto items = repo.getFetchHeadItems;
+        auto items = repo.getFetchHeadItems();
         //~ writeln(items);
     }
 
