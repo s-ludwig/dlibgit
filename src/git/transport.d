@@ -270,6 +270,8 @@ private template _credToType(GitCredType credType)
         else
         static assert(0);
     }
+    else
+    static assert(0);
 }
 
 /**
