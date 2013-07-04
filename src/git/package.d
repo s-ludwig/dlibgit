@@ -8,6 +8,7 @@ module git;
 
 public
 {
+    import git.checkout;
     import git.clone;
     import git.common;
     import git.config;
