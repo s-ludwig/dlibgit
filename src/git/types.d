@@ -11,9 +11,10 @@ import std.conv;
 import std.exception;
 import std.string;
 
+import git.c.common;
 import git.c.errors;
-import git.c.util;
 import git.c.types;
+import git.c.util;
 
 import git.exception;
 
@@ -50,3 +51,64 @@ enum GitType
     /// A delta, base is given by object id.
     ref_delta  = GIT_OBJ_REF_DELTA
 }
+
+/** Basic type of any Git reference. */
+enum GitRefType
+{
+    /** Invalid reference. */
+    invalid = GIT_REF_INVALID,
+
+    /** A reference which points at an object id. */
+    oid = GIT_REF_OID,
+
+    /** A reference which points at another reference. */
+    symbolic = GIT_REF_SYMBOLIC,
+
+    list_all = GIT_REF_LISTALL,
+}
+
+/** Basic type of any Git branch. */
+enum GitBranchType
+{
+    local = GIT_BRANCH_LOCAL,
+    remote = GIT_BRANCH_REMOTE,
+}
+
+/** Valid modes for index and tree entries. */
+enum GitFileModeType
+{
+    new_ = GIT_FILEMODE_NEW,
+    tree = GIT_FILEMODE_TREE,
+    blob = GIT_FILEMODE_BLOB,
+    blob_exe = GIT_FILEMODE_BLOB_EXECUTABLE,
+    link = GIT_FILEMODE_LINK,
+    commit = GIT_FILEMODE_COMMIT,
+}
+
+/**
+ * This is passed as the first argument to the callback to allow the
+ * user to see the progress.
+ */
+struct GitTransferProgress
+{
+    uint totalObjects;
+    uint indexedObjects;
+    uint receivedObjects;
+    size_t receivedBytes;
+}
+
+/// The return type of walker callbacks.
+enum ContinueWalk
+{
+    /// Stop walk
+    no,
+
+    /// Continue walk
+    yes
+}
+
+/// The function or delegate type that $(D GitCloneOptions) can take as the callback during indexing.
+alias TransferCallbackFunction = ContinueWalk function(const ref GitTransferProgress stats);
+
+/// ditto
+alias TransferCallbackDelegate = ContinueWalk delegate(const ref GitTransferProgress stats);
