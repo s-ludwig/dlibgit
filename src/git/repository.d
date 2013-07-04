@@ -52,16 +52,6 @@ enum UpdateGitlink
     yes
 }
 
-/// The return type of a callback used in e.g. the $(D walkFetchHead) function.
-enum ContinueWalk
-{
-    /// Stop walk
-    no,
-
-    /// Continue walk
-    yes
-}
-
 /** A single item in the list of the $(B FETCH_HEAD) file. */
 struct FetchHeadItem
 {

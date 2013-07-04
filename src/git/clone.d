@@ -10,6 +10,7 @@ import git.c.clone;
 
 import git.checkout;
 import git.repository;
+import git.types;
 
 /**
     Clone options structure.
@@ -61,16 +62,17 @@ struct GitCloneOptions
 
     /// options for the checkout step.  To disable checkout,
     /// set the `checkout_strategy` to GIT_CHECKOUT_DEFAULT.
-    //~ GitCheckoutOptions checkoutOptions;
+    GitCheckoutOptions checkoutOptions;
 
-    //~ bool cloneBare;
-    //~ GitTransferCallback transferCallback;
-    //~ void* transferPayload;
+    bool cloneBare;
 
-    //~ string remoteName;
-    //~ string pushURL;
-    //~ string fetchSpec;
-    //~ string pushSpec;
+    // todo: use toDelegate at the call site
+    TransferCallbackDelegate transferCallback;
+
+    string remoteName;
+    string pushURL;
+    string fetchSpec;
+    string pushSpec;
 
     //~ GitCredAcquireCallback credAcquireCallback;
     //~ void* credPayload;

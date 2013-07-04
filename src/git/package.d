@@ -16,6 +16,7 @@ public
     import git.oid;
     import git.repository;
     import git.trace;
+    import git.transport;
     import git.types;
     import git.version_;
 }

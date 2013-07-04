@@ -196,18 +196,20 @@ static:
                 assertThrown!GitException(setSearchPaths(config, []));
                 continue;
             }
+            else
+            {
+                auto oldPaths = getSearchPaths(config);
+                scope(exit) setSearchPaths(config, oldPaths);
 
-            auto oldPaths = getSearchPaths(config);
-            scope(exit) setSearchPaths(config, oldPaths);
+                auto newPaths = ["/foo", "$PATH", "/foo/bar"];
+                setSearchPaths(config, newPaths);
 
-            auto newPaths = ["/foo", "$PATH", "/foo/bar"];
-            setSearchPaths(config, newPaths);
+                auto chained = newPaths[0] ~ oldPaths ~ newPaths[2];
+                assert(getSearchPaths(config) == chained);
 
-            auto chained = newPaths[0] ~ oldPaths ~ newPaths[2];
-            assert(getSearchPaths(config) == chained);
-
-            setSearchPaths(config, []);
-            assert(getSearchPaths(config) == oldPaths);
+                setSearchPaths(config, []);
+                assert(getSearchPaths(config) == oldPaths);
+            }
         }
     }
 

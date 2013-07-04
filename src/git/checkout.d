@@ -236,7 +236,7 @@ struct GitCheckoutOptions
      */
     git_strarray paths;
 
-    git_tree *baseline; /** expected content of workdir, defaults to HEAD */
+    git_tree* baseline; /** expected content of workdir, defaults to HEAD */
 
     string targetDir; /** alternative checkout path to workdir */
 }

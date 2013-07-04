@@ -25,7 +25,7 @@ package string _makeEnumAliases(E)() if (is(E == enum))
     foreach (string member; __traits(allMembers, E))
         result ~= format("alias %s = %s.%s;", member, enumName, member);
 
-    return result.data.join("\n");;
+    return result.data.join("\n");
 }
 
 ///
