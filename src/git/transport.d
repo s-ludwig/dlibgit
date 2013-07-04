@@ -46,24 +46,20 @@ enum GitTransportFlags
 }
 
 ///
-alias GitTransportMessageCallback = void function(in char[] str);
+alias GitTransportMsgCallback = void function(in char[] str);
 
 struct GitTransport
 {
-	uint version_ = git_transport.init.version_;
+	/* Set progress and error callbacks */
+	int function(GitTransport transport,
+		GitTransportMsgCallback progressCallback,
+		GitTransportMsgCallback errorCallbak) setCallbacks;
 
-	//~ /* Set progress and error callbacks */
-	//~ int function(git_transport *transport,
-		//~ git_transport_message_cb progress_cb,
-		//~ git_transport_message_cb error_cb,
-		//~ void *payload) set_callbacks;
-
-	//~ /* Connect the transport to the remote repository, using the given
-	 //~ * direction. */
-	//~ int function(git_transport *transport,
-		//~ const(char)* url,
-		//~ git_cred_acquire_cb cred_acquire_cb,
-		//~ void *cred_acquire_payload,
+	/* Connect the transport to the remote repository, using the given
+	 * direction. */
+	//~ int function(GitTransport transport,
+		//~ in char[] url,
+		//~ GitCredAcquireCallback credAcquireCallback,
 		//~ int direction,
 		//~ int flags) connect;
 
