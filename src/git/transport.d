@@ -77,6 +77,14 @@ struct GitCredPublickey
     void* sign_data;
 }
 
+/** Check if type $(D T) is one of the supported git credential types. */
+template isGitCredential(T)
+{
+    enum bool isGitCredential = is(T == GitCredPlaintext) ||
+                                is(T == GitCredKeyfilePassphrase) ||
+                                is(T == GitCredPublickey);
+}
+
 // helper
 private template _credToType(GitCredType credType)
 {
@@ -95,11 +103,17 @@ private template _credToType(GitCredType credType)
 /* The base structure for all credential types. */
 struct GitCred
 {
+    // internal
     private this(git_cred* cred)
     {
         _data = Data(cred);
     }
 
+    /**
+        Return the actual credential type of this credential.
+        Use the $(D get) template to cast this type to the
+        type tagged as $(D credType).
+    */
     @property GitCredType credType()
     {
         return cast(GitCredType)_data._payload.credtype;
@@ -113,17 +127,34 @@ struct GitCred
                                       credType, target));
     }
 
-    /// enum version
+    /**
+        Cast this credential to the structure type matching
+        the $(D cred) enum tag.
+
+        If the underlying type does not match the target type,
+        a $(D GitException) is thrown.
+    */
     auto get(GitCredType cred)()
     {
         return get!(_credToType!cred);
     }
 
-    /// type version
-    T get(T : GitCredPlaintext)()
+    /**
+        Cast this credential to a specific credential type $(D T).
+
+        If the underlying type does not match the target type,
+        a $(D GitException) is thrown.
+    */
+    T get(T)() if (isGitCredential!T)
     {
         verifyTypeMatch(T.credType);
+        return getImpl!T;
+    }
 
+private:
+
+    T getImpl(T : GitCredPlaintext)()
+    {
         auto plaintext = cast(git_cred_userpass_plaintext*)_data._payload;
 
         T result;
@@ -133,21 +164,16 @@ struct GitCred
         return result;
     }
 
-    /// ditto
-    T get(T : GitCredKeyfilePassphrase)()
+    T getImpl(T : GitCredKeyfilePassphrase)()
     {
-        verifyTypeMatch(T.credType);
         assert(0);
     }
 
-    /// ditto
-    T get(T : GitCredPublickey)()
+    T getImpl(T : GitCredPublickey)()
     {
-        verifyTypeMatch(T.credType);
         assert(0);
     }
 
-private:
     /** Payload for the $(D git_cred) object which should be refcounted. */
     struct Payload
     {
@@ -203,9 +229,13 @@ unittest
             // throw when trying to cast to an inappropriate type
             assertThrown!GitException(cred.get!ssh_keyfile_passphrase);
 
+            // ditto
+            assertThrown!GitException(cred.get!GitCredKeyfilePassphrase);
+
             auto plain = cred.get!userpass_plaintext;
             assert(plain.username == "foo");
             assert(plain.password == "bar");
+
             break;
         }
 
