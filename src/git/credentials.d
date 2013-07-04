@@ -429,7 +429,7 @@ version (GIT_SSH)
     @param payload The payload provided when specifying this callback.
     @return 0 for success or an error code for failure
 */
-alias GitCredAcquireCallback = GitCred function(
-    in char[] url,
-	in char[] usernameFromURL,
-	uint allowedTypes);
+//~ alias GitCredAcquireCallback = GitCred function(
+    //~ in char[] url,
+	//~ in char[] usernameFromURL,
+	//~ uint allowedTypes);

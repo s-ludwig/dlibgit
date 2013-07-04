@@ -46,14 +46,14 @@ enum GitTransportFlags
 }
 
 ///
-alias GitTransportMsgCallback = void function(in char[] str);
+//~ alias GitTransportMsgCallback = void function(in char[] str);
 
-struct GitTransport
-{
+//~ struct GitTransport
+//~ {
 	/* Set progress and error callbacks */
-	int function(GitTransport transport,
-		GitTransportMsgCallback progressCallback,
-		GitTransportMsgCallback errorCallbak) setCallbacks;
+	//~ int function(GitTransport transport,
+		//~ GitTransportMsgCallback progressCallback,
+		//~ GitTransportMsgCallback errorCallbak) setCallbacks;
 
 	/* Connect the transport to the remote repository, using the given
 	 * direction. */
@@ -105,7 +105,7 @@ struct GitTransport
 
 	//~ /* Frees/destructs the git_transport object. */
 	//~ void function(git_transport *transport) free;
-}
+//~ }
 
 //~ enum GIT_TRANSPORT_VERSION = 1;
 //~ enum git_transport GIT_TRANSPORT_INIT = { GIT_TRANSPORT_VERSION };
