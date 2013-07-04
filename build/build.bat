@@ -23,7 +23,7 @@ if not exist %implibFile% cd %binPath% && call make_implib.bat > NUL && cd %srcP
 
 rem Note: -g option disabled due to CodeView bugs which crash linkers
 rem (both Optlink and Unilink will ICE)
-set dtest=rdmd -g --main -debug -unittest --force -of%binPath%\dlibgit_test.exe
+set dtest=rdmd -g --main -debug -unittest -of%binPath%\dlibgit_test.exe
 
 %dtest% --compiler=%compiler% %flags% -Isrc git\package.d && echo Success: dlibgit tested ok.
 rem %compiler% -of%binPath%\dlibgit.lib -lib %flags% %files% && echo Success: dlibgit built ok.
