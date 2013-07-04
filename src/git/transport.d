@@ -29,7 +29,6 @@ import git.c.util;
 version (GIT_SSH)
 {
     static assert(0, "dlibgit does not support SSH yet.");
-    // import ssh2;
 }
 
 /* The base structure for all credential types. */
