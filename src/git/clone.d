@@ -8,6 +8,7 @@ module git.clone;
 
 import git.c.clone;
 
+import git.checkout;
 import git.repository;
 
 /**
@@ -54,14 +55,14 @@ import git.repository;
     - `checkout_branch` gives the name of the branch to checkout. NULL means
     use the remote's HEAD.
 */
-//~ struct GitCloneOptions
-//~ {
-    //~ uint version_ = git_clone_options.version_;
+struct GitCloneOptions
+{
+    uint version_ = git_clone_options.init.version_;
 
-
-    //~ /// options for the checkout step.  To disable checkout,
-    //~ /// set the `checkout_strategy` to GIT_CHECKOUT_DEFAULT.
+    /// options for the checkout step.  To disable checkout,
+    /// set the `checkout_strategy` to GIT_CHECKOUT_DEFAULT.
     //~ GitCheckoutOptions checkoutOptions;
+
     //~ bool cloneBare;
     //~ GitTransferCallback transferCallback;
     //~ void* transferPayload;
@@ -79,7 +80,7 @@ import git.repository;
     //~ GitRemoteCallbacks[] remoteCallbacks;
     //~ GitRemoteAutotagOption autoTagOption;
     //~ string checkoutBranch;
-//~ }
+}
 
 /**
  * Clone a remote repository, and checkout the branch pointed to by the remote
