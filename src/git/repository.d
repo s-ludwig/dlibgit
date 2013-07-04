@@ -74,6 +74,9 @@ alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] rem
 /// ditto
 alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
 
+/// ditto
+alias FetchHeadOpApply = int delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
 /** A single item in the list of the $(B MERGE_HEAD) file. */
 struct MergeHeadItem
 {
@@ -85,6 +88,9 @@ alias MergeHeadFunction = ContinueWalk function(GitOid oid);
 
 /// ditto
 alias MergeHeadDelegate = ContinueWalk delegate(GitOid oid);
+
+/// ditto
+alias MergeHeadOpApply = int delegate(GitOid oid);
 
 /// The various states a repository can be in.
 enum RepoState
@@ -575,9 +581,70 @@ struct GitRepo
         repo.walkFetchHead(&s.walker);
     }
 
-    private void walkFetchHeadImpl(Callback)(Callback callback)
-        if (is(Callback == FetchHeadFunction) || is(Callback == FetchHeadDelegate))
+    /** Walk the $(B FETCH_HEAD) file in a foreach loop. */
+    auto walkFetchHead()
     {
+        static struct S
+        {
+            GitRepo repo;
+
+            int opApply(int delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge) dg)
+            {
+                repo.walkFetchHeadImpl(dg);
+                return 1;
+            }
+        }
+
+        return S(this);
+    }
+
+    /// Walk the $(B FETCH_HEAD) using a foreach loop.
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string[] fetchHeadItems = [
+            "23c3c6add8162693f85b3b41c9bf6550a71a57d3		branch 'master' of git://github.com/D-Programming-Language/dmd\n",
+            "aaf64112624abab1f6cc8f610223f6e12b525e09		branch 'master' of git://github.com/D-Programming-Language/dmd\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "FETCH_HEAD"), fetchHeadItems.join());
+
+        size_t count;
+        foreach (refName, remoteURL, oid, isMerge; repo.walkFetchHead)
+        {
+            string line = fetchHeadItems[count++];
+            string commitHex = line.split[0];
+
+            assert(refName == "refs/heads/master");
+            assert(remoteURL == "git://github.com/D-Programming-Language/dmd");
+            assert(oid == GitOid(commitHex));
+        }
+
+        // ensure we've iterated all itmes
+        assert(count == 2);
+
+        count = 0;
+        foreach (refName, remoteURL, oid, isMerge; repo.walkFetchHead)
+        {
+            string line = fetchHeadItems[count++];
+            string commitHex = line.split[0];
+
+            assert(refName == "refs/heads/master");
+            assert(remoteURL == "git://github.com/D-Programming-Language/dmd");
+            assert(oid == GitOid(commitHex));
+            break;
+        }
+
+        // ensure 'break' works
+        assert(count == 1);
+    }
+
+    private void walkFetchHeadImpl(Callback)(Callback callback)
+        if (is(Callback == FetchHeadFunction) || is(Callback == FetchHeadDelegate) || is(Callback == FetchHeadOpApply))
+    {
+        // return 1 to stop iteration
         static extern(C) int c_callback(
             const(char)* refName,
             const(char)* remoteURL,
@@ -588,8 +655,12 @@ struct GitRepo
             alias toSlice = to!(const(char)[]);
             Callback callback = *cast(Callback*)payload;
 
-            // return 1 to stop iteration
-            return callback(toSlice(refName), toSlice(remoteURL), GitOid(*oid), isMerge == 1) == ContinueWalk.no;
+            auto result = callback(toSlice(refName), toSlice(remoteURL), GitOid(*oid), isMerge == 1);
+
+            static if (is(Callback == FetchHeadOpApply))
+                return result;
+            else
+                return result == ContinueWalk.no;
         }
 
         auto result = git_repository_fetchhead_foreach(_data._payload, &c_callback, &callback);
@@ -751,8 +822,62 @@ struct GitRepo
         repo.walkMergeHead(&s.walker);
     }
 
+    /** Walk the $(B MERGE_HEAD) file in a foreach loop. */
+    auto walkMergeHead()
+    {
+        static struct S
+        {
+            GitRepo repo;
+
+            int opApply(int delegate(GitOid oid) dg)
+            {
+                repo.walkMergeHeadImpl(dg);
+                return 1;
+            }
+        }
+
+        return S(this);
+    }
+
+    /// Walk the $(B MERGE_HEAD) using a foreach loop.
+    unittest
+    {
+        auto repo = initRepo(_userRepo, OpenBare.yes);
+        scope(exit) rmdirRecurse(_userRepo);
+
+        string[] mergeHeadItems = [
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n",
+            "e496660174425e3147a0593ced2954f3ddbf65ca\n"
+        ];
+
+        std.file.write(buildPath(repo.path, "MERGE_HEAD"), mergeHeadItems.join());
+
+        size_t count;
+        foreach (oid; repo.walkMergeHead)
+        {
+            string line = mergeHeadItems[count++];
+            string commitHex = line.split[0];
+            assert(oid == GitOid(commitHex));
+        }
+
+        // ensure we've iterated all itmes
+        assert(count == 2);
+
+        count = 0;
+        foreach (oid; repo.walkMergeHead)
+        {
+            string line = mergeHeadItems[count++];
+            string commitHex = line.split[0];
+            assert(oid == GitOid(commitHex));
+            break;
+        }
+
+        // ensure 'break' works
+        assert(count == 1);
+    }
+
     private void walkMergeHeadImpl(Callback)(Callback callback)
-        if (is(Callback == MergeHeadFunction) || is(Callback == MergeHeadDelegate))
+        if (is(Callback == MergeHeadFunction) || is(Callback == MergeHeadDelegate) || is(Callback == MergeHeadOpApply))
     {
         static extern(C) int c_callback(const(git_oid)* oid, void* payload)
         {
@@ -762,7 +887,11 @@ struct GitRepo
             // https://github.com/libgit2/libgit2/issues/1703
             static assert(targetLibGitVersion.text == "0.19.0",
                 "Return value must be updated for new API due to libgit Issue 1703.");
-            return callback(GitOid(*oid)) == ContinueWalk.no ? -1 : 0;
+
+            static if (is(Callback == MergeHeadOpApply))
+                return callback(GitOid(*oid)) ? -1 : 0;
+            else
+                return callback(GitOid(*oid)) == ContinueWalk.no ? -1 : 0;
         }
 
         auto result = git_repository_mergehead_foreach(_data._payload, &c_callback, &callback);
