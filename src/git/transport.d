@@ -36,66 +36,88 @@ version (GIT_SSH)
 enum GitCredType
 {
     ///
-	userpass_plaintext = GIT_CREDTYPE_USERPASS_PLAINTEXT,
+	plaintext = GIT_CREDTYPE_USERPASS_PLAINTEXT,
 
     ///
-	ssh_keyfile_passphrase = GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE,
+	passphrase = GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE,
 
     ///
-	ssh_publickey = GIT_CREDTYPE_SSH_PUBLICKEY,
+	publickey = GIT_CREDTYPE_SSH_PUBLICKEY,
 }
 
 /* A plaintext username and password. */
-struct GitCredPlaintext
+struct GitCred_PlainText
 {
-    enum credType = GitCredType.userpass_plaintext;
+    ///
+    enum credType = GitCredType.plaintext;
 
+    ///
 	GitCred parent;
+
+    ///
 	string username;
+
+    ///
 	string password;
 }
 
 /* A ssh key file and passphrase. */
-struct GitCredKeyfilePassphrase
+struct GitCred_KeyFilePassPhrase
 {
-    enum credType = GitCredType.ssh_keyfile_passphrase;
+    ///
+    enum credType = GitCredType.passphrase;
 
+    ///
     GitCred parent;
-    string publickey;
-    string privatekey;
-    string passphrase;
+
+    ///
+    string publicKey;
+
+    ///
+    string privateKey;
+
+    ///
+    string passPhrase;
 }
 
 /* A ssh public key and authentication callback. */
-struct GitCredPublickey
+struct GitCred_PublicKey
 {
-    enum credType = GitCredType.ssh_publickey;
+    ///
+    enum credType = GitCredType.publickey;
 
+    ///
     GitCred parent;
-    string publickey;
-    void* sign_callback;
-    void* sign_data;
+
+    ///
+    string publicKey;
+
+    ///
+    void* signCallback;
+
+    ///
+    void* signData;
 }
 
 /** Check if type $(D T) is one of the supported git credential types. */
 template isGitCredential(T)
 {
-    enum bool isGitCredential = is(T == GitCredPlaintext) ||
-                                is(T == GitCredKeyfilePassphrase) ||
-                                is(T == GitCredPublickey);
+    enum bool isGitCredential = is(T == GitCred_PlainText) ||
+                                is(T == GitCred_KeyFilePassPhrase) ||
+                                is(T == GitCred_PublicKey);
 }
 
 // helper
 private template _credToType(GitCredType credType)
 {
-    static if (credType == GitCredType.userpass_plaintext)
-        alias _credToType = GitCredPlaintext;
+    static if (credType == GitCredType.plaintext)
+        alias _credToType = GitCred_PlainText;
     else
-    static if (credType == GitCredType.ssh_keyfile_passphrase)
-        alias _credToType = GitCredKeyfilePassphrase;
+    static if (credType == GitCredType.passphrase)
+        alias _credToType = GitCred_KeyFilePassPhrase;
     else
-    static if (credType == GitCredType.ssh_publickey)
-        alias _credToType = GitCredPublickey;
+    static if (credType == GitCredType.publickey)
+        alias _credToType = GitCred_PublicKey;
     else
     static assert(0);
 }
@@ -153,7 +175,7 @@ struct GitCred
 
 private:
 
-    T getImpl(T : GitCredPlaintext)()
+    T getImpl(T : GitCred_PlainText)()
     {
         auto plaintext = cast(git_cred_userpass_plaintext*)_data._payload;
 
@@ -164,12 +186,12 @@ private:
         return result;
     }
 
-    T getImpl(T : GitCredKeyfilePassphrase)()
+    T getImpl(T : GitCred_KeyFilePassPhrase)()
     {
         assert(0);
     }
 
-    T getImpl(T : GitCredPublickey)()
+    T getImpl(T : GitCred_PublicKey)()
     {
         assert(0);
     }
@@ -210,7 +232,7 @@ private:
     Creates a new plain-text username and password credential object.
     The supplied credential parameter will be internally duplicated.
 */
-GitCred createPlainTextCred(string username, string password)
+GitCred getCredPlainText(string username, string password)
 {
     git_cred* _git_cred;
     require(git_cred_userpass_plaintext_new(&_git_cred, username.toStringz, password.toStringz) == 0);
@@ -220,21 +242,27 @@ GitCred createPlainTextCred(string username, string password)
 ///
 unittest
 {
-    auto cred = createPlainTextCred("foo", "bar");
+    auto cred = getCredPlainText("user", "pass");
 
     switch (cred.credType) with (GitCredType)
     {
-        case userpass_plaintext:
+        case plaintext:
         {
             // throw when trying to cast to an inappropriate type
-            assertThrown!GitException(cred.get!ssh_keyfile_passphrase);
+            assertThrown!GitException(cred.get!passphrase);
 
             // ditto
-            assertThrown!GitException(cred.get!GitCredKeyfilePassphrase);
+            assertThrown!GitException(cred.get!GitCred_KeyFilePassPhrase);
 
-            auto plain = cred.get!userpass_plaintext;
-            assert(plain.username == "foo");
-            assert(plain.password == "bar");
+            // use enum for the get template
+            auto cred1 = cred.get!plaintext;
+            assert(cred1.username == "user");
+            assert(cred1.password == "pass");
+
+            // or use a type
+            auto cred2 = cred.get!GitCred_PlainText;
+            assert(cred2.username == "user");
+            assert(cred2.password == "pass");
 
             break;
         }
@@ -243,45 +271,112 @@ unittest
     }
 }
 
-//~ version (GIT_SSH)
-//~ {
-    //~ static assert(0, "dlibgit does not support SSH yet.");
-    //~ // typedef LIBSSH2_USERAUTH_PUBLICKEY_SIGN_FUNC((*git_cred_sign_callback));
+version (GIT_SSH)
+{
+    static assert(0, "dlibgit does not support SSH yet.");
 
-    //~ /**
-     //~ * Creates a new ssh key file and passphrase credential object.
-     //~ * The supplied credential parameter will be internally duplicated.
-     //~ *
-     //~ * @param out The newly created credential object.
-     //~ * @param publickey The path to the public key of the credential.
-     //~ * @param privatekey The path to the private key of the credential.
-     //~ * @param passphrase The passphrase of the credential.
-     //~ * @return 0 for success or an error code for failure
-     //~ */
-    //~ int git_cred_ssh_keyfile_passphrase_new(
-        //~ git_cred **out_,
-        //~ const(char)* publickey,
-        //~ const(char)* privatekey,
-        //~ const(char)* passphrase);
+    /**
+        Creates a new ssh key file and passphrase credential object.
+        The supplied credential parameter will be internally duplicated.
 
-    //~ /**
-     //~ * Creates a new ssh public key credential object.
-     //~ * The supplied credential parameter will be internally duplicated.
-     //~ *
-     //~ * @param out The newly created credential object.
-     //~ * @param publickey The bytes of the public key.
-     //~ * @param publickey_len The length of the public key in bytes.
-     //~ * @param sign_callback The callback method for authenticating.
-     //~ * @param sign_data The abstract data sent to the sign_callback method.
-     //~ * @return 0 for success or an error code for failure
-     //~ */
-    //~ int git_cred_ssh_publickey_new(
-        //~ git_cred **out_,
-        //~ const(char)* publickey,
-        //~ size_t publickey_len,
-        //~ git_cred_sign_callback,
-        //~ void *sign_data);
-//~ }
+        Params:
+
+        - $(D publicKey): The path to the public key of the credential.
+        - $(D privateKey): The path to the private key of the credential.
+        - $(D passPhrase): The passphrase of the credential.
+    */
+    GitCred getCredKeyFilePassPhrase(string publicKey, string privateKey, string passPhrase)
+    {
+        git_cred* _git_cred;
+        require(git_cred_ssh_keyfile_passphrase_new(&_git_cred, publicKey.toStringz, privateKey.toStringz, passPhrase.toStringz) == 0);
+        return GitCred(_git_cred);
+    }
+
+    ///
+    unittest
+    {
+        auto cred = getCredKeyFilePassPhrase("public", "private", "passphrase");
+
+        switch (cred.credType) with (GitCredType)
+        {
+            case passphrase:
+            {
+                // throw when trying to cast to an inappropriate type
+                assertThrown!GitException(cred.get!plaintext);
+
+                // ditto
+                assertThrown!GitException(cred.get!GitCred_PlainText);
+
+                // use enum for the get template
+                auto cred1 = cred.get!passphrase;
+                assert(cred1.publicKey == "public");
+                assert(cred1.privateKey == "private");
+                assert(cred1.passPhrase == "passphrase");
+
+                // or use a type
+                auto cred2 = cred.get!GitCred_KeyFilePassPhrase;
+                assert(cred2.publicKey == "public");
+                assert(cred2.privateKey == "private");
+                assert(cred2.passPhrase == "passphrase");
+
+                break;
+            }
+
+            default: assert(0, text(cred.credType));
+        }
+    }
+
+    /**
+        Creates a new ssh public key credential object.
+        The supplied credential parameter will be internally duplicated.
+
+        Params:
+
+        - $(D publicKey): The bytes of the public key.
+        - $(D signCallback): The callback method for authenticating.
+        - $(D signData): The abstract data sent to the $(D signCallback) method.
+    */
+    GitCred getCredPublicKey(ubyte[] publicKey, void* signCallback, void* signData)
+    {
+        git_cred* _git_cred;
+        require(git_cred_ssh_publickey_new(&_git_cred, publicKey.ptr, publicKey.length, signCallback, signData) == 0);
+        return GitCred(_git_cred);
+    }
+
+    ///
+    unittest
+    {
+        auto cred = getCredPublicKey([], null, null);
+
+        switch (cred.credType) with (GitCredType)
+        {
+            case publickey:
+            {
+                // throw when trying to cast to an inappropriate type
+                assertThrown!GitException(cred.get!plaintext);
+
+                // ditto
+                assertThrown!GitException(cred.get!GitCred_PlainText);
+
+                // use enum for the get template
+                auto cred1 = cred.get!publickey;
+                assert(cred1.publicKey == []);
+                assert(cred1.signCallback is null);
+                assert(cred1.signData is null);
+
+                // or use a type
+                auto cred2 = cred.get!GitCred_PublicKey;
+                assert(cred2.publicKey == []);
+                assert(cred2.signCallback is null);
+                assert(cred2.signData is null);
+
+                break;
+            }
+
+            default: assert(0, text(cred.credType));
+        }
+    }
+}
 
 //~ /**
  //~ * Signature of a function which acquires a credential object.
