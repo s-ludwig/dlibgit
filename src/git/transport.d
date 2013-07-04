@@ -32,96 +32,6 @@ version (GIT_SSH)
     // import ssh2;
 }
 
-///
-enum GitCredType
-{
-    ///
-	plaintext = GIT_CREDTYPE_USERPASS_PLAINTEXT,
-
-    ///
-	passphrase = GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE,
-
-    ///
-	publickey = GIT_CREDTYPE_SSH_PUBLICKEY,
-}
-
-/* A plaintext username and password. */
-struct GitCred_PlainText
-{
-    ///
-    enum credType = GitCredType.plaintext;
-
-    ///
-	GitCred parent;
-
-    ///
-	string username;
-
-    ///
-	string password;
-}
-
-/* A ssh key file and passphrase. */
-struct GitCred_KeyFilePassPhrase
-{
-    ///
-    enum credType = GitCredType.passphrase;
-
-    ///
-    GitCred parent;
-
-    ///
-    string publicKey;
-
-    ///
-    string privateKey;
-
-    ///
-    string passPhrase;
-}
-
-/* A ssh public key and authentication callback. */
-struct GitCred_PublicKey
-{
-    ///
-    enum credType = GitCredType.publickey;
-
-    ///
-    GitCred parent;
-
-    ///
-    string publicKey;
-
-    ///
-    void* signCallback;
-
-    ///
-    void* signData;
-}
-
-/** Check if type $(D T) is one of the supported git credential types. */
-template isGitCredential(T)
-{
-    enum bool isGitCredential = is(T == GitCred_PlainText) ||
-                                is(T == GitCred_KeyFilePassPhrase) ||
-                                is(T == GitCred_PublicKey);
-}
-
-// helper
-private template _credToType(GitCredType credType)
-{
-    static if (credType == GitCredType.plaintext)
-        alias _credToType = GitCred_PlainText;
-    else
-    static if (credType == GitCredType.passphrase)
-        alias _credToType = GitCred_KeyFilePassPhrase;
-    else
-    static if (credType == GitCredType.publickey)
-        alias _credToType = GitCred_PublicKey;
-    else
-    static assert(0);
-}
-
 /* The base structure for all credential types. */
 struct GitCred
 {
@@ -177,23 +87,42 @@ private:
 
     T getImpl(T : GitCred_PlainText)()
     {
-        auto plaintext = cast(git_cred_userpass_plaintext*)_data._payload;
+        auto cred = cast(T.c_cred_struct*)_data._payload;
 
         T result;
         result.parent = this;
-        result.username = to!string(plaintext.username);
-        result.password = to!string(plaintext.password);
+        result.username = to!string(cred.username);
+        result.password = to!string(cred.password);
         return result;
     }
 
-    T getImpl(T : GitCred_KeyFilePassPhrase)()
+    version (GIT_SSH)
     {
-        assert(0);
-    }
+        static assert(0, "dlibgit does not support SSH yet.");
 
-    T getImpl(T : GitCred_PublicKey)()
-    {
-        assert(0);
+        T getImpl(T : GitCred_KeyFilePassPhrase)()
+        {
+            auto cred = cast(T.c_cred_struct*)_data._payload;
+
+            T result;
+            result.parent = this;
+            result.publickey = to!string(cred.publickey);
+            result.privatekey = to!string(cred.privatekey);
+            result.passphrase = to!string(cred.passphrase);
+            return result;
+        }
+
+        T getImpl(T : GitCred_PublicKey)()
+        {
+            auto cred = cast(T.c_cred_struct*)_data._payload;
+
+            T result;
+            result.parent = this;
+            result.publickey = cred.publickey[0 .. cred.publickey_len];
+            result.sign_callback = cred.sign_callback;
+            result.sign_data = cred.sign_data;
+            return result;
+        }
     }
 
     /** Payload for the $(D git_cred) object which should be refcounted. */
@@ -228,6 +157,121 @@ private:
     Data _data;
 }
 
+///
+enum GitCredType
+{
+    ///
+	plaintext = GIT_CREDTYPE_USERPASS_PLAINTEXT,
+
+    ///
+	passphrase = GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE,
+
+    ///
+	publickey = GIT_CREDTYPE_SSH_PUBLICKEY,
+}
+
+/* A plaintext username and password. */
+struct GitCred_PlainText
+{
+    ///
+    enum credType = GitCredType.plaintext;
+
+    ///
+	GitCred parent;
+
+    ///
+	string username;
+
+    ///
+	string password;
+
+    private alias c_cred_struct = git_cred_userpass_plaintext;
+}
+
+version (GIT_SSH)
+{
+    static assert(0, "dlibgit does not support SSH yet.");
+
+    /* A ssh key file and passphrase. */
+    struct GitCred_KeyFilePassPhrase
+    {
+        ///
+        enum credType = GitCredType.passphrase;
+
+        ///
+        GitCred parent;
+
+        ///
+        string publicKey;
+
+        ///
+        string privateKey;
+
+        ///
+        string passPhrase;
+
+        private alias c_cred_struct = git_cred_ssh_keyfile_passphrase;
+    }
+
+    /* A ssh public key and authentication callback. */
+    struct GitCred_PublicKey
+    {
+        ///
+        enum credType = GitCredType.publickey;
+
+        ///
+        GitCred parent;
+
+        ///
+        ubyte[] publicKey;
+
+        ///
+        void* signCallback;
+
+        ///
+        void* signData;
+
+        private alias c_cred_struct = git_cred_ssh_publickey;
+    }
+}
+
+/** Check if type $(D T) is one of the supported git credential types. */
+template isGitCredential(T)
+{
+    version (GIT_SSH)
+    {
+        static assert(0, "dlibgit does not support SSH yet.");
+
+        enum bool isGitCredential = is(T == GitCred_PlainText) ||
+                                    is(T == GitCred_KeyFilePassPhrase) ||
+                                    is(T == GitCred_PublicKey);
+    }
+    else
+    {
+        enum bool isGitCredential = is(T == GitCred_PlainText);
+    }
+}
+
+// helper
+private template _credToType(GitCredType credType)
+{
+    static if (credType == GitCredType.plaintext)
+        alias _credToType = GitCred_PlainText;
+    else
+    version (GIT_SSH)
+    {
+        static assert(0, "dlibgit does not support SSH yet.");
+
+        static if (credType == GitCredType.passphrase)
+            alias _credToType = GitCred_KeyFilePassPhrase;
+        else
+        static if (credType == GitCredType.publickey)
+            alias _credToType = GitCred_PublicKey;
+        else
+        static assert(0);
+    }
+}
+
 /**
     Creates a new plain-text username and password credential object.
     The supplied credential parameter will be internally duplicated.
@@ -248,11 +292,16 @@ unittest
     {
         case plaintext:
         {
-            // throw when trying to cast to an inappropriate type
-            assertThrown!GitException(cred.get!passphrase);
+            version (GIT_SSH)
+            {
+                static assert(0, "dlibgit does not support SSH yet.");
 
-            // ditto
-            assertThrown!GitException(cred.get!GitCred_KeyFilePassPhrase);
+                // throw when trying to cast to an inappropriate type
+                assertThrown!GitException(cred.get!passphrase);
+
+                // ditto
+                assertThrown!GitException(cred.get!GitCred_KeyFilePassPhrase);
+            }
 
             // use enum for the get template
             auto cred1 = cred.get!plaintext;
