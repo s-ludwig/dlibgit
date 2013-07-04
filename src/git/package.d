@@ -12,6 +12,7 @@ public
     import git.clone;
     import git.common;
     import git.config;
+    import git.credentials;
     import git.exception;
     import git.oid;
     import git.repository;
