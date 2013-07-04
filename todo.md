@@ -17,6 +17,7 @@
   functions can operate on.
 - Add global hashFile function that redirects to git_odb_hashfile, it's referenced in
   GitRepo.hashFile which uses filtering.
+- Detab all files, but be careful about detabbing string literals which must embed tab characters.
 
 ## bugs to file to libgit2 (or pulls to make-
 - git_repository_discover dosc reference base_path instead of start_path
