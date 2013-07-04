@@ -32,21 +32,25 @@ version (GIT_SSH)
     static assert(0, "dlibgit does not support SSH yet.");
 }
 
-//~ enum git_transport_flags_t {
-	//~ GIT_TRANSPORTFLAGS_NONE = 0,
-	//~ /* If the connection is secured with SSL/TLS, the authenticity
-	 //~ * of the server certificate should not be verified. */
-	//~ GIT_TRANSPORTFLAGS_NO_CHECK_CERT = 1
-//~ } ;
+///
+enum GitTransportFlags
+{
+    ///
+    none = GIT_TRANSPORTFLAGS_NONE,
 
+    /* *
+        If the connection is secured with SSL/TLS, the authenticity
+        of the server certificate should not be verified.
+    */
+	no_check_cert = GIT_TRANSPORTFLAGS_NO_CHECK_CERT
+}
 
-//~ mixin _ExportEnumMembers!git_transport_flags_t;
+///
+alias GitTransportMessageCallback = void function(in char[] str);
 
-//~ alias git_transport_message_cb = void function(const(char)* str, int len, void *data);
-
-//~ struct git_transport
-//~ {
-	//~ uint version_ = GIT_TRANSPORT_VERSION;
+struct GitTransport
+{
+	uint version_ = git_transport.init.version_;
 
 	//~ /* Set progress and error callbacks */
 	//~ int function(git_transport *transport,
@@ -105,7 +109,7 @@ version (GIT_SSH)
 
 	//~ /* Frees/destructs the git_transport object. */
 	//~ void function(git_transport *transport) free;
-//~ }
+}
 
 //~ enum GIT_TRANSPORT_VERSION = 1;
 //~ enum git_transport GIT_TRANSPORT_INIT = { GIT_TRANSPORT_VERSION };
