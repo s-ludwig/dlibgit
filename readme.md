@@ -5,7 +5,7 @@ These are the D bindings to the libgit2 library.
 ## News
 dlibgit has been updated and now targets libgit v0.19.0.
 
-**Note:** A new D-oriented API is currently being written on top of the bindings.
+**Note:** A partial D-oriented API is in the `D_API` branch. Currently it's not being worked on (I don't have enough free time or effort to finish the API). But if you want to, you may fork the project and continue writing the API.
 
 ## v0.19.0 Changes
 
