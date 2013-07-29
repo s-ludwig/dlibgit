@@ -1,4 +1,4 @@
-## things to do for D wrapper library
+## things to do for the D wrapper library
 
 - Write a build script that generates docs in the docs folder
 - Create .ddoc file for the docs (grab some from H. S. Teoh)
