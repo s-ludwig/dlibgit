@@ -1,6 +1,7 @@
 {
 	"name": "dlibgit",
 	"description": "D bindings for libgit2",
+	"license": "GPL-2.0",
 	"authors": ["Andrej Mitrovic", "Sönke Ludwig"],
 	"importPaths": ["."],
 	"sourcePath" : "git2",
