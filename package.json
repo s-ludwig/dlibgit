@@ -1,0 +1,16 @@
+{
+    "description": "dlibgit is a binding to the libgit2 library.",
+    "targetName": "dlibgit",
+    "authors": [
+        "Andrej Mitrovic"
+    ],
+    "license": "BSL-1.0",
+    "version": "~master",
+    "homepage": "https://github.com/AndrejMitrovic/dlibgit",
+    "name": "dlibgit",
+    "copyright": "Copyright © 2013, Andrej Mitrovic",
+    "targetType": "staticLibrary",
+    "sourcePaths": [
+        "src"
+    ],
+}
