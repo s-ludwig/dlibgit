@@ -68,8 +68,3 @@ const(git_oid)*  git_indexer_stream_hash(const(git_indexer_stream)* idx);
  * @param idx the indexer to free
  */
 void git_indexer_stream_free(git_indexer_stream *idx);
-
-
-
-
-

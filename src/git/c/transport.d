@@ -408,11 +408,3 @@ int git_smart_subtransport_git(
 int git_smart_subtransport_ssh(
 	git_smart_subtransport **out_,
 	git_transport* owner);
-
-/*
- *** End interface for subtransports for the smart transport ***
- */
-
-
-
-

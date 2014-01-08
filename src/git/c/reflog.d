@@ -162,7 +162,3 @@ const(char)*  git_reflog_entry_message(const(git_reflog_entry)* entry);
  * @param reflog reflog to free
  */
 void git_reflog_free(git_reflog *reflog);
-
-
-
-

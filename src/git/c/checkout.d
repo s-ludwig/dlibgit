@@ -288,7 +288,3 @@ int git_checkout_tree(
 	git_repository *repo,
 	const(git_object)* treeish,
 	git_checkout_opts *opts);
-
-
-
-//#endif

@@ -559,7 +559,3 @@ int git_submodule_status(
 int git_submodule_location(
 	uint *location_status,
 	git_submodule *submodule);
-
-
-
-//#endif

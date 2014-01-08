@@ -429,8 +429,3 @@ size_t git_odb_num_backends(git_odb *odb);
  * @return 0 on success; GIT_ENOTFOUND if pos is invalid; other errors < 0
  */
 int git_odb_get_backend(git_odb_backend **out_, git_odb *odb, size_t pos);
-
-
-
-
-

@@ -202,8 +202,3 @@ int git_note_foreach(
 	const(char)* notes_ref,
 	git_note_foreach_cb note_cb,
 	void *payload);
-
-
-
-
-

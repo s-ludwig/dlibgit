@@ -158,7 +158,3 @@ uint32_t git_packbuilder_written(git_packbuilder *pb);
  * @param pb The packbuilder
  */
 void git_packbuilder_free(git_packbuilder *pb);
-
-
-
-

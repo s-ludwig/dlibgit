@@ -321,7 +321,3 @@ int git_status_should_ignore(
 	int *ignored,
 	git_repository *repo,
 	const(char)* path);
-
-
-
-//#endif

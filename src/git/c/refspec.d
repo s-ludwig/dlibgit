@@ -100,7 +100,3 @@ int git_refspec_transform(char *out_, size_t outlen, const(git_refspec)* spec, c
  * @return 0, GIT_EBUFS or another error
  */
 int git_refspec_rtransform(char *out_, size_t outlen, const(git_refspec)* spec, const(char)* name);
-
-
-
-
