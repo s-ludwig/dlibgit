@@ -7,6 +7,14 @@ dlibgit has been updated and now targets libgit v0.19.0.
 
 **Note:** A partial D-oriented API is in the `D_API` branch. Currently it's not being worked on (I don't have enough free time or effort to finish the API). But if you want to, you may fork the project and continue writing the API.
 
+## DUB Package
+
+A DUB package is maintained at the following fork, which contains some additions such as
+pre-compiled win32 binaries:
+https://github.com/s-ludwig/dlibgit
+
+Its DUB page is located [here](http://code.dlang.org/packages/dlibgit).
+
 ## v0.19.0 Changes
 
 - The new C-based bindings are now part of the `git.c` package.
