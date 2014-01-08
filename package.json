@@ -1,0 +1,7 @@
+{
+    "name": "dlibgit",
+    "description": "libgit2 D bindings.",
+    "copyright": "Copyright © 2013 Andrej Mitrovic, 2014 David Nadlinger",
+    "authors": ["klickverbot"],
+    "libs-posix": ["git2"]
+}
