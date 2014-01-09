@@ -1,5 +1,5 @@
 /*
- *             Copyright Andrej Mitrovic 2013.
+ *    Copyright Andrej Mitrovic 2013, David Nadlinger 2014.
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
@@ -71,4 +71,19 @@ string toPosixPath(string input)
 unittest
 {
     assert(r"foo/bar\doo".toPosixPath == r"foo/bar/doo");
+}
+
+alias toSlice = to!(const(char)[]);
+
+/**
+    Converts the passed char slice to a C string, returning the null pointer for
+    empty strings.
+
+    libgit2 generally only switches to the default for optional string
+    parameters if they are null, vs. just the empty string.
+*/
+const(char)* gitStr(const(char)[] s)
+{
+    import std.conv : toStringz;
+    return s.length ? s.toStringz : null;
 }

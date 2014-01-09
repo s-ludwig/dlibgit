@@ -179,7 +179,7 @@ static:
     void setSearchPaths(GitConfigLevel configLevel, string[] paths)
     {
         int level = cast(int)configLevel;
-        const(char)* cPaths = paths.join(GitPathSep).toStringz();
+        const(char)* cPaths = paths.join(GitPathSep).gitStr();
         require(git_libgit2_opts(GIT_OPT_SET_SEARCH_PATH, level, cPaths) == 0);
     }
 

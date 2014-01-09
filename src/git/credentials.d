@@ -270,7 +270,7 @@ private template _credToType(GitCredType credType)
 GitCred getCredPlainText(string username, string password)
 {
     git_cred* _git_cred;
-    require(git_cred_userpass_plaintext_new(&_git_cred, username.toStringz, password.toStringz) == 0);
+    require(git_cred_userpass_plaintext_new(&_git_cred, username.gitStr, password.gitStr) == 0);
     return GitCred(_git_cred);
 }
 
@@ -328,7 +328,7 @@ version (GIT_SSH)
     GitCred getCredKeyFilePassPhrase(string publicKey, string privateKey, string passPhrase)
     {
         git_cred* _git_cred;
-        require(git_cred_ssh_keyfile_passphrase_new(&_git_cred, publicKey.toStringz, privateKey.toStringz, passPhrase.toStringz) == 0);
+        require(git_cred_ssh_keyfile_passphrase_new(&_git_cred, publicKey.gitStr, privateKey.gitStr, passPhrase.gitStr) == 0);
         return GitCred(_git_cred);
     }
 

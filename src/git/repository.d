@@ -359,7 +359,7 @@ struct GitRepo
     */
     void setWorkPath(in char[] newWorkPath, UpdateGitlink updateGitlink = UpdateGitlink.no)
     {
-        require(git_repository_set_workdir(_data._payload, newWorkPath.toStringz, cast(int)updateGitlink) == 0);
+        require(git_repository_set_workdir(_data._payload, newWorkPath.gitStr, cast(int)updateGitlink) == 0);
     }
 
     ///
@@ -652,7 +652,6 @@ struct GitRepo
             uint isMerge,
             void *payload)
         {
-            alias toSlice = to!(const(char)[]);
             Callback callback = *cast(Callback*)payload;
 
             auto result = callback(toSlice(refName), toSlice(remoteURL), GitOid(*oid), isMerge == 1);
@@ -1007,7 +1006,7 @@ struct GitRepo
     */
     @property void namespace(in char[] nspace)
     {
-        require(git_repository_set_namespace(_data._payload, nspace.toStringz) == 0);
+        require(git_repository_set_namespace(_data._payload, nspace.gitStr) == 0);
     }
 
     ///
@@ -1087,7 +1086,7 @@ struct GitRepo
     {
         git_oid _git_oid;
 
-        require(git_repository_hashfile(&_git_oid, _data._payload, path.toStringz, cast(git_otype)type, asPath.toStringz) == 0);
+        require(git_repository_hashfile(&_git_oid, _data._payload, path.gitStr, cast(git_otype)type, asPath.gitStr) == 0);
 
         return GitOid(_git_oid);
     }
@@ -1127,7 +1126,7 @@ struct GitRepo
     version(none)  // todo: implement when commit, blob, and refs APIs are in place
     void setHead(in char[] refName)
     {
-        require(git_repository_set_head(_data._payload, refName.toStringz) == 0);
+        require(git_repository_set_head(_data._payload, refName.gitStr) == 0);
     }
 
     ///
@@ -1213,7 +1212,7 @@ struct GitRepo
     */
     void addIgnoreRules(scope const(char)[][] rules...)
     {
-        require(git_ignore_add_rule(_data._payload, rules.join("\n").toStringz) == 0);
+        require(git_ignore_add_rule(_data._payload, rules.join("\n").gitStr) == 0);
     }
 
     ///
@@ -1259,7 +1258,7 @@ struct GitRepo
     bool isPathIgnored(in char[] path)
     {
         int ignored;
-        require(git_ignore_path_is_ignored(&ignored, _data._payload, path.toStringz) == 0);
+        require(git_ignore_path_is_ignored(&ignored, _data._payload, path.gitStr) == 0);
         return ignored == 1;
     }
 
@@ -1292,7 +1291,7 @@ private:
 
         this(in char[] path)
         {
-            require(git_repository_open(&_payload, path.toStringz) == 0);
+            require(git_repository_open(&_payload, path.gitStr) == 0);
         }
 
         ~this()
@@ -1358,7 +1357,7 @@ enum AcrossFS
 string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
 {
     char[MaxGitPathLen] buffer;
-    const c_ceilDirs = ceilingDirs.join(GitPathSep).toStringz;
+    const c_ceilDirs = ceilingDirs.join(GitPathSep).gitStr;
 
     version(assert)
     {
@@ -1366,7 +1365,7 @@ string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS a
             assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
     }
 
-    require(git_repository_discover(buffer.ptr, buffer.length, startPath.toStringz, cast(bool)acrossFS, c_ceilDirs) == 0);
+    require(git_repository_discover(buffer.ptr, buffer.length, startPath.gitStr, cast(bool)acrossFS, c_ceilDirs) == 0);
 
     return to!string(buffer.ptr);
 }
@@ -1434,7 +1433,7 @@ enum OpenBare
 GitRepo initRepo(in char[] path, OpenBare openBare)
 {
     git_repository* repo;
-    require(git_repository_init(&repo, path.toStringz, cast(bool)openBare) == 0);
+    require(git_repository_init(&repo, path.gitStr, cast(bool)openBare) == 0);
     return GitRepo(repo);
 }
 
