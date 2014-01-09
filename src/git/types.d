@@ -85,18 +85,6 @@ enum GitFileModeType
     commit = GIT_FILEMODE_COMMIT,
 }
 
-/**
- * This is passed as the first argument to the callback to allow the
- * user to see the progress.
- */
-struct GitTransferProgress
-{
-    uint totalObjects;
-    uint indexedObjects;
-    uint receivedObjects;
-    size_t receivedBytes;
-}
-
 /// The return type of walker callbacks.
 enum ContinueWalk
 {
@@ -107,8 +95,20 @@ enum ContinueWalk
     yes
 }
 
-/// The function or delegate type that $(D GitCloneOptions) can take as the callback during indexing.
-alias TransferCallbackFunction = ContinueWalk function(const ref GitTransferProgress stats);
+/**
+ * Callback for transfer progress information during remote operations (cloning,
+ * fetching).
+ *
+ * Generally called in-line with network operations, take care not to degrade
+ * performance.
+ */
+struct GitTransferProgress
+{
+    uint totalObjects;
+    uint indexedObjects;
+    uint receivedObjects;
+    size_t receivedBytes;
+}
 
 /// ditto
 alias TransferCallbackDelegate = ContinueWalk delegate(const ref GitTransferProgress stats);

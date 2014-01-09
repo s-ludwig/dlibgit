@@ -122,7 +122,7 @@ struct GitRepo
     }
 
     // internal
-    private this(git_repository* payload)
+    package this(git_repository* payload)
     {
         _data = Data(payload);
     }
@@ -1277,6 +1277,18 @@ struct GitRepo
         repo.clearIgnoreRules();
         assert(!repo.isPathIgnored("/foo"));
         assert(!repo.isPathIgnored("/bar"));
+    }
+
+package:
+    /**
+     * Returns the internal libgit2 repository handle.
+     *
+     * Care should be taken not to escape the reference outside a scope where
+     * a GitRepo reference is kept alive.
+     */
+    @property git_repository* cHandle()
+    {
+        return _data._payload;
     }
 
 private:

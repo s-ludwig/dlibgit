@@ -72,6 +72,18 @@ struct GitCred
         return getImpl!T;
     }
 
+package:
+    /**
+     * The internal libgit2 handle for this object.
+     *
+     * Care should be taken not to escape the reference outside a scope where
+     * a GitCred encapsulating the handle is kept alive.
+     */
+    @property git_cred* cHandle()
+    {
+        return _data._payload;
+    }
+
 private:
 
     T getImpl(T : GitCred_PlainText)()
@@ -418,18 +430,7 @@ version (GIT_SSH)
     }
 }
 
-/**
-    Signature of a function which acquires a credential object.
-
-    @param cred The newly created credential object.
-    @param url The resource for which we are demanding a credential.
-    @param username_from_url The username that was embedded in a "user@host"
-                            remote url, or NULL if not included.
-    @param allowed_types A bitmask stating which cred types are OK to return.
-    @param payload The payload provided when specifying this callback.
-    @return 0 for success or an error code for failure
-*/
-//~ alias GitCredAcquireCallback = GitCred function(
-    //~ in char[] url,
-	//~ in char[] usernameFromURL,
-	//~ uint allowedTypes);
+alias GitCredAcquireDelegate = GitCred delegate(
+    in char[] url,
+    in char[] usernameFromURL,
+    uint allowedTypes);
