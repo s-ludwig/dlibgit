@@ -122,9 +122,9 @@ enum GIT_IDXENTRY_NEW_SKIP_WORKTREE = (1 << 9);
 
 /** Capabilities of system that affect index actions. */
 enum git_indexcap_t {
-	GIT_INDEXCAP_IGNORE_CASE = 1,
-	GIT_INDEXCAP_NO_FILEMODE = 2,
-	GIT_INDEXCAP_NO_SYMLINKS = 4,
+	GIT_INDEXCAP_IGNORE_CASE = 1u,
+	GIT_INDEXCAP_NO_FILEMODE = 2u,
+	GIT_INDEXCAP_NO_SYMLINKS = 4u,
 	GIT_INDEXCAP_FROM_OWNER  = ~0u
 } ;
 
@@ -143,6 +143,14 @@ enum git_index_add_option_t {
 } ;
 
 mixin _ExportEnumMembers!git_index_add_option_t;
+
+/**
+ * Match any index stage.
+ *
+ * Some index APIs take a stage to match; pass this value to match
+ * any entry matching the path regardless of stage.
+ */
+#define GIT_INDEX_STAGE_ANY -1
 
 /** @name Index File Functions
  *
@@ -220,13 +228,23 @@ uint git_index_caps(const(git_index)* index);
 int git_index_set_caps(git_index *index, uint caps);
 
 /**
- * Update the contents of an existing index object in memory
- * by reading from the hard disk.
+ * Update the contents of an existing index object in memory by reading
+ * from the hard disk.
+ *
+ * If `force` is true, this performs a "hard" read that discards in-memory
+ * changes and always reloads the on-disk index data.  If there is no
+ * on-disk version, the index will be cleared.
+ *
+ * If `force` is false, this does a "soft" read that reloads the index
+ * data from disk only if it has changed since the last time it was
+ * loaded.  Purely in-memory index data will be untouched.  Be aware: if
+ * there are changes on disk, unwritten in-memory changes are discarded.
  *
  * @param index an existing index object
+ * @param force if true, always reload, vs. only read if file has changed
  * @return 0 or an error code
  */
-int git_index_read(git_index *index);
+int git_index_read(git_index *index, int force);
 
 /**
  * Write an existing index object from memory back to disk
@@ -236,6 +254,14 @@ int git_index_read(git_index *index);
  * @return 0 or an error code
  */
 int git_index_write(git_index *index);
+
+/**
+ * Get the full path to the index file on disk.
+ *
+ * @param index an existing index object
+ * @return path to index file or NULL for in-memory index
+ */
+const(char)* git_index_path(git_index *index);
 
 /**
  * Read a tree into the index file with stats

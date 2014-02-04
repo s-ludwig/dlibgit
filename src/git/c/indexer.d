@@ -13,23 +13,29 @@ import git.c.types;
 
 extern (C):
 
-struct git_indexer_stream
+struct git_indexer
 {
     @disable this();
     @disable this(this);
 }
 
 /**
- * Create a new streaming indexer instance
+ * Create a new indexer instance
  *
  * @param out where to store the indexer instance
  * @param path to the directory where the packfile should be stored
+ * @param mode permissions to use creating packfile or 0 for defaults
+ * @param odb object database from which to read base objects when
+ * fixing thin packs. Pass NULL if no thin pack is expected (an error
+ * will be returned if there are bases missing)
  * @param progress_cb function to call with progress information
  * @param progress_cb_payload payload for the progress callback
  */
-int git_indexer_stream_new(
-		git_indexer_stream **out_,
+int git_indexer_new(
+		git_indexer **out_,
 		const(char)* path,
+		uint mode,
+		git_odb *odb,
 		git_transfer_progress_callback progress_cb,
 		void *progress_cb_payload);
 
@@ -41,7 +47,7 @@ int git_indexer_stream_new(
  * @param size the size of the data in bytes
  * @param stats stat storage
  */
-int git_indexer_stream_add(git_indexer_stream *idx, const(void)* data, size_t size, git_transfer_progress *stats);
+int git_indexer_append(git_indexer *idx, const(void)* data, size_t size, git_transfer_progress *stats);
 
 /**
  * Finalize the pack and index
@@ -50,7 +56,7 @@ int git_indexer_stream_add(git_indexer_stream *idx, const(void)* data, size_t si
  *
  * @param idx the indexer
  */
-int git_indexer_stream_finalize(git_indexer_stream *idx, git_transfer_progress *stats);
+int git_indexer_commit(git_indexer *idx, git_transfer_progress *stats);
 
 /**
  * Get the packfile's hash
@@ -60,14 +66,14 @@ int git_indexer_stream_finalize(git_indexer_stream *idx, git_transfer_progress *
  *
  * @param idx the indexer instance
  */
-const(git_oid)*  git_indexer_stream_hash(const(git_indexer_stream)* idx);
+const(git_oid)*  git_indexer_hash(const(git_indexer)* idx);
 
 /**
  * Free the indexer and its resources
  *
  * @param idx the indexer to free
  */
-void git_indexer_stream_free(git_indexer_stream *idx);
+void git_indexer_free(git_indexer *idx);
 
 
 

@@ -105,7 +105,7 @@ int git_note_read(
 /**
  * Get the note message
  *
- * @param note
+ * @param note the note
  * @return the note message
  */
 const(char)*  git_note_message(const(git_note)* note);
@@ -114,7 +114,7 @@ const(char)*  git_note_message(const(git_note)* note);
 /**
  * Get the note object OID
  *
- * @param note
+ * @param note the note
  * @return the note object OID
  */
 const(git_oid)*  git_note_oid(const(git_note)* note);
