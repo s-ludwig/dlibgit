@@ -62,7 +62,7 @@ mixin _ExportEnumMembers!git_stash_flags;
 int git_stash_save(
 	git_oid *out_,
 	git_repository *repo,
-	git_signature *stasher,
+	const(git_signature)* stasher,
 	const(char)* message,
 	uint flags);
 

@@ -98,11 +98,15 @@ int git_repository_discover(
  *   changes from the `stat` system call).  (E.g. Searching in a user's home
  *   directory "/home/user/source/" will not return "/.git/" as the found
  *   repo if "/" is a different filesystem than "/home".)
- */
+ * * GIT_REPOSITORY_OPEN_BARE - Open repository as a bare repo regardless
+ *   of core.bare config, and defer loading config file for faster setup.
+ *   Unlike `git_repository_open_bare`, this can follow gitlinks.
+*/
 enum git_repository_open_flag_t {
 	GIT_REPOSITORY_OPEN_NO_SEARCH = (1 << 0),
 	GIT_REPOSITORY_OPEN_CROSS_FS  = (1 << 1),
-} ;
+	GIT_REPOSITORY_OPEN_BARE      = (1 << 2),
+}
 
 mixin _ExportEnumMembers!git_repository_open_flag_t;
 
@@ -184,7 +188,7 @@ int git_repository_init(
  * when initializing a new repo.  Details of individual values are:
  *
  * * BARE   - Create a bare repository with no working directory.
- * * NO_REINIT - Return an EEXISTS error if the repo_path appears to
+ * * NO_REINIT - Return an GIT_EEXISTS error if the repo_path appears to
  *        already be an git repository.
  * * NO_DOTGIT_DIR - Normally a "/.git/" will be appended to the repo
  *        path for non-bare repos (if it is not already there), but
@@ -303,7 +307,7 @@ int git_repository_init_ext(
  * @param out pointer to the reference which will be retrieved
  * @param repo a repository object
  *
- * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
+ * @return 0 on success, GIT_EUNBORNBRANCH when HEAD points to a non existing
  * branch, GIT_ENOTFOUND when HEAD is missing; an error code otherwise
  */
 int git_repository_head(git_reference **out_, git_repository *repo);
@@ -321,16 +325,16 @@ int git_repository_head(git_reference **out_, git_repository *repo);
 int git_repository_head_detached(git_repository *repo);
 
 /**
- * Check if the current branch is an orphan
+ * Check if the current branch is unborn
  *
- * An orphan branch is one named from HEAD but which doesn't exist in
+ * An unborn branch is one named from HEAD but which doesn't exist in
  * the refs namespace, because it doesn't have any commit to point to.
  *
  * @param repo Repo to test
- * @return 1 if the current branch is an orphan, 0 if it's not; error
+ * @return 1 if the current branch is unborn, 0 if it's not; error
  * code if there was an error
  */
-int git_repository_head_orphan(git_repository *repo);
+int git_repository_head_unborn(git_repository *repo);
 
 /**
  * Check if a repository is empty
@@ -481,7 +485,7 @@ int git_repository_index(git_index **out_, git_repository *repo);
  * @param out Buffer to write data into or NULL to just read required size
  * @param len Length of `out` buffer in bytes
  * @param repo Repository to read prepared message from
- * @return GIT_ENOUTFOUND if no message exists, other value < 0 for other
+ * @return GIT_ENOTFOUND if no message exists, other value < 0 for other
  *         errors, or total bytes in message (may be > `len`) on success
  */
 int git_repository_message(char *out_, size_t len, git_repository *repo);
@@ -617,7 +621,7 @@ int git_repository_set_head_detached(
  * Otherwise, the HEAD will be detached and point to the peeled Commit.
  *
  * @param repo Repository pointer
- * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
+ * @return 0 on success, GIT_EUNBORNBRANCH when HEAD points to a non existing
  * branch or an error code
  */
 int git_repository_detach_head(

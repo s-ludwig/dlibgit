@@ -22,26 +22,36 @@ import git.c.types;
 extern (C):
 
 /**
- * Find a single object, as specified by a revision string. See `man gitrevisions`,
- * or http://git-scm.com/docs/git-rev-parse.html#_specifying_revisions for
+ * Find a single object, as specified by a revision string.
+ *
+ * See `man gitrevisions`, or
+ * http://git-scm.com/docs/git-rev-parse.html#_specifying_revisions for
  * information on the syntax accepted.
+ *
+ * The returned object should be released with `git_object_free` when no
+ * longer needed.
  *
  * @param out pointer to output object
  * @param repo the repository to search in
  * @param spec the textual specification for an object
  * @return 0 on success, GIT_ENOTFOUND, GIT_EAMBIGUOUS, GIT_EINVALIDSPEC or an error code
  */
-int git_revparse_single(git_object **out_, git_repository *repo, const(char)* spec);
+int git_revparse_single(
+	git_object **out_, git_repository *repo, const(char) *spec);
 
 /**
- * Find a single object, as specified by a revision string.
- * See `man gitrevisions`,
- * or http://git-scm.com/docs/git-rev-parse.html#_specifying_revisions for
+ * Find a single object and intermediate reference by a revision string.
+ *
+ * See `man gitrevisions`, or
+ * http://git-scm.com/docs/git-rev-parse.html#_specifying_revisions for
  * information on the syntax accepted.
  *
- * In some cases (`@{<-n>}` or `<branchname>@{upstream}`), the expression may
+ * In some cases (`@{$(LT)-n$(GT)}` or `$(LT)branchname$(GT)@{upstream}`), the expression may
  * point to an intermediate reference. When such expressions are being passed
  * in, `reference_out` will be valued as well.
+ *
+ * The returned object should be released with `git_object_free` and the
+ * returned reference with `git_reference_free` when no longer needed.
  *
  * @param object_out pointer to output object
  * @param reference_out pointer to output reference or NULL
@@ -60,7 +70,7 @@ int git_revparse_ext(
  * Revparse flags.  These indicate the intended behavior of the spec passed to
  * git_revparse.
  */
-enum git_revparse_mode_t {
+enum git_revparse_mode_t : uint {
 	/** The spec targeted a single object. */
 	GIT_REVPARSE_SINGLE         = 1 << 0,
 	/** The spec targeted a range of commits. */
@@ -79,27 +89,24 @@ struct git_revspec {
 	git_object *from;
 	/** The right element of the revspec; must be freed by the user */
 	git_object *to;
-	/** The intent of the revspec */
-	uint flags;
+	/** The intent of the revspec (i.e. `git_revparse_mode_t` flags) */
+	git_revparse_mode_t flags;
 } ;
 
 /**
- * Parse a revision string for `from`, `to`, and intent. See `man gitrevisions` or
- * http://git-scm.com/docs/git-rev-parse.html#_specifying_revisions for information
- * on the syntax accepted.
+ * Parse a revision string for `from`, `to`, and intent.
  *
- * @param revspec Pointer to an user-allocated git_revspec struct where the result
- *	of the rev-parse will be stored
+ * See `man gitrevisions` or
+ * http://git-scm.com/docs/git-rev-parse.html#_specifying_revisions for
+ * information on the syntax accepted.
+ *
+ * @param revspec Pointer to an user-allocated git_revspec struct where
+ *	              the result of the rev-parse will be stored
  * @param repo the repository to search in
  * @param spec the rev-parse spec to parse
  * @return 0 on success, GIT_INVALIDSPEC, GIT_ENOTFOUND, GIT_EAMBIGUOUS or an error code
  */
 int git_revparse(
-		git_revspec *revspec,
-		git_repository *repo,
-		const(char)* spec);
-
-
-
-
-
+	git_revspec *revspec,
+	git_repository *repo,
+	const(char)* spec);

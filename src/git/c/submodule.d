@@ -7,14 +7,6 @@ module git.c.submodule;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-/**
- * @file git2/submodule.h
- * @brief Git submodule management utilities
- * @defgroup git_submodule Git submodule management routines
- * @ingroup Git
- * @{
- */
-
 import git.c.common;
 import git.c.oid;
 import git.c.util;
@@ -23,52 +15,19 @@ import git.c.types;
 extern (C):
 
 /**
- * Opaque structure representing a submodule.
+ * @file git2/submodule.h
+ * @brief Git submodule management utilities
  *
  * Submodule support in libgit2 builds a list of known submodules and keeps
  * it in the repository.  The list is built from the .gitmodules file, the
  * .git/config file, the index, and the HEAD tree.  Items in the working
  * directory that look like submodules (i.e. a git repo) but are not
  * mentioned in those places won't be tracked.
- */
-struct git_submodule
-{
-    @disable this();
-    @disable this(this);
-}
-
-/**
- * Values that could be specified for the update rule of a submodule.
  *
- * Use the DEFAULT value if you have altered the update value via
- * `git_submodule_set_update()` and wish to reset to the original default.
+ * @defgroup git_submodule Git submodule management routines
+ * @ingroup Git
+ * @{
  */
-enum git_submodule_update_t {
-	GIT_SUBMODULE_UPDATE_DEFAULT = -1,
-	GIT_SUBMODULE_UPDATE_CHECKOUT = 0,
-	GIT_SUBMODULE_UPDATE_REBASE = 1,
-	GIT_SUBMODULE_UPDATE_MERGE = 2,
-	GIT_SUBMODULE_UPDATE_NONE = 3
-} ;
-
-mixin _ExportEnumMembers!git_submodule_update_t;
-
-/**
- * Values that could be specified for how closely to examine the
- * working directory when getting submodule status.
- *
- * Use the DEFUALT value if you have altered the ignore value via
- * `git_submodule_set_ignore()` and wish to reset to the original value.
- */
-enum git_submodule_ignore_t {
-	GIT_SUBMODULE_IGNORE_DEFAULT = -1,  /* reset to default */
-	GIT_SUBMODULE_IGNORE_NONE = 0,      /* any change or untracked == dirty */
-	GIT_SUBMODULE_IGNORE_UNTRACKED = 1, /* dirty if tracked files change */
-	GIT_SUBMODULE_IGNORE_DIRTY = 2,     /* only dirty if HEAD moved */
-	GIT_SUBMODULE_IGNORE_ALL = 3        /* never dirty */
-} ;
-
-mixin _ExportEnumMembers!git_submodule_ignore_t;
 
 /**
  * Return codes for submodule status.
@@ -131,19 +90,9 @@ enum git_submodule_status_t {
 
 mixin _ExportEnumMembers!git_submodule_status_t;
 
-enum GIT_SUBMODULE_STATUS__IN_FLAGS =
-	(git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_HEAD |
-	git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_INDEX |
-	git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_CONFIG |
-	git_submodule_status_t.GIT_SUBMODULE_STATUS_IN_WD);
-
-enum GIT_SUBMODULE_STATUS__INDEX_FLAGS =
-	(git_submodule_status_t.GIT_SUBMODULE_STATUS_INDEX_ADDED |
-	git_submodule_status_t.GIT_SUBMODULE_STATUS_INDEX_DELETED |
-	git_submodule_status_t.GIT_SUBMODULE_STATUS_INDEX_MODIFIED);
-
-enum GIT_SUBMODULE_STATUS__WD_FLAGS =
-	~(GIT_SUBMODULE_STATUS__IN_FLAGS | GIT_SUBMODULE_STATUS__INDEX_FLAGS);
+enum GIT_SUBMODULE_STATUS__IN_FLAGS = 0x000Fu;
+enum GIT_SUBMODULE_STATUS__INDEX_FLAGS = 0x0070u;
+enum GIT_SUBMODULE_STATUS__WD_FLAGS = 0x3F80u;
 
 auto GIT_SUBMODULE_STATUS_IS_UNMODIFIED(T)(T S)
 {
@@ -274,7 +223,7 @@ int git_submodule_add_finalize(git_submodule *submodule);
  *            file.  If you pass this as false, you will have to get the
  *            git_index and explicitly call `git_index_write()` on it to
  *            save the change.
- * @return 0 on success, <0 on failure
+ * @return 0 on success, $(LT)0 on failure
  */
 int git_submodule_add_to_index(
 	git_submodule *submodule,
@@ -290,7 +239,7 @@ int git_submodule_add_to_index(
  * settings about remotes to the actual submodule repository.
  *
  * @param submodule The submodule to write.
- * @return 0 on success, <0 on failure.
+ * @return 0 on success, $(LT)0 on failure.
  */
 int git_submodule_save(git_submodule *submodule);
 
@@ -346,7 +295,7 @@ const(char)*  git_submodule_url(git_submodule *submodule);
  *
  * @param submodule Pointer to the submodule object
  * @param url URL that should be used for the submodule
- * @return 0 on success, <0 on failure
+ * @return 0 on success, $(LT)0 on failure
  */
 int git_submodule_set_url(git_submodule *submodule, const(char)* url);
 
@@ -380,9 +329,10 @@ const(git_oid)*  git_submodule_head_id(git_submodule *submodule);
 const(git_oid)*  git_submodule_wd_id(git_submodule *submodule);
 
 /**
- * Get the ignore rule for the submodule.
+ * Get the ignore rule that will be used for the submodule.
  *
- * There are four ignore values:
+ * These values control the behavior of `git_submodule_status()` for this
+ * submodule.  There are four ignore values:
  *
  *  - **GIT_SUBMODULE_IGNORE_NONE** will consider any change to the contents
  *    of the submodule from a clean checkout to be dirty, including the
@@ -396,6 +346,13 @@ const(git_oid)*  git_submodule_wd_id(git_submodule *submodule);
  *  - **GIT_SUBMODULE_IGNORE_ALL** means not to open the submodule repo.
  *    The working directory will be consider clean so long as there is a
  *    checked out version present.
+ *
+ * plus the special **GIT_SUBMODULE_IGNORE_RESET** which can be used with
+ * `git_submodule_set_ignore()` to revert to the on-disk setting.
+ *
+ * @param submodule The submodule to check
+ * @return The current git_submodule_ignore_t valyue what will be used for
+ *         this submodule.
  */
 git_submodule_ignore_t git_submodule_ignore(
 	git_submodule *submodule);
@@ -403,15 +360,17 @@ git_submodule_ignore_t git_submodule_ignore(
 /**
  * Set the ignore rule for the submodule.
  *
- * This sets the ignore rule in memory for the submodule.  This will be used
- * for any following actions (such as `git_submodule_status()`) while the
- * submodule is in memory.  You should call `git_submodule_save()` if you
- * want to persist the new ignore role.
+ * This sets the in-memory ignore rule for the submodule which will
+ * control the behavior of `git_submodule_status()`.
  *
- * Calling this again with GIT_SUBMODULE_IGNORE_DEFAULT or calling
- * `git_submodule_reload()` will revert the rule to the value that was in the
- * original config.
+ * To make changes persistent, call `git_submodule_save()` to write the
+ * value to disk (in the ".gitmodules" and ".git/config" files).
  *
+ * Call with `GIT_SUBMODULE_IGNORE_RESET` or call `git_submodule_reload()`
+ * to revert the in-memory rule to the value that is on disk.
+ *
+ * @param submodule The submodule to update
+ * @param ignore The new value for the ignore rule
  * @return old value for ignore
  */
 git_submodule_ignore_t git_submodule_set_ignore(
@@ -419,7 +378,16 @@ git_submodule_ignore_t git_submodule_set_ignore(
 	git_submodule_ignore_t ignore);
 
 /**
- * Get the update rule for the submodule.
+ * Get the update rule that will be used for the submodule.
+ *
+ * This value controls the behavior of the `git submodule update` command.
+ * There are four useful values documented with `git_submodule_update_t`
+ * plus the `GIT_SUBMODULE_UPDATE_RESET` which can be used to revert to
+ * the on-disk setting.
+ *
+ * @param submodule The submodule to check
+ * @return The current git_submodule_update_t value that will be used
+ *         for this submodule.
  */
 git_submodule_update_t git_submodule_update(
 	git_submodule *submodule);
@@ -427,13 +395,17 @@ git_submodule_update_t git_submodule_update(
 /**
  * Set the update rule for the submodule.
  *
- * This sets the update rule in memory for the submodule.  You should call
- * `git_submodule_save()` if you want to persist the new update rule.
+ * The initial value comes from the ".git/config" setting of
+ * `submodule.$name.update` for this submodule (which is initialized from
+ * the ".gitmodules" file).  Using this function sets the update rule in
+ * memory for the submodule.  Call `git_submodule_save()` to write out the
+ * new update rule.
  *
- * Calling this again with GIT_SUBMODULE_UPDATE_DEFAULT or calling
- * `git_submodule_reload()` will revert the rule to the value that was in the
- * original config.
+ * Calling this again with GIT_SUBMODULE_UPDATE_RESET or calling
+ * `git_submodule_reload()` will revert the rule to the on disk value.
  *
+ * @param submodule The submodule to update
+ * @param update The new value to use
  * @return old value for update
  */
 git_submodule_update_t git_submodule_set_update(
@@ -480,7 +452,7 @@ int git_submodule_set_fetch_recurse_submodules(
  * @param submodule The submodule to write into the superproject config
  * @param overwrite By default, existing entries will not be overwritten,
  *                  but setting this to true forces them to be updated.
- * @return 0 on success, <0 on failure.
+ * @return 0 on success, $(LT)0 on failure.
  */
 int git_submodule_init(git_submodule *submodule, int overwrite);
 
@@ -504,7 +476,7 @@ int git_submodule_sync(git_submodule *submodule);
  *
  * @param repo Pointer to the submodule repo which was opened
  * @param submodule Submodule to be opened
- * @return 0 on success, <0 if submodule repo could not be opened.
+ * @return 0 on success, $(LT)0 if submodule repo could not be opened.
  */
 int git_submodule_open(
 	git_repository **repo,
@@ -536,7 +508,7 @@ int git_submodule_reload_all(git_repository *repo);
  *
  * @param status Combination of `GIT_SUBMODULE_STATUS` flags
  * @param submodule Submodule for which to get status
- * @return 0 on success, <0 on error
+ * @return 0 on success, $(LT)0 on error
  */
 int git_submodule_status(
 	uint *status,
@@ -554,7 +526,7 @@ int git_submodule_status(
  *
  * @param location_status Combination of first four `GIT_SUBMODULE_STATUS` flags
  * @param submodule Submodule for which to get status
- * @return 0 on success, <0 on error
+ * @return 0 on success, $(LT)0 on error
  */
 int git_submodule_location(
 	uint *location_status,
