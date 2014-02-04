@@ -51,12 +51,12 @@ struct git_odb_backend {
 	int function(
 		size_t *, git_otype *, git_odb_backend *, const(git_oid)* ) read_header;
 
-	/* The writer may assume that the object
-	 * has already been hashed and is passed
-	 * in the first parameter.
+	/**
+	 * Write an object into the backend. The id of the object has
+	 * already been calculated and is passed in.
 	 */
 	int function(
-		git_oid *, git_odb_backend *, const(void)* , size_t, git_otype) write;
+		git_odb_backend *, const git_oid *, const void *, size_t, git_otype) write;
 
 	int function(
 		git_odb_stream **, git_odb_backend *, size_t, git_otype) writestream;
@@ -67,13 +67,23 @@ struct git_odb_backend {
 	int function(
 		git_odb_backend *, const(git_oid)* ) exists;
 
+	/**
+	 * If the backend implements a refreshing mechanism, it should be exposed
+	 * through this endpoint. Each call to `git_odb_refresh()` will invoke it.
+	 *
+	 * However, the backend implementation should try to stay up-to-date as much
+	 * as possible by itself as libgit2 will not automatically invoke
+	 * `git_odb_refresh()`. For instance, a potential strategy for the backend
+	 * implementation to achieve this could be to internally invoke this
+	 * endpoint on failed lookups (ie. `exists()`, `read()`, `read_header()`).
+	 */
 	int function(git_odb_backend *) refresh;
 
 	int function(
 		git_odb_backend *, git_odb_foreach_cb cb, void *payload) foreach_;
 
 	int function(
-		git_odb_writepack **, git_odb_backend *,
+		git_odb_writepack **, git_odb_backend *, git_odb *odb,
 		git_transfer_progress_callback progress_cb, void *progress_payload) writepack;
 
 	void function(git_odb_backend *) free;

@@ -1,4 +1,4 @@
-module git.c.version_;
+module git.c.sys.reflog;
 
 /*
  * Copyright (C) the libgit2 contributors. All rights reserved.
@@ -7,9 +7,9 @@ module git.c.version_;
  * a Linking Exception. For full terms see the included COPYING file.
  */
 
-extern (C):
+import git.c.common;
+import git.c.types;
+import git.c.oid;
 
-enum LIBGIT2_VERSION = "0.20.0";
-enum LIBGIT2_VER_MAJOR = 0;
-enum LIBGIT2_VER_MINOR = 20;
-enum LIBGIT2_VER_REVISION = 0;
+git_reflog_entry* git_reflog_entry__alloc();
+void git_reflog_entry__free(git_reflog_entry *entry);

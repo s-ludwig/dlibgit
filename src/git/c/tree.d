@@ -201,6 +201,17 @@ git_otype git_tree_entry_type(const(git_tree_entry)* entry);
 git_filemode_t git_tree_entry_filemode(const(git_tree_entry)* entry);
 
 /**
+ * Get the raw UNIX file attributes of a tree entry
+ *
+ * This function does not perform any normalization and is only useful
+ * if you need to be able to recreate the original tree object.
+ *
+ * @param entry a tree entry
+ * @return filemode as an integer
+ */
+git_filemode_t git_tree_entry_filemode_raw(const(git_tree_entry)* entry);
+
+/**
  * Compare two tree entries
  *
  * @param e1 first tree entry
@@ -210,7 +221,7 @@ git_filemode_t git_tree_entry_filemode(const(git_tree_entry)* entry);
 int git_tree_entry_cmp(const(git_tree_entry)* e1, const(git_tree_entry)* e2);
 
 /**
- * Convert a tree entry to the git_object it points too.
+ * Convert a tree entry to the git_object it points to.
  *
  * You must call `git_object_free()` on the object when you are done with it.
  *

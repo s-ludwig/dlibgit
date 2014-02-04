@@ -23,6 +23,33 @@ extern (C):
 
 
 /**
+ * Every iterator must have this struct as its first element, so the
+ * API can talk to it. You'd define your iterator as
+ *
+ *     struct my_iterator {
+ *             git_config_iterator parent;
+ *             ...
+ *     }
+ *
+ * and assign `iter->parent.backend` to your `git_config_backend`.
+ */
+struct git_config_iterator {
+	git_config_backend *backend;
+	uint flags;
+
+	/**
+	 * Return the current entry and advance the iterator. The
+	 * memory belongs to the library.
+	 */
+	int function(git_config_entry **entry, git_config_iterator *iter) next;
+
+	/**
+	 * Free the iterator
+	 */
+	void function(git_config_iterator *iter) free;
+}
+
+/**
  * Generic backend that implements the interface to
  * access a configuration file
  */
@@ -33,11 +60,11 @@ struct git_config_backend {
 	/* Open means open the file/database and parse if necessary */
 	int function(git_config_backend *, git_config_level_t level) open;
 	int function(const(git_config_backend)*, const(char)* key, const(git_config_entry)** entry) get;
-	int function(git_config_backend *, const(char)* key, const(char)* regexp, git_config_foreach_cb callback, void *payload) get_multivar;
 	int function(git_config_backend *, const(char)* key, const(char)* value) set;
 	int function(git_config_backend *cfg, const(char)* name, const(char)* regexp, const(char)* value) set_multivar;
 	int function(git_config_backend *, const(char)* key) del;
-	int function(git_config_backend *, const(char)* , git_config_foreach_cb callback, void *payload) _foreach;
+	int function(struct git_config_backend *, const char *key, const char *regexp) del_multivar;
+	int function(git_config_iterator **, struct git_config_backend *) iterator;
 	int function(git_config_backend *) refresh;
 	void function(git_config_backend *) free;
 }

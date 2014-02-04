@@ -39,7 +39,6 @@ extern (C):
  */
 int git_repository_new(git_repository **out_);
 
-
 /**
  * Reset all the internal state in a repository.
  *
@@ -52,6 +51,25 @@ int git_repository_new(git_repository **out_);
  * before deallocation the repo.
  */
 void git_repository__cleanup(git_repository *repo);
+
+/**
+ * Update the filesystem config settings for an open repository
+ *
+ * When a repository is initialized, config values are set based on the
+ * properties of the filesystem that the repository is on, such as
+ * "core.ignorecase", "core.filemode", "core.symlinks", etc.  If the
+ * repository is moved to a new filesystem, these properties may no
+ * longer be correct and API calls may not behave as expected.  This
+ * call reruns the phase of repository initialization that sets those
+ * properties to compensate for the current filesystem of the repo.
+ *
+ * @param repo A repository object
+ * @param recurse_submodules Should submodules be updated recursively
+ * @returrn 0 on success, < 0 on error
+ */
+int git_repository_reinit_filesystem(
+	git_repository *repo,
+	int recurse_submodules);
 
 /**
  * Set the configuration file for this repository

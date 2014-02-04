@@ -60,7 +60,7 @@ struct git_reference_iterator {
 
 /** An instance for a custom backend */
 struct git_refdb_backend {
-	uint version_ = GIT_ODB_BACKEND_VERSION;
+	uint version_ = GIT_REFDB_BACKEND_VERSION;
 
 	/**
 	 * Queries the refdb backend to determine if the given ref_name
@@ -105,7 +105,7 @@ struct git_refdb_backend {
 	 * Deletes the given reference from the refdb.  A refdb implementation
 	 * must provide this function.
 	 */
-	int function(git_refdb_backend *backend, const(char)* ref_name) delete_;
+	int function(git_refdb_backend *backend, const(char)* ref_name) del;
 
 	/**
 	 * Suggests that the given refdb compress or optimize its references.
@@ -121,10 +121,30 @@ struct git_refdb_backend {
 	 * provide this function; if it is not provided, nothing will be done.
 	 */
 	void function(git_refdb_backend *backend) free;
+
+	/**
+	 * Read the reflog for the given reference name.
+	 */
+	int function(git_reflog **out_, git_refdb_backend *backend, const(char)* name) reflog_read;
+
+	/**
+	 * Write a reflog to disk.
+	 */
+	int function(git_refdb_backend *backend, git_reflog *reflog) reflog_write;
+
+	/**
+	 * Rename a reflog
+	 */
+	int function(git_refdb_backend *_backend, const(char)* old_name, const(char)* new_name) reflog_rename;
+
+	/**
+	 * Remove a reflog.
+	 */
+	int function(git_refdb_backend *backend, const(char)* name) reflog_delete;
 }
 
-enum GIT_ODB_BACKEND_VERSION = 1;
-enum git_refdb_backend GIT_ODB_BACKEND_INIT = { GIT_ODB_BACKEND_VERSION };
+enum GIT_REFDB_BACKEND_VERSION = 1;
+enum git_refdb_backend GIT_REFDB_BACKEND_INIT = { GIT_REFDB_BACKEND_VERSION };
 
 /**
  * Constructors for default filesystem-based refdb backend

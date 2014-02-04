@@ -32,12 +32,20 @@ version (GIT_SSH)
  *** Begin interface for credentials acquisition ***
  */
 
+/** Authentication type requested */
 enum git_credtype_t {
 	/* git_cred_userpass_plaintext */
-	GIT_CREDTYPE_USERPASS_PLAINTEXT = 1,
-	GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE = 2,
-	GIT_CREDTYPE_SSH_PUBLICKEY = 3,
-} ;
+	GIT_CREDTYPE_USERPASS_PLAINTEXT = (1u << 0),
+
+	/* git_cred_ssh_key */
+	GIT_CREDTYPE_SSH_KEY = (1u << 1),
+
+	/* git_cred_ssh_custom */
+	GIT_CREDTYPE_SSH_CUSTOM = (1u << 2),
+
+	/* git_cred_default */
+	GIT_CREDTYPE_DEFAULT = (1u << 3),
+}
 
 mixin _ExportEnumMembers!git_credtype_t;
 
@@ -47,38 +55,56 @@ struct git_cred {
 	void function(git_cred *cred) free;
 };
 
-/* A plaintext username and password */
+/** A plaintext username and password */
 struct git_cred_userpass_plaintext {
 	git_cred parent;
 	char *username;
 	char *password;
 };
 
-version (GIT_SSH)
-{
+version (GIT_SSH) {
+	//typedef LIBSSH2_USERAUTH_PUBLICKEY_SIGN_FUNC((*git_cred_sign_callback));
     static assert(0, "dlibgit does not support SSH yet.");
-    // typedef LIBSSH2_USERAUTH_PUBLICKEY_SIGN_FUNC((*git_cred_sign_callback));
-
-    /* A ssh key file and passphrase */
-    struct git_cred_ssh_keyfile_passphrase {
-        git_cred parent;
-        char *publickey;
-        char *privatekey;
-        char *passphrase;
-    };
-
-    /* A ssh public key and authentication callback */
-    struct git_cred_ssh_publickey {
-        git_cred parent;
-        char *publickey;
-        size_t publickey_len;
-        void *sign_callback;
-        void *sign_data;
-    };
+} else {
+	alias git_cred_sign_callback = int function(void *, ...);
 }
 
 /**
- * Creates a new plain-text username and password credential object.
+ * A ssh key from disk
+ */
+struct git_cred_ssh_key {
+	git_cred parent;
+	char *username;
+	char *publickey;
+	char *privatekey;
+	char *passphrase;
+}
+
+/**
+ * A key with a custom signature function
+ */
+struct git_cred_ssh_custom {
+	git_cred parent;
+	char *username;
+	char *publickey;
+	size_t publickey_len;
+	void *sign_callback;
+	void *sign_data;
+}
+
+/** A key for NTLM/Kerberos "default" credentials */
+alias git_cred_default = git_cred;
+
+/**
+ * Check whether a credential object contains username information.
+ *
+ * @param cred object to check
+ * @return 1 if the credential object has non-NULL username, 0 otherwise
+ */
+int git_cred_has_username(git_cred *cred);
+
+/**
+ * Create a new plain-text username and password credential object.
  * The supplied credential parameter will be internally duplicated.
  *
  * @param out The newly created credential object.
@@ -91,56 +117,68 @@ int git_cred_userpass_plaintext_new(
 	const(char)* username,
 	const(char)* password);
 
-version (GIT_SSH)
-{
-    static assert(0, "dlibgit does not support SSH yet.");
-    // typedef LIBSSH2_USERAUTH_PUBLICKEY_SIGN_FUNC((*git_cred_sign_callback));
+/**
+ * Create a new passphrase-protected ssh key credential object.
+ * The supplied credential parameter will be internally duplicated.
+ *
+ * @param out The newly created credential object.
+ * @param username username to use to authenticate
+ * @param publickey The path to the public key of the credential.
+ * @param privatekey The path to the private key of the credential.
+ * @param passphrase The passphrase of the credential.
+ * @return 0 for success or an error code for failure
+ */
+int git_cred_ssh_key_new(
+	git_cred **out_,
+	const(char)* username,
+	const(char)* publickey,
+	const(char)* privatekey,
+	const(char)* passphrase);
 
-    /**
-     * Creates a new ssh key file and passphrase credential object.
-     * The supplied credential parameter will be internally duplicated.
-     *
-     * @param out The newly created credential object.
-     * @param publickey The path to the public key of the credential.
-     * @param privatekey The path to the private key of the credential.
-     * @param passphrase The passphrase of the credential.
-     * @return 0 for success or an error code for failure
-     */
-    int git_cred_ssh_keyfile_passphrase_new(
-        git_cred **out_,
-        const(char)* publickey,
-        const(char)* privatekey,
-        const(char)* passphrase);
+/**
+ * Create an ssh key credential with a custom signing function.
+ *
+ * This lets you use your own function to sign the challenge.
+ *
+ * This function and its credential type is provided for completeness
+ * and wraps `libssh2_userauth_publickey()`, which is undocumented.
+ *
+ * The supplied credential parameter will be internally duplicated.
+ *
+ * @param out The newly created credential object.
+ * @param username username to use to authenticate
+ * @param publickey The bytes of the public key.
+ * @param publickey_len The length of the public key in bytes.
+ * @param sign_fn The callback method to sign the data during the challenge.
+ * @param sign_data The data to pass to the sign function.
+ * @return 0 for success or an error code for failure
+ */
+int git_cred_ssh_custom_new(
+	git_cred **out_,
+	const(char)* username,
+	const(char)* publickey,
+	size_t publickey_len,
+	git_cred_sign_callback sign_fn,
+	void *sign_data);
 
-    /**
-     * Creates a new ssh public key credential object.
-     * The supplied credential parameter will be internally duplicated.
-     *
-     * @param out The newly created credential object.
-     * @param publickey The bytes of the public key.
-     * @param publickey_len The length of the public key in bytes.
-     * @param sign_callback The callback method for authenticating.
-     * @param sign_data The abstract data sent to the sign_callback method.
-     * @return 0 for success or an error code for failure
-     */
-    int git_cred_ssh_publickey_new(
-        git_cred **out_,
-        const(char)* publickey,
-        size_t publickey_len,
-        git_cred_sign_callback,
-        void *sign_data);
-}
+/**
+ * Create a "default" credential usable for Negotiate mechanisms like NTLM
+ * or Kerberos authentication.
+ *
+ * @return 0 for success or an error code for failure
+ */
+int git_cred_default_new(git_cred **out_);
 
 /**
  * Signature of a function which acquires a credential object.
  *
- * @param cred The newly created credential object.
- * @param url The resource for which we are demanding a credential.
- * @param username_from_url The username that was embedded in a "user@host"
+ * - cred: The newly created credential object.
+ * - url: The resource for which we are demanding a credential.
+ * - username_from_url: The username that was embedded in a "user@host"
  *                          remote url, or NULL if not included.
- * @param allowed_types A bitmask stating which cred types are OK to return.
- * @param payload The payload provided when specifying this callback.
- * @return 0 for success or an error code for failure
+ * - allowed_types: A bitmask stating which cred types are OK to return.
+ * - payload: The payload provided when specifying this callback.
+ * - returns 0 for success or non-zero to indicate an error
  */
 alias git_cred_acquire_cb = int function(
 	git_cred **cred,
@@ -164,7 +202,7 @@ enum git_transport_flags_t {
 
 mixin _ExportEnumMembers!git_transport_flags_t;
 
-alias git_transport_message_cb = void function(const(char)* str, int len, void *data);
+alias git_transport_message_cb = int function(const(char)* str, int len, void *data);
 
 struct git_transport
 {
@@ -185,12 +223,13 @@ struct git_transport
 		int direction,
 		int flags) connect;
 
-	/* This function may be called after a successful call to connect(). The
-	 * provided callback is invoked for each ref discovered on the remote
-	 * end. */
-	int function(git_transport *transport,
-		git_headlist_cb list_cb,
-		void *payload) ls;
+	/* This function may be called after a successful call to
+	 * connect(). The array returned is owned by the transport and
+	 * is guranteed until the next call of a transport function. */
+	int (*ls)(
+		const(git_remote_head)*** out_,
+		size_t *size,
+		git_transport *transport);
 
 	/* Executes the push whose context is in the git_push object. */
 	int function(git_transport *transport, git_push *push) push;
@@ -246,6 +285,40 @@ int git_transport_new(git_transport **out_, git_remote *owner, const(char)* url)
 
 /* Signature of a function which creates a transport */
 alias git_transport_cb = int function(git_transport **out_, git_remote *owner, void *param);
+
+/**
+ * Add a custom transport definition, to be used in addition to the built-in
+ * set of transports that come with libgit2.
+ *
+ * The caller is responsible for synchronizing calls to git_transport_register
+ * and git_transport_unregister with other calls to the library that
+ * instantiate transports.
+ *
+ * @param prefix The scheme (ending in "://") to match, i.e. "git://"
+ * @param priority The priority of this transport relative to others with
+ *		the same prefix. Built-in transports have a priority of 1.
+ * @param cb The callback used to create an instance of the transport
+ * @param param A fixed parameter to pass to cb at creation time
+ * @return 0 or an error code
+ */
+int git_transport_register(
+	const(char) *prefix,
+	uint priority,
+	git_transport_cb cb,
+	void *param);
+
+/**
+ *
+ * Unregister a custom transport definition which was previously registered
+ * with git_transport_register.
+ *
+ * @param prefix From the previous call to git_transport_register
+ * @param priority From the previous call to git_transport_register
+ * @return 0 or an error code
+ */
+int git_transport_unregister(
+	const(char) *prefix,
+	uint priority);
 
 /* Transports which come with libgit2 (match git_transport_cb). The expected
  * value for "param" is listed in-line below. */
@@ -324,19 +397,19 @@ struct git_smart_subtransport_stream {
 	git_smart_subtransport *subtransport;
 
 	int function(
-			git_smart_subtransport_stream *stream,
-			char *buffer,
-			size_t buf_size,
-			size_t *bytes_read) read;
+		git_smart_subtransport_stream *stream,
+		char *buffer,
+		size_t buf_size,
+		size_t *bytes_read) read;
 
 	int function(
-			git_smart_subtransport_stream *stream,
-			const(char)* buffer,
-			size_t len) write;
+		git_smart_subtransport_stream *stream,
+		const(char)* buffer,
+		size_t len) write;
 
 	void function(
-			git_smart_subtransport_stream *stream) free;
-} ;
+		git_smart_subtransport_stream *stream) free;
+}
 
 /* An implementation of a subtransport which carries data for the
  * smart transport */
@@ -356,7 +429,7 @@ struct git_smart_subtransport {
 	int function(git_smart_subtransport *transport) close;
 
 	void function(git_smart_subtransport *transport) free;
-};
+}
 
 /* A function which creates a new subtransport for the smart transport */
 alias git_smart_subtransport_cb = int function(
