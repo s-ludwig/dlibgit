@@ -432,7 +432,7 @@ mixin _ExportEnumMembers!git_remote_completion_type;
  * about the progress of the network operations.
  */
 struct git_remote_callbacks {
-	uint version;
+	uint version_ = GIT_REMOTE_CALLBACKS_VERSION;
 	/**
 	 * Textual progress from the remote. Text send over the
 	 * progress side-band will be passed to this function (this is
@@ -450,14 +450,14 @@ struct git_remote_callbacks {
 	 * This will be called if the remote host requires
 	 * authentication in order to connect to it.
 	 */
-	int function(git_cred **cred, const(char)* url, const(char)* username_from_url, unsigned int allowed_types, void *data) credentials;
+	int function(git_cred **cred, const(char)* url, const(char)* username_from_url, uint allowed_types, void *data) credentials;
 
 	/**
 	 * During the download of new data, this will be regularly
 	 * called with the current count of progress done by the
 	 * indexer.
 	 */
-	int function(const git_transfer_progress *stats, void *data) transfer_progress;
+	int function(const(git_transfer_progress)* stats, void *data) transfer_progress;
 
 	/**
 	 * Each time a reference is updated locally, this function
@@ -503,7 +503,7 @@ mixin _ExportEnumMembers!git_remote_autotag_option_t;
 /**
  * Retrieve the tag auto-follow setting
  *
- * @param remote the remote to query
+ * @param remote the re-mote to query
  * @return the auto-follow setting
  */
 git_remote_autotag_option_t git_remote_autotag(git_remote *remote);

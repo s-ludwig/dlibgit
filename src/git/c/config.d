@@ -18,6 +18,7 @@ module git.c.config;
 import git.c.common;
 import git.c.types;
 import git.c.util;
+import git.c.sys.config;
 
 extern (C):
 

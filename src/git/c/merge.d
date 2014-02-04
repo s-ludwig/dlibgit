@@ -91,7 +91,7 @@ struct git_merge_opts {
 }
 
 enum GIT_MERGE_OPTS_VERSION = 1;
-enum git_merge_opts GIT_MERGE_OPTS_INIT = {GIT_MERGE_OPTS_VERSION, 0, GIT_MERGE_TREE_OPTS_INIT, GIT_CHECKOUT_OPTS_INIT};
+enum git_merge_opts GIT_MERGE_OPTS_INIT = {GIT_MERGE_OPTS_VERSION, cast(git_merge_flags_t)0, GIT_MERGE_TREE_OPTS_INIT, GIT_CHECKOUT_OPTS_INIT};
 
 
 /**

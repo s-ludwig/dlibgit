@@ -10,6 +10,7 @@ module git.c.diff;
 import git.c.common;
 import git.c.types;
 import git.c.oid;
+import git.c.strarray;
 import git.c.tree;
 import git.c.refs;
 
@@ -377,8 +378,8 @@ enum GIT_DIFF_OPTIONS_VERSION = 1;
 /* Stack initializer for diff options.  Alternatively use
  * `git_diff_options_init` programmatic initialization.
  */
-enum git_diff_options = GIT_DIFF_OPTIONS_INIT =
-	{GIT_DIFF_OPTIONS_VERSION, 0, GIT_SUBMODULE_IGNORE_DEFAULT, {NULL,0}, NULL, NULL, 3}
+enum git_diff_options GIT_DIFF_OPTIONS_INIT =
+	{GIT_DIFF_OPTIONS_VERSION, 0, git_submodule_ignore_t.GIT_SUBMODULE_IGNORE_DEFAULT, {null,0}, null, null, 3};
 
 /**
  * When iterating over a diff, callback that will be made per file.
@@ -512,10 +513,10 @@ enum git_diff_find_t {
  */
 struct git_diff_similarity_metric {
 	int function(
-		void **out, const(git_diff_file)* file,
+		void **out_, const(git_diff_file)* file,
 		const(char)* fullpath, void *payload) file_signature;
 	int function(
-		void **out, const(git_diff_file)* file,
+		void **out_, const(git_diff_file)* file,
 		const(char)* buf, size_t buflen, void *payload) buffer_signature;
 	void function(void *sig, void *payload) free_signature;
 	int function(int *score, void *siga, void *sigb, void *payload) similarity;

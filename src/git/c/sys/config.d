@@ -63,8 +63,8 @@ struct git_config_backend {
 	int function(git_config_backend *, const(char)* key, const(char)* value) set;
 	int function(git_config_backend *cfg, const(char)* name, const(char)* regexp, const(char)* value) set_multivar;
 	int function(git_config_backend *, const(char)* key) del;
-	int function(struct git_config_backend *, const char *key, const char *regexp) del_multivar;
-	int function(git_config_iterator **, struct git_config_backend *) iterator;
+	int function(git_config_backend *, const(char)* key, const(char)* regexp) del_multivar;
+	int function(git_config_iterator **, git_config_backend *) iterator;
 	int function(git_config_backend *) refresh;
 	void function(git_config_backend *) free;
 }

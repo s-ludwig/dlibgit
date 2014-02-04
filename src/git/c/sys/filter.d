@@ -8,6 +8,9 @@ module git.c.sys.filter;
  */
 
 import git.c.filter;
+import git.c.buffer;
+import git.c.oid;
+import git.c.types;
 
 /**
  * @file git2/sys/filter.h

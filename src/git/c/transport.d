@@ -226,10 +226,10 @@ struct git_transport
 	/* This function may be called after a successful call to
 	 * connect(). The array returned is owned by the transport and
 	 * is guranteed until the next call of a transport function. */
-	int (*ls)(
+	int function(
 		const(git_remote_head)*** out_,
 		size_t *size,
-		git_transport *transport);
+		git_transport *transport) ls;
 
 	/* Executes the push whose context is in the git_push object. */
 	int function(git_transport *transport, git_push *push) push;

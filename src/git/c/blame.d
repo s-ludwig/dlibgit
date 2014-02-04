@@ -17,6 +17,7 @@ module git.c.blame;
 
 import git.c.common;
 import git.c.oid;
+import git.c.types;
 
 extern(C):
 
@@ -76,6 +77,8 @@ struct git_blame_options {
 	uint32_t max_line;
 }
 
+enum GIT_BLAME_OPTIONS_VERSION = 1;
+enum git_blame_options GIT_BLAME_OPTIONS_INIT = {GIT_BLAME_OPTIONS_VERSION};
 
 /**
  * Structure that represents a blame hunk.
