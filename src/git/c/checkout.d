@@ -134,6 +134,13 @@ enum git_checkout_strategy_t {
 	/** Don't refresh index/config/etc before doing checkout */
 	GIT_CHECKOUT_NO_REFRESH = (1u << 9),
 
+	/** Allow checkout to skip unmerged files */
+	GIT_CHECKOUT_SKIP_UNMERGED = (1u << 10),
+	/** For unmerged files, checkout stage 2 from index */
+	GIT_CHECKOUT_USE_OURS = (1u << 11),
+	/** For unmerged files, checkout stage 3 from index */
+	GIT_CHECKOUT_USE_THEIRS = (1u << 12),
+
 	/** Treat pathspec as simple list of exact match file paths */
 	GIT_CHECKOUT_DISABLE_PATHSPEC_MATCH = (1u << 13),
 
@@ -143,13 +150,6 @@ enum git_checkout_strategy_t {
 	/**
 	 * THE FOLLOWING OPTIONS ARE NOT YET IMPLEMENTED
 	 */
-
-	/** Allow checkout to skip unmerged files (NOT IMPLEMENTED) */
-	GIT_CHECKOUT_SKIP_UNMERGED = (1u << 10),
-	/** For unmerged files, checkout stage 2 from index (NOT IMPLEMENTED) */
-	GIT_CHECKOUT_USE_OURS = (1u << 11),
-	/** For unmerged files, checkout stage 3 from index (NOT IMPLEMENTED) */
-	GIT_CHECKOUT_USE_THEIRS = (1u << 12),
 
 	/** Recursively checkout submodules with same options (NOT IMPLEMENTED) */
 	GIT_CHECKOUT_UPDATE_SUBMODULES = (1u << 16),
@@ -240,6 +240,9 @@ struct git_checkout_opts {
 	git_tree *baseline; /** expected content of workdir, defaults to HEAD */
 
 	const(char)* target_directory; /** alternative checkout path to workdir */
+
+	const(char)* our_label; /** the name of the "our" side of conflicts */
+	const(char)* their_label; /** the name of the "their" side of conflicts */
 };
 
 enum GIT_CHECKOUT_OPTS_VERSION = 1;
@@ -251,13 +254,13 @@ enum git_checkout_opts GIT_CHECKOUT_OPTS_INIT = { GIT_CHECKOUT_OPTS_VERSION };
  *
  * @param repo repository to check out (must be non-bare)
  * @param opts specifies checkout options (may be NULL)
- * @return 0 on success, GIT_EORPHANEDHEAD when HEAD points to a non existing
+ * @return 0 on success, GIT_EUNBORNBRANCH when HEAD points to a non existing
  * branch, GIT_ERROR otherwise (use giterr_last for information
  * about the error)
  */
 int git_checkout_head(
 	git_repository *repo,
-	git_checkout_opts *opts);
+	const(git_checkout_opts)* opts);
 
 /**
  * Updates files in the working tree to match the content of the index.
@@ -271,7 +274,7 @@ int git_checkout_head(
 int git_checkout_index(
 	git_repository *repo,
 	git_index *index,
-	git_checkout_opts *opts);
+	const(git_checkout_opts)* opts);
 
 /**
  * Updates files in the index and working tree to match the content of the
@@ -279,7 +282,7 @@ int git_checkout_index(
  *
  * @param repo repository to check out (must be non-bare)
  * @param treeish a commit, tag or tree which content will be used to update
- * the working directory
+ * the working directory (or NULL to use HEAD)
  * @param opts specifies checkout options (may be NULL)
  * @return 0 on success, GIT_ERROR otherwise (use giterr_last for information
  * about the error)
@@ -287,7 +290,7 @@ int git_checkout_index(
 int git_checkout_tree(
 	git_repository *repo,
 	const(git_object)* treeish,
-	git_checkout_opts *opts);
+	const(git_checkout_opts)* opts);
 
 
 

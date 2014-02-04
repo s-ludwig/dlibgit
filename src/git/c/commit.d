@@ -25,6 +25,9 @@ extern (C):
 /**
  * Lookup a commit object from a repository.
  *
+ * The returned object should be released with `git_commit_free` when no
+ * longer needed.
+ *
  * @param commit pointer to the looked up commit
  * @param repo the repo to use when locating the commit.
  * @param id identity of the commit to locate. If the object is
@@ -34,8 +37,11 @@ extern (C):
 int git_commit_lookup(git_commit **commit, git_repository *repo, const(git_oid)* id);
 
 /**
- * Lookup a commit object from a repository,
- * given a prefix of its identifier (short id).
+ * Lookup a commit object from a repository, given a prefix of its
+ * identifier (short id).
+ *
+ * The returned object should be released with `git_commit_free` when no
+ * longer needed.
  *
  * @see git_object_lookup_prefix
  *
@@ -93,10 +99,21 @@ const(char)* git_commit_message_encoding(const(git_commit)* commit);
 /**
  * Get the full message of a commit.
  *
+ * The returned message will be slightly prettified by removing any
+ * potential leading newlines.
+ *
  * @param commit a previously loaded commit.
  * @return the message of a commit
  */
 const(char)* git_commit_message(const(git_commit)* commit);
+
+/**
+ * Get the full raw message of a commit.
+ *
+ * @param commit a previously loaded commit.
+ * @return the raw message of a commit
+ */
+const(char)* git_commit_message_raw(const(git_commit)* commit);
 
 /**
  * Get the commit time (i.e. committer time) of a commit.
@@ -129,6 +146,14 @@ const(git_signature)* git_commit_committer(const(git_commit)* commit);
  * @return the author of a commit
  */
 const(git_signature)* git_commit_author(const(git_commit)* commit);
+
+/**
+ * Get the full raw text of the commit header.
+ *
+ * @param commit a previously loaded commit
+ * @return the header text of the commit
+ */
+const(char)* git_commit_raw_header(const(git_commit)* commit);
 
 /**
  * Get the tree pointed to by a commit.

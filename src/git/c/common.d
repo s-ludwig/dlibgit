@@ -58,7 +58,8 @@ void git_libgit2_version(int *major, int *minor, int *rev);
 enum git_cap_t
 {
 	GIT_CAP_THREADS			= ( 1 << 0 ),
-	GIT_CAP_HTTPS			= ( 1 << 1 )
+	GIT_CAP_HTTPS			= ( 1 << 1 ),
+	GIT_CAP_SSH				= ( 1 << 2 )
 }
 
 /**
@@ -88,7 +89,9 @@ enum git_libgit2_opt_t
 	GIT_OPT_SET_CACHE_OBJECT_LIMIT,
 	GIT_OPT_SET_CACHE_MAX_SIZE,
 	GIT_OPT_ENABLE_CACHING,
-	GIT_OPT_GET_CACHED_MEMORY
+	GIT_OPT_GET_CACHED_MEMORY,
+	GIT_OPT_GET_TEMPLATE_PATH,
+	GIT_OPT_SET_TEMPLATE_PATH
 }
 
 /**
@@ -161,6 +164,18 @@ enum git_libgit2_opt_t
  *
  *		> Get the current bytes in cache and the maximum that would be
  *		> allowed in the cache.
+ *
+ *	* opts(GIT_OPT_GET_TEMPLATE_PATH, char *out, size_t len)
+ *
+ *		> Get the default template path.
+ *		> The path is written to the `out`
+ *		> buffer up to size `len`.  Returns GIT_EBUFS if buffer is too small.
+ *
+ *	* opts(GIT_OPT_SET_TEMPLATE_PATH, const char *path)
+ *
+ *		> Set the default template path.
+ *		>
+ *		> - `path` directory of template.
  *
  * @param option Option key
  * @param ... value to set the option
