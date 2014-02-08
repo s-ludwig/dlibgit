@@ -10,9 +10,9 @@ import git.repository;
 import git.types;
 import git.util;
 
-import git.c.net;
-import git.c.remote;
-import git.c.types;
+import git2.net;
+import git2.remote;
+import git2.types;
 
 import std.conv : to;
 

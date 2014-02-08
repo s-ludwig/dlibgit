@@ -12,7 +12,7 @@ import std.stdio;
 import std.string;
 import std.typecons;
 
-import git.c.clone;
+import git2.clone;
 
 import git.credentials;
 import git.checkout;
@@ -21,11 +21,11 @@ import git.repository;
 import git.types;
 import git.util;
 
-import git.c.indexer;
-import git.c.net;
-import git.c.transport;
-import git.c.types;
-import git.c.util;
+import git2.indexer;
+import git2.net;
+import git2.transport;
+import git2.types;
+import git2.util;
 
 version (GIT_SSH)
 {

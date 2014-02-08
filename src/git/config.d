@@ -6,7 +6,7 @@
  */
 module git.config;
 
-import git.c.config;
+import git2.config;
 
 /**
     Priority level of a config file.

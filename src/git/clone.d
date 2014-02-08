@@ -14,10 +14,10 @@ import git.transport;
 import git.types;
 import git.util;
 
-import git.c.clone;
-import git.c.remote;
-import git.c.transport;
-import git.c.types;
+import git2.clone;
+import git2.remote;
+import git2.transport;
+import git2.types;
 
 ///
 struct GitCloneOptions

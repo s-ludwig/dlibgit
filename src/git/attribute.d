@@ -13,10 +13,10 @@ import std.string;
 
 import git.repository;
 
-import git.c.attr;
-import git.c.common;
-import git.c.types;
-import git.c.util;
+import git2.attr;
+import git2.common;
+import git2.types;
+import git2.util;
 
 /**
     Git attributes, see:

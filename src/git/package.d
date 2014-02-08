@@ -27,6 +27,6 @@ public
 
 private
 {
-    import git.c;
+    import git2.all;
     import git.util;
 }

@@ -15,7 +15,7 @@ import std.conv;
 import std.exception;
 import std.string;
 
-import git.c.errors;
+import git2.errors;
 
 import git.exception;
 
@@ -56,7 +56,7 @@ package void require(bool state, string file = __FILE__, size_t line = __LINE__)
 ///
 unittest
 {
-    import git.c.oid;
+    import git2.oid;
     git_oid oid;
     assertThrown!GitException(require(git_oid_fromstr(&oid, "foobar") == 0));
 }

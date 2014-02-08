@@ -21,12 +21,12 @@ import std.traits;
 import std.typecons;
 import std.typetuple;
 
-import git.c.common;
-import git.c.errors;
-import git.c.ignore;
-import git.c.oid;
-import git.c.repository;
-import git.c.types;
+import git2.common;
+import git2.errors;
+import git2.ignore;
+import git2.oid;
+import git2.repository;
+import git2.types;
 
 import git.common;
 import git.exception;
@@ -1149,11 +1149,11 @@ struct GitRepo
         string blobPath = buildPath(repo.workPath, "foo.text");
         std.file.write(blobPath, "blob");
 
-        import git.c.blob;
+        import git2.blob;
         git_oid _oid;
         require(0 == git_blob_create_fromworkdir(&_oid, repo._data._payload, "/foo.text"));
 
-        import git.c.refs;
+        import git2.refs;
         git_reference* ptr;
         require(0 == git_reference_create(&ptr, repo._data._payload, "MY_REF", &_oid, false));
 

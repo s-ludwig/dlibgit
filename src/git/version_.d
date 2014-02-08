@@ -9,8 +9,8 @@ module git.version_;
 import std.exception;
 import std.string;
 
-import git.c.common;
-import git.c.version_;
+import git2.common;
+import git2.version_;
 
 import git.common;
 

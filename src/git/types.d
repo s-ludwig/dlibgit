@@ -11,10 +11,10 @@ import std.conv;
 import std.exception;
 import std.string;
 
-import git.c.common;
-import git.c.errors;
-import git.c.types;
-import git.c.util;
+import git2.common;
+import git2.errors;
+import git2.types;
+import git2.util;
 
 import git.exception;
 

@@ -15,8 +15,8 @@ import std.stdio;
 import std.string;
 import std.traits;
 
-import git.c.common;
-import git.c.types;
+import git2.common;
+import git2.types;
 
 import git.config;
 import git.exception;

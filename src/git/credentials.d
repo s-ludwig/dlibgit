@@ -11,7 +11,7 @@ import std.exception;
 import std.string;
 import std.typecons;
 
-import git.c.transport;
+import git2.transport;
 
 import git.exception;
 import git.util;
