@@ -391,8 +391,3 @@ int git_tree_walk(
 	git_treewalk_mode mode,
 	git_treewalk_cb callback,
 	void *payload);
-
-
-
-
-

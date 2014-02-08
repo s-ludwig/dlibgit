@@ -506,7 +506,3 @@ void git_remote_set_update_fetchhead(git_remote *remote, int value);
  * @return 1 if the reference name is acceptable; 0 if it isn't
  */
 int git_remote_is_valid_name(const(char)* remote_name);
-
-
-
-//#endif

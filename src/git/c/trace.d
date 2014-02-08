@@ -65,7 +65,3 @@ alias git_trace_callback = void function(git_trace_level_t level, const(char)* m
  * @return 0 or an error code
  */
 int git_trace_set(git_trace_level_t level, git_trace_callback cb);
-
-
-
-

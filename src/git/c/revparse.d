@@ -98,8 +98,3 @@ int git_revparse(
 		git_revspec *revspec,
 		git_repository *repo,
 		const(char)* spec);
-
-
-
-
-

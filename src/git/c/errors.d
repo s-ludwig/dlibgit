@@ -120,8 +120,3 @@ void giterr_set_str(int error_class, const(char)* string);
  * internal value.
  */
 void giterr_set_oom();
-
-
-
-
-

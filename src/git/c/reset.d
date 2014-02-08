@@ -48,7 +48,7 @@ mixin _ExportEnumMembers!git_reset_t;
  *
  * @param repo Repository where to perform the reset operation.
  *
- * @param target Committish to which the Head should be moved to. This object
+ * @param target Commit oid to which the Head should be moved to. This object
  * must belong to the given `repo` and can either be a git_commit or a
  * git_tag. When a git_tag is being passed, it should be dereferencable
  * to a git_commit which oid will be used as the target of the branch.
@@ -71,7 +71,7 @@ int git_reset(
  *
  * @param repo Repository where to perform the reset operation.
  *
- * @param target The committish which content will be used to reset the content
+ * @param target The commit oid which content will be used to reset the content
  * of the index.
  *
  * @param pathspecs List of pathspecs to operate on.
@@ -82,7 +82,3 @@ int git_reset_default(
 	git_repository *repo,
 	git_object *target,
 	git_strarray* pathspecs);
-
-
-
-

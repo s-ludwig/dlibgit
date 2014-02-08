@@ -62,8 +62,3 @@ int git_refdb_compress(git_refdb *refdb);
  * @param refdb reference database pointer or NULL
  */
 void git_refdb_free(git_refdb *refdb);
-
-
-
-
-

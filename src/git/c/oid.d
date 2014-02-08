@@ -37,6 +37,8 @@ struct git_oid
  *		the hex sequence and have at least the number of bytes
  *		needed for an oid encoded in hex (40 bytes).
  * @return 0 or an error code
+ *
+ * $(B Note:) Equivalent to calling $(D git_oid_fromstrn) with $(D GIT_OID_HEXSZ).
  */
 int git_oid_fromstr(git_oid *out_, const(char)* str);
 
@@ -47,6 +49,9 @@ int git_oid_fromstr(git_oid *out_, const(char)* str);
  * @param str input hex string; must be at least 4 characters
  *      long and null-terminated.
  * @return 0 or an error code
+ *
+ * $(B Note:) Calling $(D git_oid_fromstrn) is faster, since
+ * $(D git_oid_fromstrp) forwards to it with an $(D strlen) call.
  */
 int git_oid_fromstrp(git_oid *out_, const(char)* str);
 
@@ -207,7 +212,11 @@ int git_oid_iszero(const(git_oid)* id);
 /**
  * OID Shortener object
  */
-struct git_oid_shorten;
+struct git_oid_shorten
+{
+    @disable this();
+    @disable this(this);
+}
 
 /**
  * Create a new OID shortener.

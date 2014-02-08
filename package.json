@@ -1,10 +1,11 @@
 {
-	"name": "dlibgit",
-	"description": "D bindings for libgit2",
-	"authors": ["Andrej Mitrovic"],
+    "name": "dlibgit",
+    "description": "D wrapper library for libgit2.",
+    "copyright": "Copyright © 2013 Andrej Mitrovic, 2014 David Nadlinger",
 	"license": "LGPL 2",
+    "authors": ["Andrej Mitrovic", "David Nadlinger"],
 	"copyFiles-windows-x86": ["bin/git2.dll"],
 	"sourceFiles-windows-x86": ["bin/git2.lib"],
-	"libs-posix": ["git2"],
+    "libs-posix": ["git2"],
 	"excludedSourceFiles": ["src/git/c/package.d"]
 }

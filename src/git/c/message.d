@@ -43,9 +43,3 @@ int git_message_prettify(
 	size_t out_size,
 	const(char)* message,
 	int strip_comments);
-
-
-
-
- /* INCLUDE_git_message_h__ */
-
