@@ -7,8 +7,5 @@
 	"dependencies": {
 		"libgit2": "==0.19.1"
 	},
-	"copyFiles-windows-x86": ["bin/git2.dll"],
-	"sourceFiles-windows-x86": ["bin/git2.lib"],
-	"libs-posix": ["git2"],
 	"excludedSourceFiles": ["src/git/c/package.d"]
 }
