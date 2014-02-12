@@ -37,7 +37,7 @@ struct GitCred
     */
     @property GitCredType credType()
     {
-        return cast(GitCredType)_data._payload.credtype;
+        return _data._payload.credtype.toDlibGitCredType();
     }
 
     /** Throw if the target credential type is not equal to credType that's stored. */
@@ -158,17 +158,27 @@ private:
     Data _data;
 }
 
+
 ///
 enum GitCredType
 {
     ///
-	plaintext = GIT_CREDTYPE_USERPASS_PLAINTEXT,
+    plaintext = 1 << 0,
 
     ///
-	passphrase = GIT_CREDTYPE_SSH_KEYFILE_PASSPHRASE,
+    passphrase = 1 << 1,
 
     ///
-	publickey = GIT_CREDTYPE_SSH_PUBLICKEY,
+    publickey = 1 << 2,
+
+    ///
+    sshKey = 1 << 3,
+
+    ///
+    sshCustom = 1 << 4,
+
+    ///
+    default_ = 1 << 5
 }
 
 /* A plaintext username and password. */
@@ -258,22 +268,45 @@ private template _credToType(GitCredType credType)
 {
     static if (credType == GitCredType.plaintext)
         alias _credToType = GitCred_PlainText;
-    else
-    version (GIT_SSH)
-    {
-        static assert(0, "dlibgit does not support SSH yet.");
+    else static if (targetLibGitVersion >= VerionInfo(0, 20, 0)) {
+        static if (credType == GitCredType.sshKey)
+            alias _credToType = GitCred_SSHKey;
+        else static if (credType == GitCredType.sshCustom)
+            alias _credToType = GitCred_SSHCustom;
+        else static assert(false);
+    } else {
+        version (GIT_SSH)
+        {
+            static assert(0, "dlibgit does not support SSH yet.");
 
-        static if (credType == GitCredType.passphrase)
-            alias _credToType = GitCred_KeyFilePassPhrase;
-        else
-        static if (credType == GitCredType.publickey)
-            alias _credToType = GitCred_PublicKey;
+            static if (credType == GitCredType.passphrase)
+                alias _credToType = GitCred_KeyFilePassPhrase;
+            else
+            static if (credType == GitCredType.publickey)
+                alias _credToType = GitCred_PublicKey;
+            else
+            static assert(0);
+        }
         else
         static assert(0);
     }
-    else
-    static assert(0);
 }
+
+private GitCredType toDlibGitCredType(git_credtype_t cred_type)
+{
+    GitCredType ret = cast(GitCredType)0;
+    if (cred_type & GIT_CREDTYPE_USERPASS_PLAINTEXT) ret |= GitCredType.plaintext;
+    if (cred_type & GIT_CREDTYPE_USERPASS_PLAINTEXT) ret |= GitCredType.plaintext;
+    static if (targetLibGitVersion >= VersionInfo(0, 20, 0)) {
+        if (cred_type & GIT_CREDTYPE_SSH_KEY) ret |= GitCredType.sshKey;
+        if (cred_type & GIT_CREDTYPE_SSH_CUSTOM) ret |= GitCredType.sshCustom;
+        if (cred_type & GIT_CREDTYPE_DEFAULT) ret |= GitCredType.default_;
+    } else {
+        if (cred_type & GIT_CREDTYPE_SSH_KEY) ret |= GitCredType.sshKey;
+        if (cred_type & GIT_CREDTYPE_SSH_CUSTOM) ret |= GitCredType.sshCustom;
+    }
+    return ret;
+ }
 
 /**
     Creates a new plain-text username and password credential object.

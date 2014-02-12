@@ -53,6 +53,14 @@ struct VersionInfo
     {
         return format("v%s", text);
     }
+
+    ///
+    int opCmp(in ref VersionInfo other)
+    const {
+        if (this.major != other.major) return this.major - other.major;
+        if (this.minor != other.minor) return this.minor - other.minor;
+        return this.revision - other.revision;
+    }
 }
 
 /**
@@ -64,9 +72,6 @@ enum targetLibGitVersion = VersionInfo(LIBGIT2_VER_MAJOR, LIBGIT2_VER_MINOR, LIB
     The current version of dlibgit.
 */
 enum dlibgitVersion = VersionInfo(0, 1, 0);
-
-/// The libgit2 version this binding is based on
-static assert(targetLibGitVersion.text == "0.19.0");
 
 /// The version of the binding itself
 static assert(dlibgitVersion.text == "0.1.0");

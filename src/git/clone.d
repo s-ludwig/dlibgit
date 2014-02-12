@@ -24,8 +24,11 @@ struct GitCloneOptions
 {
     uint version_ = git_clone_options.init.version_;
 
-    GitCheckoutOptions checkoutOptions;
+    static assert(false, "TODO");
+    //GitCheckoutOptions checkoutOptions;
+    //git_remote_callbacks remote_callbacks;
 
+    //bool ignoreCertErrors;
     bool cloneBare;
 
     TransferCallbackDelegate fetchProgessCallback;

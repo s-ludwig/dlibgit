@@ -17,6 +17,7 @@ import git2.types;
 import git2.util;
 
 import git.exception;
+import git.version_;
 
 /** Basic type (loose or packed) of any Git object. */
 enum GitType
@@ -104,10 +105,20 @@ enum ContinueWalk
  */
 struct GitTransferProgress
 {
-    uint totalObjects;
-    uint indexedObjects;
-    uint receivedObjects;
-    size_t receivedBytes;
+    static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+        uint totalObjects;
+        uint indexedObjects;
+        uint receivedObjects;
+        size_t receivedBytes;
+    } else static if (targetLibGitVersion == VersionInfo(0, 20, 0)) {
+        uint totalObjects;
+        uint indexedObjects;
+        uint receivedObjects;
+        uint localObjects;
+        uint totalDeltas;
+        uint indexedDeltas;
+        size_t receivedBytes;
+    } else static assert(false);
 }
 
 /// ditto
