@@ -12,7 +12,7 @@ import std.stdio;
 import std.string;
 import std.typecons;
 
-import git2.clone;
+import deimos.git2.clone;
 
 import git.credentials;
 import git.checkout;
@@ -21,11 +21,11 @@ import git.repository;
 import git.types;
 import git.util;
 
-import git2.indexer;
-import git2.net;
-import git2.transport;
-import git2.types;
-import git2.util;
+import deimos.git2.indexer;
+import deimos.git2.net;
+import deimos.git2.transport;
+import deimos.git2.types;
+import deimos.git2.util;
 
 version (GIT_SSH)
 {

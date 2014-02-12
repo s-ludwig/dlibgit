@@ -27,6 +27,6 @@ public
 
 private
 {
-    import git2.all;
+    import deimos.git2.all;
     import git.util;
 }

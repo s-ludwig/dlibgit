@@ -11,10 +11,10 @@ import std.conv;
 import std.exception;
 import std.string;
 
-import git2.common;
-import git2.errors;
-import git2.types;
-import git2.util;
+import deimos.git2.common;
+import deimos.git2.errors;
+import deimos.git2.types;
+import deimos.git2.util;
 
 import git.exception;
 

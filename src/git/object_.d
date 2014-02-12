@@ -5,8 +5,8 @@ import git.repository;
 import git.types;
 import git.util;
 
-import git2.object_;
-import git2.types;
+import deimos.git2.object_;
+import deimos.git2.types;
 
 // Note: This file includes none of the original comments, as they might
 // be copyrightable material.

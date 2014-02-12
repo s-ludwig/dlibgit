@@ -14,10 +14,10 @@ import git.transport;
 import git.types;
 import git.util;
 
-import git2.clone;
-import git2.remote;
-import git2.transport;
-import git2.types;
+import deimos.git2.clone;
+import deimos.git2.remote;
+import deimos.git2.transport;
+import deimos.git2.types;
 
 ///
 struct GitCloneOptions

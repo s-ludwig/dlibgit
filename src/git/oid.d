@@ -16,9 +16,9 @@ import std.stdio;
 import std.string;
 import std.typecons;
 
-import git2.common;
-import git2.oid;
-import git2.types;
+import deimos.git2.common;
+import deimos.git2.oid;
+import deimos.git2.types;
 
 import git.exception;
 import git.util;

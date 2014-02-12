@@ -8,7 +8,7 @@ module git.trace;
 
 import std.conv;
 
-import git2.trace;
+import deimos.git2.trace;
 
 import git.exception;
 import git.util;

@@ -13,12 +13,12 @@ import git.object_;
 import git.repository;
 import git.util;
 
-import git2.checkout;
-import git2.common;
-import git2.diff;
-import git2.strarray;
-import git2.types;
-import git2.util;
+import deimos.git2.checkout;
+import deimos.git2.common;
+import deimos.git2.diff;
+import deimos.git2.strarray;
+import deimos.git2.types;
+import deimos.git2.util;
 
 ///
 enum GitCheckoutStrategy

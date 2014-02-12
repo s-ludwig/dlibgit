@@ -21,12 +21,12 @@ import std.traits;
 import std.typecons;
 import std.typetuple;
 
-import git2.common;
-import git2.errors;
-import git2.ignore;
-import git2.oid;
-import git2.repository;
-import git2.types;
+import deimos.git2.common;
+import deimos.git2.errors;
+import deimos.git2.ignore;
+import deimos.git2.oid;
+import deimos.git2.repository;
+import deimos.git2.types;
 
 import git.common;
 import git.exception;
@@ -1149,11 +1149,11 @@ struct GitRepo
         string blobPath = buildPath(repo.workPath, "foo.text");
         std.file.write(blobPath, "blob");
 
-        import git2.blob;
+        import deimos.git2.blob;
         git_oid _oid;
         require(0 == git_blob_create_fromworkdir(&_oid, repo._data._payload, "/foo.text"));
 
-        import git2.refs;
+        import deimos.git2.refs;
         git_reference* ptr;
         require(0 == git_reference_create(&ptr, repo._data._payload, "MY_REF", &_oid, false));
 

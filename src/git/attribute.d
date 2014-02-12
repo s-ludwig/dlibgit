@@ -13,10 +13,10 @@ import std.string;
 
 import git.repository;
 
-import git2.attr;
-import git2.common;
-import git2.types;
-import git2.util;
+import deimos.git2.attr;
+import deimos.git2.common;
+import deimos.git2.types;
+import deimos.git2.util;
 
 /**
     Git attributes, see:
