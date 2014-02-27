@@ -49,7 +49,7 @@ GitTreeBuilder createTreeBuilder(GitTree source)
 
 ///
 struct GitTree {
-	private this(GitRepo repo, git_tree* tree)
+	package this(GitRepo repo, git_tree* tree)
 	{
 		_repo = repo;
 		_data = Data(tree);

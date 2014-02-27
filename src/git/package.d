@@ -11,6 +11,7 @@ public
     import git.attribute;
     import git.checkout;
     import git.clone;
+    import git.commit;
     import git.common;
     import git.config;
     import git.credentials;
@@ -18,8 +19,10 @@ public
     import git.net;
     import git.object_;
     import git.oid;
+    import git.reference;
     import git.remote;
     import git.repository;
+    import git.signature;
     import git.trace;
     import git.transport;
     import git.tree;
