@@ -15,11 +15,14 @@ import deimos.git2.transport;
 
 import git.exception;
 import git.util;
+import git.version_;
 
 version (GIT_SSH)
 {
     static assert(0, "dlibgit does not support SSH yet.");
 }
+
+static if (targetLibGitVersion == VersionInfo(0, 19, 0)):
 
 /* The base structure for all credential types. */
 struct GitCred

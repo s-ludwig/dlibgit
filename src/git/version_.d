@@ -53,6 +53,14 @@ struct VersionInfo
     {
         return format("v%s", text);
     }
+
+    int opCmp(in ref VersionInfo other)
+    const {
+        if (this.major != other.major) return this.major - other.major;
+        if (this.minor != other.minor) return this.minor - other.minor;
+        if (this.revision != other.revision) return this.revision - other.revision;
+        return 0;
+    }
 }
 
 /**
@@ -65,11 +73,8 @@ enum targetLibGitVersion = VersionInfo(LIBGIT2_VER_MAJOR, LIBGIT2_VER_MINOR, LIB
 */
 enum dlibgitVersion = VersionInfo(0, 1, 0);
 
-/// The libgit2 version this binding is based on
-static assert(targetLibGitVersion.text == "0.19.0");
 
-/// The version of the binding itself
-static assert(dlibgitVersion.text == "0.1.0");
+static assert(targetLibGitVersion == VersionInfo(0, 19, 0) || targetLibGitVersion == VersionInfo(0, 20, 0));
 
 /**
     Return the runtime version of the libgit2 library

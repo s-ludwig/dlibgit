@@ -17,6 +17,7 @@ import deimos.git2.types;
 import deimos.git2.util;
 
 import git.exception;
+import git.version_;
 
 /** Basic type (loose or packed) of any Git object. */
 enum GitType
@@ -107,6 +108,11 @@ struct GitTransferProgress
     uint totalObjects;
     uint indexedObjects;
     uint receivedObjects;
+    static if (targetLibGitVersion == VersionInfo(0, 20, 0)) {
+        uint local_objects;
+        uint total_deltas;
+        uint indexed_deltas;
+    }
     size_t receivedBytes;
 }
 

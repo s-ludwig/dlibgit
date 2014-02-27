@@ -9,6 +9,7 @@ module git.remote;
 import git.repository;
 import git.types;
 import git.util;
+import git.version_;
 
 import deimos.git2.net;
 import deimos.git2.remote;
@@ -132,13 +133,18 @@ struct GitRemote
         assert(connected, "Must connect(GitDirection.push) before invoking download().");
 
         immutable ctx = Ctx(progressCallback);
-        if (progressCallback)
-        {
-            require(git_remote_download(_data._payload, &cCallback, cast(void*)&ctx) == 0);
-        }
-        else
-        {
-            require(git_remote_download(_data._payload, null, null) == 0);
+        static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+            if (progressCallback)
+            {
+                require(git_remote_download(_data._payload, &cCallback, cast(void*)&ctx) == 0);
+            }
+            else
+            {
+                require(git_remote_download(_data._payload, null, null) == 0);
+            }
+        } else {
+            assert(progressCallback is null);
+            require(git_remote_download(_data._payload) == 0);
         }
     }
 

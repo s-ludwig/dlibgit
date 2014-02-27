@@ -13,6 +13,7 @@ import git.repository;
 import git.transport;
 import git.types;
 import git.util;
+import git.version_;
 
 import deimos.git2.clone;
 import deimos.git2.remote;
@@ -28,58 +29,62 @@ struct GitCloneOptions
 
     bool cloneBare;
 
-    TransferCallbackDelegate fetchProgessCallback;
+    static if (targetLibGitVersion == VersionInfo(0, 19, 0)) TransferCallbackDelegate fetchProgessCallback;
 
     string remoteName;
-    string pushURL;
-    string fetchSpec;
-    string pushSpec;
+    static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+        string pushURL;
+        string fetchSpec;
+        string pushSpec;
 
-    GitCredAcquireDelegate credAcquireCallback;
+        GitCredAcquireDelegate credAcquireCallback;
 
-    GitTransportFlags transportFlags;
-    // GitTransport transport; // TODO: translate
-    // GitRemoteCallback[] remoteCallbacks; // TODO: implement translation
-    GitRemoteAutotagOption remoteAutotag;
+        GitTransportFlags transportFlags;
+        // GitTransport transport; // TODO: translate
+        // GitRemoteCallback[] remoteCallbacks; // TODO: implement translation
+        GitRemoteAutotagOption remoteAutotag;
+    }
     string checkoutBranch;
 }
 
 
-extern(C) int cFetchProgessCallback(
-    const(git_transfer_progress)* stats,
-    void* payload)
-{
-    auto dg = (cast(GitCloneOptions*)payload).fetchProgessCallback;
-    if (dg)
+static if (targetLibGitVersion == VersionInfo(0, 19, 0))  {
+    extern(C) int cFetchProgessCallback(
+        const(git_transfer_progress)* stats,
+        void* payload)
     {
-        GitTransferProgress tp;
-        tp.tupleof = stats.tupleof;
-        return dg(tp);
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-extern(C) int cCredAcquireCallback(
-    git_cred** cred,
-    const(char)* url,
-    const(char)* username_from_url,
-    uint allowed_types,
-    void* payload)
-{
-    auto dg = (cast(GitCloneOptions*)payload).credAcquireCallback;
-    if (dg)
-    {
-        auto dCred = dg(toSlice(url), toSlice(username_from_url), allowed_types);
-        // FIXME: cred will probably be immediately freed.
-        *cred = dCred.cHandle;
-        return 0;
+        auto dg = (cast(GitCloneOptions*)payload).fetchProgessCallback;
+        if (dg)
+        {
+            GitTransferProgress tp;
+            tp.tupleof = stats.tupleof;
+            return dg(tp);
+        }
+        else
+        {
+            return 0;
+        }
     }
 
-    // FIXME: Use real error code here.
-    return 1;
+    extern(C) int cCredAcquireCallback(
+        git_cred** cred,
+        const(char)* url,
+        const(char)* username_from_url,
+        uint allowed_types,
+        void* payload)
+    {
+        auto dg = (cast(GitCloneOptions*)payload).credAcquireCallback;
+        if (dg)
+        {
+            auto dCred = dg(toSlice(url), toSlice(username_from_url), allowed_types);
+            // FIXME: cred will probably be immediately freed.
+            *cred = dCred.cHandle;
+            return 0;
+        }
+
+        // FIXME: Use real error code here.
+        return 1;
+    }
 }
 
 GitRepo cloneRepo(in char[] url, in char[] localPath, GitCloneOptions options = GitCloneOptions.init)
@@ -90,23 +95,27 @@ GitRepo cloneRepo(in char[] url, in char[] localPath, GitCloneOptions options = 
         cOpts.version_ = version_;
         checkoutOptions.toCCheckoutOpts(cOpts.checkout_opts);
         cOpts.bare = cloneBare;
-        if (fetchProgessCallback)
-        {
-            cOpts.fetch_progress_cb = &cFetchProgessCallback;
-            cOpts.fetch_progress_payload = &cOpts;
+        static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+            if (fetchProgessCallback)
+            {
+                cOpts.fetch_progress_cb = &cFetchProgessCallback;
+                cOpts.fetch_progress_payload = &cOpts;
+            }
         }
         cOpts.remote_name = remoteName.gitStr;
-        cOpts.pushurl = pushURL.gitStr;
-        cOpts.fetch_spec = fetchSpec.gitStr;
-        cOpts.push_spec = pushSpec.gitStr;
-        if (credAcquireCallback)
-        {
-            cOpts.cred_acquire_cb = &cCredAcquireCallback;
-            cOpts.cred_acquire_payload = &cOpts;
+        static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+            cOpts.pushurl = pushURL.gitStr;
+            cOpts.fetch_spec = fetchSpec.gitStr;
+            cOpts.push_spec = pushSpec.gitStr;
+            if (credAcquireCallback)
+            {
+                cOpts.cred_acquire_cb = &cCredAcquireCallback;
+                cOpts.cred_acquire_payload = &cOpts;
+            }
+            cOpts.transport_flags = transportFlags;
+            // cOpts.transport = // TODO: Translate.
+            cOpts.remote_autotag = cast(git_remote_autotag_option_t)remoteAutotag;
         }
-        cOpts.transport_flags = transportFlags;
-        // cOpts.transport = // TODO: Translate.
-        cOpts.remote_autotag = cast(git_remote_autotag_option_t)remoteAutotag;
         cOpts.checkout_branch = checkoutBranch.gitStr;
     }
 

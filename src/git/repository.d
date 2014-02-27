@@ -188,7 +188,11 @@ struct GitRepo
     */
     @property bool isHeadOrphan()
     {
-        return requireBool(git_repository_head_orphan(_data._payload));
+        static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+            return requireBool(git_repository_head_orphan(_data._payload));
+        } else {
+            return requireBool(git_repository_head_unborn(_data._payload));
+        }
     }
 
     ///
@@ -882,11 +886,9 @@ struct GitRepo
         {
             Callback callback = *cast(Callback*)payload;
 
-            // return < 1 to stop iteration. Bug in v0.19.0
+            // return < 0 to stop iteration. Bug in v0.19.0
+            // 0.20.0 and later requires just != 0, so -1 is fine there, too
             // https://github.com/libgit2/libgit2/issues/1703
-            static assert(targetLibGitVersion.text == "0.19.0",
-                "Return value must be updated for new API due to libgit Issue 1703.");
-
             static if (is(Callback == MergeHeadOpApply))
                 return callback(GitOid(*oid)) ? -1 : 0;
             else
