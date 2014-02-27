@@ -31,6 +31,7 @@ import deimos.git2.types;
 import git.common;
 import git.exception;
 import git.oid;
+import git.reference;
 import git.types;
 import git.util;
 import git.version_;
@@ -154,6 +155,13 @@ struct GitRepo
 
         // open using the base path of the .git directory
         auto repo2 = GitRepo(_testRepo.dirName);
+    }
+
+    @property GitReference head()
+    {
+        git_reference* ret;
+        require(git_repository_head(&ret, this.cHandle) == 0);
+        return GitReference(this, ret);
     }
 
     /**
