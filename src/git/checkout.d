@@ -11,6 +11,7 @@ module git.checkout;
 
 import git.object_;
 import git.repository;
+import git.tree;
 import git.util;
 
 import deimos.git2.checkout;
@@ -204,4 +205,11 @@ void checkout(GitRepo repo, GitObject treeish, GitCheckoutOptions opts = GitChec
     git_checkout_opts cOpts;
     opts.toCCheckoutOpts(cOpts);
     require(git_checkout_tree(repo.cHandle, treeish.cHandle, &cOpts) == 0);
+}
+
+void checkout(GitRepo repo, GitTree treeish, GitCheckoutOptions opts = GitCheckoutOptions.init)
+{
+    git_checkout_opts cOpts;
+    opts.toCCheckoutOpts(cOpts);
+    require(git_checkout_tree(repo.cHandle, cast(git_object*)treeish.cHandle, &cOpts) == 0);
 }
