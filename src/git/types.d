@@ -96,6 +96,19 @@ enum ContinueWalk
     yes
 }
 
+/// The return type of walker callbacks.
+enum ContinueWalkSkip
+{
+    /// Stop walk
+    no,
+
+    /// Continue walk
+    yes,
+
+    /// Skip the current sub tree
+    skip
+}
+
 /**
  * Callback for transfer progress information during remote operations (cloning,
  * fetching).

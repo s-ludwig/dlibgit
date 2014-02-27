@@ -15,7 +15,7 @@ import deimos.git2.types;
 struct GitObject
 {
     // Internal, see free-standing constructor functions below.
-    private this(GitRepo repo, git_object* obj)
+    package this(GitRepo repo, git_object* obj)
     {
         _repo = repo;
         _data = Data(obj);

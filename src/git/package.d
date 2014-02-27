@@ -22,6 +22,7 @@ public
     import git.repository;
     import git.trace;
     import git.transport;
+    import git.tree;
     import git.types;
     import git.version_;
 }

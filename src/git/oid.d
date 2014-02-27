@@ -154,7 +154,7 @@ struct GitOid
 
 package:
     // internal use only
-    git_oid _get_oid() { return _oid; }
+    ref inout(git_oid) _get_oid() inout { return _oid; }
 
 private:
     git_oid _oid;
