@@ -15,6 +15,7 @@ public
     import git.config;
     import git.credentials;
     import git.exception;
+    import git.net;
     import git.object_;
     import git.oid;
     import git.remote;

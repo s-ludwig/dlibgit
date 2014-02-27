@@ -1,17 +1,21 @@
 /*
-  *             Copyright David Nadlinger 2014.
+ *             Copyright David Nadlinger 2014.
+ *              Copyright Sönke Ludwig 2014.
  *  Distributed under the Boost Software License, Version 1.0.
  *     (See accompanying file LICENSE_1_0.txt or copy at
  *           http://www.boost.org/LICENSE_1_0.txt)
  */
 module git.remote;
 
+import git.oid;
 import git.repository;
+import git.net;
 import git.types;
 import git.util;
 import git.version_;
 
 import deimos.git2.net;
+import deimos.git2.oid;
 import deimos.git2.remote;
 import deimos.git2.types;
 
@@ -39,6 +43,23 @@ enum GitRemoteAutotagOption
     ///
     all = 2
 }
+
+///
+enum GitRemoteCompletionType {
+    download = GIT_REMOTE_COMPLETION_DOWNLOAD,
+    indexing = GIT_REMOTE_COMPLETION_INDEXING,
+    error = GIT_REMOTE_COMPLETION_ERROR,
+}
+
+///
+struct GitRemoteCallbacks {
+    void delegate(string str) progress;
+    void delegate(GitRemoteCompletionType type) completion;
+    //void delegate(GitCred *cred, string url, string username_from_url, uint allowed_types) credentials;
+    TransferCallbackDelegate transferProgress;
+}
+
+alias GitUpdateTipsDelegate = void delegate(string refname, in ref GitOid a, in ref GitOid b);
 
 
 ///
@@ -87,6 +108,11 @@ struct GitRemote
         require(git_remote_set_pushurl(_data._payload, url.gitStr) == 0);
     }
 
+    @property GitTransferProgress stats()
+    {
+        return GitTransferProgress(git_remote_stats(_data._payload));
+    }
+
     ///
     void connect(GitDirection direction)
     {
@@ -112,40 +138,70 @@ struct GitRemote
     }
 
     ///
-    void download(TransferCallbackDelegate progressCallback = null)
+    void download(TransferCallbackDelegate progressCallback)
     {
-        static struct Ctx { TransferCallbackDelegate dg; }
-        extern(C) static int cCallback(const(git_transfer_progress)* stats, void* payload)
-        {
-            auto dg = (cast(Ctx*)payload).dg;
-            if (dg)
-            {
-                GitTransferProgress tp;
-                tp.tupleof = stats.tupleof;
-                return dg(tp);
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
+        GitRemoteCallbacks cb;
+        cb.transferProgress = progressCallback;
+        download(&cb);
+    }
+    ///
+    void download(GitRemoteCallbacks* callbacks = null)
+    {
         assert(connected, "Must connect(GitDirection.push) before invoking download().");
 
-        immutable ctx = Ctx(progressCallback);
+        git_remote_callbacks gitcallbacks;
+        gitcallbacks.progress = &progress_cb;
+        gitcallbacks.completion = &completion_cb;
+        static if (targetLibGitVersion >= VersionInfo(0, 20, 0)) {
+            //gitcallbacks.credentials = &cred_acquire_cb;
+            gitcallbacks.transfer_progress = &transfer_progress_cb;
+        }
+        gitcallbacks.payload = cast(void*)callbacks;
+        require(git_remote_set_callbacks(_data._payload, &gitcallbacks) == 0);
+
         static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
-            if (progressCallback)
-            {
-                require(git_remote_download(_data._payload, &cCallback, cast(void*)&ctx) == 0);
-            }
-            else
-            {
-                require(git_remote_download(_data._payload, null, null) == 0);
-            }
+            require(git_remote_download(_data._payload, &transfer_progress_cb, cast(void*)callbacks) == 0);
         } else {
-            assert(progressCallback is null);
             require(git_remote_download(_data._payload) == 0);
         }
+    }
+
+    void updateTips(scope void delegate(string refname, in ref GitOid a, in ref GitOid b) updateTips)
+    {
+        static struct CTX { GitUpdateTipsDelegate updateTips; }
+
+        static extern(C) nothrow int update_cb(const(char)* refname, const(git_oid)* a, const(git_oid)* b, void* payload)
+        {
+            auto cbs = cast(CTX*)payload;
+            if (cbs.updateTips) {
+                try {
+                    auto ac = GitOid(*a);
+                    auto bc = GitOid(*b);
+                    cbs.updateTips(refname.to!string, ac, bc);
+                } catch (Exception e) return -1;
+            }
+            return 0;
+        }
+
+        CTX ctx;
+        ctx.updateTips = updateTips;
+
+        git_remote_callbacks gitcallbacks;
+        gitcallbacks.update_tips = &update_cb;
+        gitcallbacks.payload = &ctx;
+        require(git_remote_set_callbacks(_data._payload, &gitcallbacks) == 0);
+        require(git_remote_update_tips(_data._payload) == 0);
+    }
+
+    immutable(GitRemoteHead)[] ls()
+    {
+        const(git_remote_head)** heads;
+        size_t head_count;
+        require(git_remote_ls(&heads, &head_count, _data._payload) == 0);
+        auto ret = new GitRemoteHead[head_count];
+        foreach (i, ref rh; ret)
+            ret[i] = GitRemoteHead(heads[i]);
+        return cast(immutable)ret;
     }
 
 private:
@@ -206,6 +262,48 @@ GitRemote loadRemote(GitRepo repo, in char[] name)
     return GitRemote(repo, result);
 }
 
+
+private extern(C) nothrow {
+    int progress_cb(const(char)* str, int len, void* payload)
+    {
+        auto cbs = cast(GitRemoteCallbacks*)payload;
+        if (cbs.progress) {
+            try cbs.progress(str[0 .. len].idup);
+            catch (Exception e) return -1;
+        }
+        return 0;
+    }
+
+    /*int cred_acquire_cb(git_cred** dst, const(char)* url, const(char)* username_from_url, uint allowed_types, void* payload)
+    {
+        auto cbs = cast(GitRemoteCallbacks)payload;
+        try cbs.credentials(...);
+        catch (Exception e) return -1;
+        return 0;
+    }*/
+
+    int completion_cb(git_remote_completion_type type, void* payload)
+    {
+        auto cbs = cast(GitRemoteCallbacks*)payload;
+        if (cbs.completion) {
+            try cbs.completion(cast(GitRemoteCompletionType)type);
+            catch (Exception e) return -1;
+        }
+        return 0;
+    }
+
+    int transfer_progress_cb(const(git_transfer_progress)* stats, void* payload)
+    {
+        auto cbs = cast(GitRemoteCallbacks*)payload;
+        if (cbs.transferProgress) {
+            try {
+                auto tp = GitTransferProgress(stats);
+                cbs.transferProgress(tp);
+            } catch (Exception e) return -1;
+        }
+        return 0;
+    }
+}
 
 /+ TODO: Port these.
 

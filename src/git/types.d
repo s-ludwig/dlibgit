@@ -105,6 +105,11 @@ enum ContinueWalk
  */
 struct GitTransferProgress
 {
+    package this(const(git_transfer_progress)* p)
+    {
+        this.tupleof = (*p).tupleof;
+    }
+
     uint totalObjects;
     uint indexedObjects;
     uint receivedObjects;
@@ -117,4 +122,4 @@ struct GitTransferProgress
 }
 
 /// ditto
-alias TransferCallbackDelegate = ContinueWalk delegate(const ref GitTransferProgress stats);
+alias TransferCallbackDelegate = void delegate(const ref GitTransferProgress stats);

@@ -54,7 +54,7 @@ struct VersionInfo
         return format("v%s", text);
     }
 
-    int opCmp(in ref VersionInfo other)
+    int opCmp(in VersionInfo other)
     const {
         if (this.major != other.major) return this.major - other.major;
         if (this.minor != other.minor) return this.minor - other.minor;
