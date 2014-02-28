@@ -1,0 +1,311 @@
+/*
+ *             Copyright Sönke Ludwig 2014.
+ *  Distributed under the Boost Software License, Version 1.0.
+ *     (See accompanying file LICENSE_1_0.txt or copy at
+ *           http://www.boost.org/LICENSE_1_0.txt)
+ */
+module git.revparse;
+
+import git.commit;
+import git.object_;
+import git.oid;
+import git.reference;
+import git.repository;
+import git.types;
+import git.util;
+import git.version_;
+
+import deimos.git2.revparse;
+import deimos.git2.errors;
+import deimos.git2.types;
+
+import std.conv : to;
+import std.string : toStringz;
+import std.typecons : Tuple, tuple;
+
+
+GitDiff diffTreeToTree(GitRepo repo, GitTree old_tree, GitTree new_tree, in ref GitDiffOptions opts)
+{
+	int git_diff_tree_to_tree(
+	git_diff **diff,
+	git_repository *repo,
+	git_tree *old_tree,
+	git_tree *new_tree,
+	const(git_diff_options)* opts);
+}
+
+GitDiff diffTreeToIndex(GitRepo repo, GitTree old_tree, GitIndex index, in ref GitDiffOptions opts)
+{
+	int git_diff_tree_to_index(
+	git_diff **diff,
+	git_repository *repo,
+	git_tree *old_tree,
+	git_index *index,
+	const(git_diff_options)* opts);
+}
+
+GitDiff diffIndexToWorkDir(GitRepo repo, GitIndex index, in ref GitDiffOptions opts)
+{
+	int git_diff_index_to_workdir(
+	git_diff **diff,
+	git_repository *repo,
+	git_index *index,
+	const(git_diff_options)* opts);
+}
+
+GitDiff diffTreeToWorkDir(GitRepo repo, GitTree old_tree, in ref GitDiffOptions opts)
+{
+	int git_diff_tree_to_workdir(
+	git_diff **diff,
+	git_repository *repo,
+	git_tree *old_tree,
+	const(git_diff_options)* opts);
+}
+
+GitDiff diffTreeToWorkDirWithIndex(GitRepo repo, GitTree old_tree, in ref GitDiffOptions opts)
+{
+	int git_diff_tree_to_workdir_with_index(
+	git_diff **diff,
+	git_repository *repo,
+	git_tree *old_tree,
+	const(git_diff_options)* opts);
+}
+
+enum GitDiffOptionFlags {
+	normal = GIT_DIFF_NORMAL,
+	reverse = GIT_DIFF_REVERSE,
+	includeIgnored = GIT_DIFF_INCLUDE_IGNORED,
+	recurseIgnored_dirs = GIT_DIFF_RECURSE_IGNORED_DIRS,
+	includeUntracked = GIT_DIFF_INCLUDE_UNTRACKED,
+	recurseUntracked_dirs = GIT_DIFF_RECURSE_UNTRACKED_DIRS,
+	includeUnmodified = GIT_DIFF_INCLUDE_UNMODIFIED,
+	includeTypechange = GIT_DIFF_INCLUDE_TYPECHANGE,
+	includeTypechangeTrees = GIT_DIFF_INCLUDE_TYPECHANGE_TREES,
+	ignoreFilemode = GIT_DIFF_IGNORE_FILEMODE,
+	ignoreSubmodules = GIT_DIFF_IGNORE_SUBMODULES,
+	ignoreCase = GIT_DIFF_IGNORE_CASE,
+	disablePathspecMatch = GIT_DIFF_DISABLE_PATHSPEC_MATCH,
+	skipBinaryCheck = GIT_DIFF_SKIP_BINARY_CHECK,
+	enableFastUntrackedDirs = GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS,
+	forceText = GIT_DIFF_FORCE_TEXT,
+	forceBinary = GIT_DIFF_FORCE_BINARY,
+	ignoreWhitespace = GIT_DIFF_IGNORE_WHITESPACE,
+	ignoreWhitespaceChange = GIT_DIFF_IGNORE_WHITESPACE_CHANGE,
+	ignoreWhitespaceEOL = GIT_DIFF_IGNORE_WHITESPACE_EOL,
+	showUntrackedContent = GIT_DIFF_SHOW_UNTRACKED_CONTENT,
+	showUnmodified = GIT_DIFF_SHOW_UNMODIFIED,
+	patience = GIT_DIFF_PATIENCE,
+	minimal = GIT_DIFF_MINIMAL,
+}
+
+enum GitDiffFlags {
+	binary = GIT_DIFF_FLAG_BINARY,
+	notBinary = GIT_DIFF_FLAG_NOT_BINARY,
+	validOID = GIT_DIFF_FLAG_VALID_OID,
+}
+
+enum GitDeltaType {
+	unmodified = GIT_DELTA_UNMODIFIED,
+	added = GIT_DELTA_ADDED,
+	deleted = GIT_DELTA_DELETED,
+	modified = GIT_DELTA_MODIFIED,
+	renamed = GIT_DELTA_RENAMED,
+	copied = GIT_DELTA_COPIED,
+	ignored = GIT_DELTA_IGNORED,
+	untracked = GIT_DELTA_UNTRACKED,
+	typechange = GIT_DELTA_TYPECHANGE,
+}
+
+struct GitDiffFile {
+	git_oid     oid;
+	const(char)*path;
+	git_off_t   size;
+	uint32_t    flags;
+	uint16_t    mode;
+}
+
+struct GitDiffDelta {
+	git_delta_t   status;
+	uint32_t      flags;
+	uint16_t      similarity;
+	uint16_t      nfiles;
+	git_diff_file old_file;
+	git_diff_file new_file;
+}
+
+alias git_diff_notify_cb = int function(
+	const(git_diff)* diff_so_far,
+	const(git_diff_delta)* delta_to_add,
+	const(char)* matched_pathspec,
+	void *payload);
+
+struct GitDiffOptions {
+	GitDiffOptionFlags flags;
+	git_submodule_ignore_t ignore_submodules;
+	git_strarray       pathspec;
+	git_diff_notify_cb notify_cb;
+	void              *notify_payload;
+	uint16_t    context_lines = 3;
+	uint16_t    interhunk_lines;
+	uint16_t    oid_abbrev;
+	git_off_t   max_size;
+	const(char)* old_prefix;
+	const(char)* new_prefix;
+}
+
+enum GIT_DIFF_OPTIONS_VERSION = 1;
+
+enum git_diff_options GIT_DIFF_OPTIONS_INIT =
+	{GIT_DIFF_OPTIONS_VERSION, 0, git_submodule_ignore_t.GIT_SUBMODULE_IGNORE_DEFAULT, {null,0}, null, null, 3};
+
+alias git_diff_file_cb = int function(
+	const(git_diff_delta)* delta,
+	float progress,
+	void *payload);
+
+struct git_diff_hunk {
+	int    old_start;
+	int    old_lines;
+	int    new_start;
+	int    new_lines;
+	size_t header_len;
+	char[128] header;
+}
+
+alias git_diff_hunk_cb = int function(
+	const(git_diff_delta)* delta,
+	const(git_diff_hunk)* hunk,
+	void *payload);
+
+enum git_diff_line_t {
+	GIT_DIFF_LINE_CONTEXT   = ' ',
+	GIT_DIFF_LINE_ADDITION  = '+',
+	GIT_DIFF_LINE_DELETION  = '-',
+	GIT_DIFF_LINE_CONTEXT_EOFNL = '=',
+	GIT_DIFF_LINE_ADD_EOFNL = '>',
+	GIT_DIFF_LINE_DEL_EOFNL = '<',
+	GIT_DIFF_LINE_FILE_HDR  = 'F',
+	GIT_DIFF_LINE_HUNK_HDR  = 'H',
+	GIT_DIFF_LINE_BINARY    = 'B'
+}
+
+struct git_diff_line {
+	char   origin;
+	int    old_lineno;
+	int    new_lineno;
+	int    num_lines;
+	size_t content_len;
+	git_off_t content_offset;
+	const(char)* content;
+}
+
+alias git_diff_line_cb = int function(
+	const(git_diff_delta)* delta,
+	const(git_diff_hunk)* hunk,
+	const(git_diff_line)* line,
+	void *payload);
+
+enum git_diff_find_t {
+	GIT_DIFF_FIND_RENAMES = (1u << 0),
+	GIT_DIFF_FIND_RENAMES_FROM_REWRITES = (1u << 1),
+	GIT_DIFF_FIND_COPIES = (1u << 2),
+	GIT_DIFF_FIND_COPIES_FROM_UNMODIFIED = (1u << 3),
+	GIT_DIFF_FIND_REWRITES = (1u << 4),
+	GIT_DIFF_BREAK_REWRITES = (1u << 5),
+	GIT_DIFF_FIND_AND_BREAK_REWRITES =
+		(GIT_DIFF_FIND_REWRITES | GIT_DIFF_BREAK_REWRITES),
+	GIT_DIFF_FIND_FOR_UNTRACKED = (1u << 6),
+	GIT_DIFF_FIND_ALL = (0x0ff),
+	GIT_DIFF_FIND_IGNORE_LEADING_WHITESPACE = 0,
+	GIT_DIFF_FIND_IGNORE_WHITESPACE = (1u << 12),
+	GIT_DIFF_FIND_DONT_IGNORE_WHITESPACE = (1u << 13),
+	GIT_DIFF_FIND_EXACT_MATCH_ONLY = (1u << 14),
+	GIT_DIFF_BREAK_REWRITES_FOR_RENAMES_ONLY  = (1u << 15),
+}
+
+struct git_diff_similarity_metric {
+	int function(
+		void **out_, const(git_diff_file)* file,
+		const(char)* fullpath, void *payload) file_signature;
+	int function(
+		void **out_, const(git_diff_file)* file,
+		const(char)* buf, size_t buflen, void *payload) buffer_signature;
+	void function(void *sig, void *payload) free_signature;
+	int function(int *score, void *siga, void *sigb, void *payload) similarity;
+	void *payload;
+}
+
+struct git_diff_find_options {
+	uint version_ = GIT_DIFF_FIND_OPTIONS_VERSION;
+	uint32_t flags;
+	uint16_t rename_threshold;
+	uint16_t rename_from_rewrite_threshold;
+	uint16_t copy_threshold;
+	uint16_t break_rewrite_threshold;
+	size_t rename_limit;
+	git_diff_similarity_metric *metric;
+}
+
+
+struct GitDiff {
+
+	mixin RefCountedGitObject!(git_diff, git_diff_free);
+}
+
+int git_diff_merge(
+	git_diff *onto,
+	const(git_diff)* from);
+int git_diff_find_similar(
+	git_diff *diff,
+	const(git_diff_find_options)* options);
+int git_diff_options_init(
+	git_diff_options *options,
+	uint version_);
+size_t git_diff_num_deltas(const(git_diff)* diff);
+size_t git_diff_num_deltas_of_type(
+	const(git_diff)* diff, git_delta_t type);
+const(git_diff_delta)* git_diff_get_delta(
+	const(git_diff)* diff, size_t idx);
+int git_diff_is_sorted_icase(const(git_diff)* diff);
+int git_diff_foreach(
+	git_diff *diff,
+	git_diff_file_cb file_cb,
+	git_diff_hunk_cb hunk_cb,
+	git_diff_line_cb line_cb,
+	void *payload);
+char git_diff_status_char(git_delta_t status);
+
+enum git_diff_format_t {
+	GIT_DIFF_FORMAT_PATCH        = 1u,
+	GIT_DIFF_FORMAT_PATCH_HEADER = 2u,
+	GIT_DIFF_FORMAT_RAW          = 3u,
+	GIT_DIFF_FORMAT_NAME_ONLY    = 4u,
+	GIT_DIFF_FORMAT_NAME_STATUS  = 5u,
+}
+
+int git_diff_print(
+	git_diff *diff,
+	git_diff_format_t format,
+	git_diff_line_cb print_cb,
+	void *payload);
+int git_diff_blobs(
+	const(git_blob)* old_blob,
+	const(char)* old_as_path,
+	const(git_blob)* new_blob,
+	const(char)* new_as_path,
+	const(git_diff_options)* options,
+	git_diff_file_cb file_cb,
+	git_diff_hunk_cb hunk_cb,
+	git_diff_line_cb line_cb,
+	void *payload);
+int git_diff_blob_to_buffer(
+	const(git_blob)* old_blob,
+	const(char)* old_as_path,
+	const(char)* buffer,
+	size_t buffer_len,
+	const(char)* buffer_as_path,
+	const(git_diff_options)* options,
+	git_diff_file_cb file_cb,
+	git_diff_hunk_cb hunk_cb,
+	git_diff_line_cb line_cb,
+	void *payload);
