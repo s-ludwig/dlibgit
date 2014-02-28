@@ -4,13 +4,23 @@ This library provides an idiomatic D interface to the [libgit2](https://github.c
 
 This project was originally started by Andrej Mitrovic as a set of bindings to libgit2. He since started to implement a D wrapper interface, which was taken up by David Nadlinger. Since some time, Sönke Ludwig has continued the maintainership and completed most of the D API, moving the C bindings to a separate package to make the D API independent of libgit2's development.
 
+## v0.50.1 Changes
+
+- Added support for indexes, submodules and tags
+
+- Time values are handled as `SysTime` objects now
+
+- "Upcasts" from `GitObject` to specialized types, such as `GitCommit` are supported now
+
+- `GitSignature` now has getter properties for all fields
+
 ## v0.50.0 Changes
 
 - The version number has been incremented to be independent of the underlying libgit2 version - dlibgit aims to always support the latest versions of libgit2 under a unified API
 
 - The D interface is about 70% finished
 
-- All C bindings have been removed in favor of the separate Deimos packae
+- All C bindings have been removed in favor of the separate Deimos package
 
 ## v0.19.0 Changes
 
