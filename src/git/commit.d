@@ -100,38 +100,7 @@ struct GitCommit {
 		return GitCommit(_repo, ret);
 	}
 
-	package inout(git_commit)* cHandle() inout { return _data._payload; }
-
-private:
-	struct Payload
-	{
-		this(git_commit* payload)
-		{
-			_payload = payload;
-		}
-
-		~this()
-		{
-			if (_payload !is null)
-			{
-				git_commit_free(_payload);
-				_payload = null;
-			}
-		}
-
-		/// Should never perform copy
-		@disable this(this);
-
-		/// Should never perform assign
-		@disable void opAssign(typeof(this));
-
-		git_commit* _payload;
-	}
-
+	mixin RefCountedGitObject!(git_commit, git_commit_free);
 	// Reference to the parent repository to keep it alive.
-	GitRepo _repo;
-
-	import std.typecons : RefCounted, RefCountedAutoInitialize;
-	alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-	Data _data;
+	private GitRepo _repo;
 }

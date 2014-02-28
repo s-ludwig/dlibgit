@@ -108,6 +108,7 @@ enum RepoState
     apply_mailbox_or_rebase, ///
 }
 
+
 /**
     The structure representing a git repository.
 */
@@ -141,7 +142,9 @@ struct GitRepo
      */
     this(in char[] path)
     {
-        _data = Data(path);
+        git_repository* repo;
+        require(git_repository_open(&repo, path.gitStr) == 0);
+        _data = Data(repo);
     }
 
     ///
@@ -1289,56 +1292,7 @@ struct GitRepo
         assert(!repo.isPathIgnored("/bar"));
     }
 
-package:
-    /**
-     * Returns the internal libgit2 repository handle.
-     *
-     * Care should be taken not to escape the reference outside a scope where
-     * a GitRepo reference is kept alive.
-     */
-    @property git_repository* cHandle()
-    {
-        return _data._payload;
-    }
-
-private:
-
-    /** Payload for the $(D git_repository) object which should be refcounted. */
-    struct Payload
-    {
-        this(git_repository* payload)
-        {
-            _payload = payload;
-        }
-
-        this(in char[] path)
-        {
-            require(git_repository_open(&_payload, path.gitStr) == 0);
-        }
-
-        ~this()
-        {
-            //~ writefln("- %s", __FUNCTION__);
-
-            if (_payload !is null)
-            {
-                git_repository_free(_payload);
-                _payload = null;
-            }
-        }
-
-        /// Should never perform copy
-        @disable this(this);
-
-        /// Should never perform assign
-        @disable void opAssign(typeof(this));
-
-        git_repository* _payload;
-    }
-
-    // refcounted git_oid_shorten
-    alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-    Data _data;
+    mixin RefCountedGitObject!(git_repository, git_repository_free);
 }
 
 /// Used to specify whether to continue search on a file system change.

@@ -147,7 +147,6 @@ struct GitBranch {
 
 	alias reference this;
 
-	package inout(git_reference)* cHandle() inout { return _ref.cHandle; }
 private:
 	GitReference _ref;
 }

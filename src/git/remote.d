@@ -217,40 +217,9 @@ struct GitRemote
         }
     }
 
-    package inout(git_remote)* cHandle() inout { return _data._payload; }
-
-private:
-    struct Payload
-    {
-        this(git_remote* payload)
-        {
-            _payload = payload;
-        }
-
-        ~this()
-        {
-            if (_payload !is null)
-            {
-                git_remote_free(_payload);
-                _payload = null;
-            }
-        }
-
-        /// Should never perform copy
-        @disable this(this);
-
-        /// Should never perform assign
-        @disable void opAssign(typeof(this));
-
-        git_remote* _payload;
-    }
-
+    mixin RefCountedGitObject!(git_remote, git_remote_free);
     // Reference to the parent repository to keep it alive.
-    GitRepo _repo;
-
-    import std.typecons : RefCounted, RefCountedAutoInitialize;
-    alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-    Data _data;
+    private GitRepo _repo;
 }
 
 ///

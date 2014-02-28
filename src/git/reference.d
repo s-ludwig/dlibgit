@@ -154,38 +154,7 @@ int git_reference_peel(
 int git_reference_is_valid_name(const(char)* refname);
 const(char)*  git_reference_shorthand(git_reference *ref_);*/
 
-	package inout(git_reference)* cHandle() inout { return _data._payload; }
-
-private:
-	struct Payload
-	{
-		this(git_reference* payload)
-		{
-			_payload = payload;
-		}
-
-		~this()
-		{
-			if (_payload !is null)
-			{
-				git_reference_free(_payload);
-				_payload = null;
-			}
-		}
-
-		/// Should never perform copy
-		@disable this(this);
-
-		/// Should never perform assign
-		@disable void opAssign(typeof(this));
-
-		git_reference* _payload;
-	}
-
+	mixin RefCountedGitObject!(git_reference, git_reference_free);
 	// Reference to the parent repository to keep it alive.
-	GitRepo _repo;
-
-	import std.typecons : RefCounted, RefCountedAutoInitialize;
-	alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-	Data _data;
+	private GitRepo _repo;
 }

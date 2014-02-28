@@ -55,50 +55,9 @@ struct GitObject
         return GitObject(_repo, result);
     }
 
-package:
-    /**
-     * The internal libgit2 handle for this object.
-     *
-     * Care should be taken not to escape the reference outside a scope where
-     * a GitObject encapsulating the handle is kept alive.
-     */
-    @property git_object* cHandle()
-    {
-        return _data._payload;
-    }
-
-private:
-    struct Payload
-    {
-        this(git_object* payload)
-        {
-            _payload = payload;
-        }
-
-        ~this()
-        {
-            if (_payload !is null)
-            {
-                git_object_free(_payload);
-                _payload = null;
-            }
-        }
-
-        /// Should never perform copy
-        @disable this(this);
-
-        /// Should never perform assign
-        @disable void opAssign(typeof(this));
-
-        git_object* _payload;
-    }
-
+    mixin RefCountedGitObject!(git_object, git_object_free);
     // Reference to the parent repository to keep it alive.
-    GitRepo _repo;
-
-    import std.typecons : RefCounted, RefCountedAutoInitialize;
-    alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-    Data _data;
+    private GitRepo _repo;
 }
 
 ///

@@ -59,37 +59,10 @@ struct GitSignature {
 
 	package const(git_signature)* cHandle() const { return _sig ? _sig : _data._payload; }
 
+	mixin RefCountedGitObject!(git_signature, git_signature_free, false);
+
 private:
-	struct Payload
-	{
-		this(git_signature* payload)
-		{
-			_payload = payload;
-		}
-
-		~this()
-		{
-			if (_payload !is null)
-			{
-				git_signature_free(_payload);
-				_payload = null;
-			}
-		}
-
-		/// Should never perform copy
-		@disable this(this);
-
-		/// Should never perform assign
-		@disable void opAssign(typeof(this));
-
-		git_signature* _payload;
-	}
-
 	// Reference to the parent commit to keep it alive.
 	GitCommit _commit;
 	const(git_signature)* _sig;
-
-	import std.typecons : RefCounted, RefCountedAutoInitialize;
-	alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-	Data _data;
 }

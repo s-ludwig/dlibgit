@@ -64,13 +64,13 @@ unittest
 /** Return a posix-native path, replacing backslashes with forward slashes. */
 string toPosixPath(string input)
 {
-    return input.replace(r"\", "/");
+    return input.replace(`\`, `/`);
 }
 
 ///
 unittest
 {
-    assert(r"foo/bar\doo".toPosixPath == r"foo/bar/doo");
+    assert(`foo/bar\doo`.toPosixPath == r"foo/bar/doo");
 }
 
 alias toSlice = to!(const(char)[]);
@@ -86,4 +86,42 @@ const(char)* gitStr(const(char)[] s)
 {
     import std.conv : toStringz;
     return s.length ? s.toStringz : null;
+}
+
+mixin template RefCountedGitObject(T, alias free_function, bool define_chandle = true)
+{
+package:
+    static if (define_chandle) {
+        @property inout(T)* cHandle() inout { return _data._payload; }
+    }
+
+private:
+    struct Payload
+    {
+        this(T* payload)
+        {
+            _payload = payload;
+        }
+
+        ~this()
+        {
+            if (_payload !is null)
+            {
+                free_function(_payload);
+                _payload = null;
+            }
+        }
+
+        /// Should never perform copy
+        @disable this(this);
+
+        /// Should never perform assign
+        @disable void opAssign(typeof(this));
+
+        T* _payload;
+    }
+
+    import std.typecons : RefCounted, RefCountedAutoInitialize;
+    alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
+    Data _data;
 }

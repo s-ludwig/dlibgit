@@ -109,40 +109,9 @@ struct GitTree {
 		require(git_tree_walk(_data._payload, cast(git_treewalk_mode)mode, &callback, cast(void*)&ctx) == 0);
 	}
 
-	package git_tree* cHandle() { return _data._payload; }
-
-private:
-	struct Payload
-	{
-		this(git_tree* payload)
-		{
-			_payload = payload;
-		}
-
-		~this()
-		{
-			if (_payload !is null)
-			{
-				git_tree_free(_payload);
-				_payload = null;
-			}
-		}
-
-		/// Should never perform copy
-		@disable this(this);
-
-		/// Should never perform assign
-		@disable void opAssign(typeof(this));
-
-		git_tree* _payload;
-	}
-
-	// Reference to the parent repository to keep it alive.
-	GitRepo _repo;
-
-	import std.typecons : RefCounted, RefCountedAutoInitialize;
-	alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-	Data _data;
+    mixin RefCountedGitObject!(git_tree, git_tree_free);
+    // Reference to the parent repository to keep it alive.
+    private GitRepo _repo;
 }
 
 
@@ -222,37 +191,7 @@ struct GitTreeBuilder {
 	}
 
 
-	package git_treebuilder* cHandle() { return _data._payload; }
-
-private:
-	struct Payload
-	{
-		this(git_treebuilder* payload)
-		{
-			_payload = payload;
-		}
-
-		~this()
-		{
-			if (_payload !is null)
-			{
-				git_treebuilder_free(_payload);
-				_payload = null;
-			}
-		}
-
-		/// Should never perform copy
-		@disable this(this);
-
-		/// Should never perform assign
-		@disable void opAssign(typeof(this));
-
-		git_treebuilder* _payload;
-	}
-
-	import std.typecons : RefCounted, RefCountedAutoInitialize;
-	alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-	Data _data;
+	mixin RefCountedGitObject!(git_treebuilder, git_treebuilder_free);
 }
 
 
@@ -300,39 +239,11 @@ struct GitTreeEntry {
 
 	package const(git_tree_entry)* cHandle() { return _entry ? _entry : _data._payload; }
 
+	mixin RefCountedGitObject!(git_tree_entry, git_tree_entry_free, false);
+
 private:
-	struct Payload
-	{
-		this(git_tree_entry* payload)
-		{
-			_payload = payload;
-		}
-
-		~this()
-		{
-			if (_payload !is null)
-			{
-				git_tree_entry_free(_payload);
-				_payload = null;
-			}
-		}
-
-		/// Should never perform copy
-		@disable this(this);
-
-		/// Should never perform assign
-		@disable void opAssign(typeof(this));
-
-		git_tree_entry* _payload;
-	}
-
-	import std.typecons : RefCounted, RefCountedAutoInitialize;
-	alias RefCounted!(Payload, RefCountedAutoInitialize.no) Data;
-
 	// foreign ownership
 	GitTreeBuilder _builder;
 	GitTree _tree;
 	const(git_tree_entry)* _entry;
-	// owned by us
-	Data _data;
 }
