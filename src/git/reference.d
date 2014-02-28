@@ -6,6 +6,7 @@
  */
 module git.reference;
 
+import git.object_;
 import git.oid;
 import git.repository;
 import git.types;
@@ -15,6 +16,7 @@ import deimos.git2.refs;
 import deimos.git2.types;
 
 import std.conv : to;
+import std.exception : enforce;
 import std.string : toStringz;
 
 
@@ -55,10 +57,15 @@ GitReference createReference(GitRepo repo, string name, GitOid target, bool forc
 
 
 struct GitReference {
+	this(GitObject object)
+	{
+		enforce(object.type == GitType.commit, "GIT object is not a reference.");
+		_object = object;
+	}
+
 	package this(GitRepo repo, git_reference* reference)
 	{
-		_repo = repo;
-		_data = Data(reference);
+		_object = GitObject(repo, cast(git_object*)reference);
 	}
 
 	@property GitOid target() { return GitOid(*git_reference_target(this.cHandle)); }
@@ -66,34 +73,34 @@ struct GitReference {
 	@property string symbolicTarget() { return git_reference_symbolic_target(this.cHandle).to!string; }
 	@property git_ref_t type() { return git_reference_type(this.cHandle); }
 	@property string name() { return git_reference_name(this.cHandle).to!string; }
-	@property GitRepo owner() { return _repo; }
+	@property GitRepo owner() { return _object.owner; }
 
 	GitReference resolve()
 	{
 		git_reference* ret;
 		require(git_reference_resolve(&ret, this.cHandle) == 0);
-		return GitReference(_repo, ret);
+		return GitReference(this.owner, ret);
 	}
 
 	GitReference setSymbolicTarget(string target)
 	{
 		git_reference* ret;
 		require(git_reference_symbolic_set_target(&ret, this.cHandle, target.toStringz) == 0);
-		return GitReference(_repo, ret);
+		return GitReference(this.owner, ret);
 	}
 
 	GitReference setTarget(GitOid oid)
 	{
 		git_reference* ret;
 		require(git_reference_set_target(&ret, this.cHandle, &oid._get_oid()) == 0);
-		return GitReference(_repo, ret);
+		return GitReference(this.owner, ret);
 	}
 
 	GitReference rename(string new_name, bool force)
 	{
 		git_reference* ret;
 		require(git_reference_rename(&ret, this.cHandle, new_name.toStringz, force) == 0);
-		return GitReference(_repo, ret);
+		return GitReference(this.owner, ret);
 	}
 
 	void delete_() { require(git_reference_delete(this.cHandle) == 0); }
@@ -154,7 +161,7 @@ int git_reference_peel(
 int git_reference_is_valid_name(const(char)* refname);
 const(char)*  git_reference_shorthand(git_reference *ref_);*/
 
-	mixin RefCountedGitObject!(git_reference, git_reference_free);
-	// Reference to the parent repository to keep it alive.
-	private GitRepo _repo;
+	package @property inout(git_reference)* cHandle() inout { return cast(inout(git_reference)*)_object.cHandle; } 
+
+	private GitObject _object;
 }

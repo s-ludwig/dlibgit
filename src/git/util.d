@@ -12,10 +12,12 @@ module git.util;
 
 import std.array;
 import std.conv;
+import std.datetime;
 import std.exception;
 import std.string;
 
 import deimos.git2.errors;
+import deimos.git2.types : git_time;
 
 import git.exception;
 
@@ -74,6 +76,24 @@ unittest
 }
 
 alias toSlice = to!(const(char)[]);
+
+SysTime toSysTime(git_time gtime)
+{
+    auto ctime = unixTimeToStdTime(gtime.time);
+    auto ctimeoff = gtime.offset.minutes();
+    return SysTime(ctime, new immutable SimpleTimeZone(ctimeoff));
+}
+
+git_time toGitTime(SysTime time)
+{
+    git_time ret;
+    ret.time = stdTimeToUnixTime(time.stdTime);
+    ret.offset = cast(int)((time.timezone.utcToTZ(time.stdTime) - time.stdTime) / (10_000_000*60));
+    return ret;
+}
+
+// TODO: unit tests for time functions!
+
 
 /**
     Converts the passed char slice to a C string, returning the null pointer for

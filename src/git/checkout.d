@@ -186,7 +186,7 @@ package void toCCheckoutOpts(ref GitCheckoutOptions dOpts, ref git_checkout_opts
     }
 }
 
-void checkout(GitRepo repo, GitCheckoutOptions opts = GitCheckoutOptions.init)
+void checkoutHead(GitRepo repo, GitCheckoutOptions opts = GitCheckoutOptions.init)
 {
     git_checkout_opts cOpts;
     opts.toCCheckoutOpts(cOpts);

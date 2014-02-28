@@ -34,10 +34,7 @@ struct GitObject
     }
 
     ///
-    @property GitRepo owner()
-    {
-        return GitRepo(git_object_owner(_data._payload));
-    }
+    @property inout(GitRepo) owner() inout { return _repo; }
 
     ///
     @property GitObject dup()
