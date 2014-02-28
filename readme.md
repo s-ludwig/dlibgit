@@ -1,19 +1,16 @@
-# dlibgit - libgit2 D bindings
+# dlibgit
 
-These are the D bindings to the libgit2 library.
+This library provides an idiomatic D interface to the [libgit2](https://github.com/libgit2/libgit2) library. It is based on the [Deimos libgit2 bindings](https://github.com/s-ludwig/libgit2) and currently supports versions 0.19.0 and 0.20.0 of libgit2. This library is available as a [DUB package](http://code.dlang.org/packages/dlibgit).
 
-## News
-dlibgit has been updated and now targets libgit v0.19.0.
+This project was originally started by Andrej Mitrovic as a set of bindings to libgit2. He since started to implement a D wrapper interface, which was taken up by David Nadlinger. Since some time, Sönke Ludwig has continued the maintainership and completed most of the D API, moving the C bindings to a separate package to make the D API independent of libgit2's development.
 
-**Note:** A partial D-oriented API is in the `D_API` branch. Currently it's not being worked on (I don't have enough free time or effort to finish the API). But if you want to, you may fork the project and continue writing the API.
+## v0.50.0 Changes
 
-## DUB Package
+- The version number has been incremented to be independent of the underlying libgit2 version - dlibgit aims to always support the latest versions of libgit2 under a unified API
 
-A DUB package is maintained at the following fork, which contains some additions such as
-pre-compiled win32 binaries:
-https://github.com/s-ludwig/dlibgit
+- The D interface is about 70% finished
 
-Its DUB page is located [here](http://code.dlang.org/packages/dlibgit).
+- All C bindings have been removed in favor of the separate Deimos packae
 
 ## v0.19.0 Changes
 
@@ -46,20 +43,20 @@ Its DUB page is located [here](http://code.dlang.org/packages/dlibgit).
 
 ### Windows:
 
-- Get the libgit2 DLL from [here](https://github.com/AndrejMitrovic/libgit_bin).
-- Or build `libgit2` manually.
+- A pre-built version of the libgit2 DLL is included with the bindings package
 
 ### Posix:
 
-- Get the libgit2 shared library with your package manager, making sure you're getting the `0.19.0` release.
+- Get the libgit2 shared library with your package manager
 - Or build `libgit2` manually.
+- Making sure you install the right version of the libgit2 bindings (e.g. `dub fetch libgit2 --version=0.19.2` or `dub fetch libgit2 --version=0.20.1`)
 
 ## Building libgit2 manually
 
     $ cd <your-folder-of-choice>
     $ git clone git://github.com/libgit2/libgit2.git
     $ cd libgit2
-    $ git checkout v0.19.0
+    $ git checkout v0.20.0
 
 - Then follow these instructions: https://github.com/libgit2/libgit2#building-libgit2---using-cmake
 - You might need to install zlib if cmake says it's missing (On Posix use your package manager to find the `zlib dev` package).
@@ -79,6 +76,8 @@ Its DUB page is located [here](http://code.dlang.org/packages/dlibgit).
 
 ### Samples
 
+<span style="color: red">Note that the samples are not yet ported to the new D API and are currently absent from the repository</span>
+
 **diff** sample:
 
     $ rdmd build.d diff/diff.d
@@ -95,10 +94,10 @@ Its DUB page is located [here](http://code.dlang.org/packages/dlibgit).
 **git client** sample:
 **Note**: This sample has not been ported to v0.19.0 yet.
 
-    $ rdmd build.d network/git.d
-    $ bin\git.exe ls-remote git://github.com/AndrejMitrovic/dlibgit.git
+    $ rdmd build.d samples/network/git.d
+    $ bin\git.exe ls-remote git://github.com/s-ludwig/dlibgit.git
     $ bin\git.exe index-pack path\to\.git\objects\pack\abcd1234.pack
-    $ bin\git.exe clone git://github.com/AndrejMitrovic/dlibgit.git ../../dlibgit2_clone
+    $ bin\git.exe clone git://github.com/s-dludwig/dlibgit.git ../../dlibgit2_clone
 
 - `clone` is not the same as git's `clone` command, it does not deflate git object files.
 - `fetch` doesn't currently work due to some bugs in network\fetch.d.
@@ -113,8 +112,8 @@ As a convenience you can import `git.c.all` or `git.c` (with the new 2.064 packa
 
 You can use the libgit2 [API] docs. The [general] example is a good read.
 
-[API]: http://libgit2.github.com/libgit2/#v0.19.0
-[general]: http://libgit2.github.com/libgit2/ex/v0.19.0/general.html
+[API]: http://libgit2.github.com/libgit2/#v0.20.0
+[general]: http://libgit2.github.com/libgit2/ex/v0.20.0/general.html
 
 ## See also
 - The libgit2 [homepage] and [github] repository.
@@ -128,7 +127,7 @@ You can use the libgit2 [API] docs. The [general] example is a good read.
 See libgit's [COPYING] file, included in the `src/git/c` folder. Also see the licensing remarks on the [libgit2] github page.
 
 [libgit2]: https://github.com/libgit2/libgit2/
-[COPYING]: https://github.com/AndrejMitrovic/dlibgit/blob/master/COPYING
+[COPYING]: https://github.com/s-ludwig/dlibgit/blob/master/COPYING
 
 ## Disclaimer
 
