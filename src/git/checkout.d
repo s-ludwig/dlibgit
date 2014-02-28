@@ -9,6 +9,7 @@ module git.checkout;
 // Note: This file includes none of the original comments, as they might
 // be copyrightable material.
 
+import git.index;
 import git.object_;
 import git.repository;
 import git.tree;
@@ -193,11 +194,11 @@ void checkoutHead(GitRepo repo, GitCheckoutOptions opts = GitCheckoutOptions.ini
     require(git_checkout_head(repo.cHandle, &cOpts) == 0);
 }
 
-void checkout(GitRepo repo, git_index* index, GitCheckoutOptions opts = GitCheckoutOptions.init) // TODO: Convert.
+void checkout(GitRepo repo, GitIndex index, GitCheckoutOptions opts = GitCheckoutOptions.init) // TODO: Convert.
 {
     git_checkout_opts cOpts;
     opts.toCCheckoutOpts(cOpts);
-    require(git_checkout_index(repo.cHandle, index, &cOpts) == 0);
+    require(git_checkout_index(repo.cHandle, index.cHandle, &cOpts) == 0);
 }
 
 void checkout(GitRepo repo, GitObject treeish, GitCheckoutOptions opts = GitCheckoutOptions.init)

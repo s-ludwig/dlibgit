@@ -20,6 +20,8 @@ import deimos.git2.remote;
 import deimos.git2.types;
 
 import std.conv : to;
+import std.string : toStringz;
+
 
 ///
 enum GitDirection
@@ -166,6 +168,8 @@ struct GitRemote
         }
     }
 
+    void addFetch(string refspec) { require(git_remote_add_fetch(this.cHandle, refspec.toStringz) == 0); }
+
     void updateTips(scope void delegate(string refname, in ref GitOid a, in ref GitOid b) updateTips)
     {
         static struct CTX { GitUpdateTipsDelegate updateTips; }
@@ -252,7 +256,7 @@ private extern(C) nothrow {
         void progress_cb(const(char)* str, int len, void* payload)
         {
             auto cbs = cast(GitRemoteCallbacks*)payload;
-            if (cbs.progress) {
+            if (cbs && cbs.progress) {
                 try cbs.progress(str[0 .. len].idup);
                 catch (Exception e) {} // FIXME: store exception and skip calling the callback during the next iterations
             }
@@ -261,7 +265,7 @@ private extern(C) nothrow {
         int progress_cb(const(char)* str, int len, void* payload)
         {
             auto cbs = cast(GitRemoteCallbacks*)payload;
-            if (cbs.progress) {
+            if (cbs && cbs.progress) {
                 try cbs.progress(str[0 .. len].idup);
                 catch (Exception e) return -1; // FIXME: store and rethrow exception 
             }
@@ -280,7 +284,7 @@ private extern(C) nothrow {
     int completion_cb(git_remote_completion_type type, void* payload)
     {
         auto cbs = cast(GitRemoteCallbacks*)payload;
-        if (cbs.completion) {
+        if (cbs && cbs.completion) {
             try cbs.completion(cast(GitRemoteCompletionType)type);
             catch (Exception e) return -1; // FIXME: store and rethrow exception 
         }
@@ -290,7 +294,7 @@ private extern(C) nothrow {
     int transfer_progress_cb(const(git_transfer_progress)* stats, void* payload)
     {
         auto cbs = cast(GitRemoteCallbacks*)payload;
-        if (cbs.transferProgress) {
+        if (cbs && cbs.transferProgress) {
             try {
                 auto tp = GitTransferProgress(stats);
                 cbs.transferProgress(tp);
@@ -301,8 +305,6 @@ private extern(C) nothrow {
 }
 
 /+ TODO: Port these.
-
-extern (C):
 
 alias git_remote_rename_problem_cb = int function(const(char)* problematic_refspec, void *payload);
 

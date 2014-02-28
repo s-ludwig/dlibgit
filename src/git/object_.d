@@ -58,7 +58,7 @@ struct GitObject
 }
 
 ///
-GitObject lookup(GitRepo repo, GitOid oid, GitType type = GitType.any)
+GitObject lookupObject(GitRepo repo, GitOid oid, GitType type = GitType.any)
 {
     git_object* result;
     auto cOid = oid._get_oid;
@@ -67,7 +67,7 @@ GitObject lookup(GitRepo repo, GitOid oid, GitType type = GitType.any)
 }
 
 ///
-GitObject lookupByPrefix(GitRepo repo, GitOid oid, size_t prefixLen, GitType type = GitType.any)
+GitObject lookupObjectPrefix(GitRepo repo, GitOid oid, size_t prefixLen, GitType type = GitType.any)
 {
     git_object* result;
     auto cOid = oid._get_oid;
@@ -76,18 +76,21 @@ GitObject lookupByPrefix(GitRepo repo, GitOid oid, size_t prefixLen, GitType typ
 }
 
 ///
-GitObject lookup(GitRepo repo, in char[] hexString, GitType type = GitType.any)
+GitObject lookupObject(GitRepo repo, in char[] hexString, GitType type = GitType.any)
 {
     auto oid = GitOid(hexString);
     if (hexString.length < GitOid.MaxHexSize)
     {
-        return lookupByPrefix(repo, oid, hexString.length, type);
+        return lookupObjectPrefix(repo, oid, hexString.length, type);
     }
     else
     {
-        return lookup(repo, oid, type);
+        return lookupObject(repo, oid, type);
     }
 }
+
+deprecated alias lookup = lookupObject;
+deprecated alias lookupByPrefix = lookupObjectPrefix;
 
 ///
 const(char)[] toString(GitType type)

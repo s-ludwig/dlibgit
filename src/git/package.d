@@ -9,6 +9,7 @@ module git;
 public
 {
     import git.attribute;
+    import git.blob;
     import git.checkout;
     import git.clone;
     import git.commit;
@@ -16,6 +17,7 @@ public
     import git.config;
     import git.credentials;
     import git.exception;
+    import git.index;
     import git.net;
     import git.object_;
     import git.oid;
@@ -25,6 +27,8 @@ public
     import git.revparse;
     import git.revwalk;
     import git.signature;
+    import git.submodule;
+    import git.tag;
     import git.trace;
     import git.transport;
     import git.tree;

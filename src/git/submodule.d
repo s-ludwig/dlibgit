@@ -21,7 +21,7 @@ import deimos.git2.types;
 import std.conv : to;
 import std.string : toStringz;
 
-GitSubModule lookupSubmodule(GitRepo repo, string name)
+GitSubModule lookupSubModule(GitRepo repo, string name)
 {
 	git_submodule* dst;
 	require(git_submodule_lookup(&dst, repo.cHandle, name.toStringz) == 0);

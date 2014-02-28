@@ -205,7 +205,7 @@ unittest
 struct GitRepo
 {
     /// Default-construction is disabled
-    @disable this();
+    //@disable this();
 
     ///
     unittest

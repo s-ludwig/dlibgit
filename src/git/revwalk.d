@@ -23,7 +23,7 @@ import std.string : toStringz;
 // TODO: range interface?
 
 
-GitRevWalk createRefWalk(GitRepo repo)
+GitRevWalk createRevWalk(GitRepo repo)
 {
 	git_revwalk* ret;
 	require(git_revwalk_new(&ret, repo.cHandle) == 0);

@@ -7,6 +7,7 @@
 module git.blob;
 
 import git.commit;
+import git.object_;
 import git.oid;
 import git.repository;
 import git.types;
@@ -18,6 +19,7 @@ import deimos.git2.errors;
 import deimos.git2.types;
 
 import std.conv : to;
+import std.exception : enforce;
 import std.string : toStringz;
 
 
@@ -71,13 +73,18 @@ GitOid createBlobFromDisk(GitRepo repo, string path)
 
 
 struct GitBlob {
-	package this(GitRepo repo, git_blob* blob)
+	this(GitObject object)
 	{
-		_repo = repo;
-		_data = Data(blob);
+		enforce(object.type == GitType.blob, "GIT object is not a blob.");
+		_object = object;
 	}
 
-	@property GitRepo owner() { return _repo; }
+	package this(GitRepo repo, git_blob* blob)
+	{
+		_object = GitObject(repo, cast(git_object*)blob);
+	}
+
+	@property GitRepo owner() { return _object.owner; }
 	@property GitOid id() { return GitOid(*git_blob_id(this.cHandle)); }
 
 	@property const(ubyte)[] rawContent()
@@ -94,6 +101,7 @@ struct GitBlob {
 		int git_blob_filtered_content(git_buf *out_, git_blob *blob, const(char)* as_path, int check_for_binary_data);
 	}*/
 
-	mixin RefCountedGitObject!(git_blob, git_blob_free);
-	private GitRepo _repo;
+	package @property inout(git_blob)* cHandle() inout { return cast(inout(git_blob)*)_object.cHandle; }
+
+	private GitObject _object;
 }

@@ -18,6 +18,7 @@ import git.version_;
 import deimos.git2.oid;
 import deimos.git2.tag;
 import deimos.git2.errors;
+import deimos.git2.strarray;
 import deimos.git2.types;
 
 import std.conv : to;
@@ -95,6 +96,29 @@ void iterateTags(GitRepo repo, scope ContinueWalk delegate(string name, GitOid o
 	require(ret == 0);
 }
 
+string[] listTags(GitRepo repo)
+{
+	git_strarray arr;
+	require(git_tag_list(&arr, repo.cHandle) == 0);
+	git_strarray_free(&arr);
+	auto ret = new string[arr.count];
+	foreach (i; 0 .. arr.count)
+		ret[i] = arr.strings[i].to!string;
+	return ret;
+}
+
+string[] listMatchingTags(GitRepo repo, string pattern)
+{
+	git_strarray arr;
+	require(git_tag_list_match(&arr, pattern.toStringz, repo.cHandle) == 0);
+	git_strarray_free(&arr);
+	auto ret = new string[arr.count];
+	foreach (i; 0 .. arr.count)
+		ret[i] = arr.strings[i].to!string;
+	return ret;
+}
+
+
 struct GitTag {
 	this(GitObject obj)
 	{
@@ -132,12 +156,3 @@ struct GitTag {
 
 	private GitObject _object;
 }
-
-
-/*int git_tag_list(
-	git_strarray *tag_names,
-	git_repository *repo);
-int git_tag_list_match(
-	git_strarray *tag_names,
-	const(char)* pattern,
-	git_repository *repo);*/
