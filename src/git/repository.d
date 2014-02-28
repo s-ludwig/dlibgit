@@ -63,11 +63,45 @@ GitRepo openBareRepository(string bare_path)
     return GitRepo(dst);
 }
 
-GitRepo initRepository(string path, bool bare)
+/**
+    Create a new Git repository in the given folder.
+
+    Parameters:
+
+    $(D path): the path to the git repository.
+
+    $(D openBare): if equal to $(D OpenBare.yes), a Git
+    repository without a working directory is created at the
+    pointed path.
+
+    If equal to $(D OpenBare.no), the provided path will be
+    considered as the working directory into which the .git
+    directory will be created.
+*/
+GitRepo initRepository(in char[] path, OpenBare openBare)
 {
-    git_repository* ret;
-    require(git_repository_init(&ret, path.toStringz(), bare) == 0);
-    return GitRepo(ret);
+    git_repository* repo;
+    require(git_repository_init(&repo, path.gitStr, cast(bool)openBare) == 0);
+    return GitRepo(repo);
+}
+alias initRepo = initRepository;
+
+///
+unittest
+{
+    // create a bare test repository and ensure the HEAD file exists
+    auto repo = initRepo(_userRepo, OpenBare.yes);
+    scope(exit) rmdirRecurse(_userRepo);
+    assert(buildPath(_userRepo, "HEAD").exists);
+}
+
+///
+unittest
+{
+    // create a non-bare test repository and ensure the .git/HEAD file exists
+    auto repo = initRepo(_userRepo, OpenBare.no);
+    scope(exit) rmdirRecurse(_userRepo);
+    assert(buildPath(_userRepo, ".git/HEAD").exists);
 }
 
 GitRepo initRepository(string path, GitRepositoryInitOptions options)
@@ -85,103 +119,80 @@ GitRepo initRepository(string path, GitRepositoryInitOptions options)
     return GitRepo(ret);
 }
 
-enum GitRepositoryOpenFlags {
-    none = 0,
-    noSearch = GIT_REPOSITORY_OPEN_NO_SEARCH,
-    crossFS = GIT_REPOSITORY_OPEN_CROSS_FS,
-    bare = GIT_REPOSITORY_OPEN_BARE
-}
+/**
+    Discover a git repository and return its path if found.
 
-enum GitRepositoryInitMode {
-    sharedUmask = GIT_REPOSITORY_INIT_SHARED_UMASK,
-    sharedGroup = GIT_REPOSITORY_INIT_SHARED_GROUP,
-    sharedAll = GIT_REPOSITORY_INIT_SHARED_ALL,
-}
+    The lookup starts from $(D startPath) and continues searching across
+    parent directories. The lookup stops when one of the following
+    becomes true:
 
-enum GitRepositoryInitFlags {
-    none = 0,
-    bare = GIT_REPOSITORY_INIT_BARE,
-    reinit = GIT_REPOSITORY_INIT_NO_REINIT,
-    noDotGitDir = GIT_REPOSITORY_INIT_NO_DOTGIT_DIR,
-    makeDir = GIT_REPOSITORY_INIT_MKDIR,
-    makePath = GIT_REPOSITORY_INIT_MKPATH,
-    externalTemplate = GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE
-}
+    $(LI a git repository is found.)
+    $(LI a directory referenced in $(D ceilingDirs) has been reached.)
+    $(LI the filesystem changed (if acrossFS is equal to $(D AcrossFS.no).))
 
-struct GitRepositoryInitOptions {
-    GitRepositoryInitFlags flags;
-    GitRepositoryInitMode mode;
-    string workdirPath;
-    string description;
-    string templatePath;
-    string initialHead;
-    string originURL;
-}
+    Parameters:
 
+    $(D startPath): The base path where the lookup starts.
 
-/// Used to specify whether to continue search on a file system change.
-enum UpdateGitlink
+    $(D ceilingDirs): An array of absolute paths which are symbolic-link-free.
+    If any of these paths are reached a $(D GitException) will be thrown.
+
+    $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will
+    continue when a filesystem device change is detected while exploring
+    parent directories, otherwise $(D GitException) is thrown.
+
+    $(B Note:) The lookup always performs on $(D startPath) even if
+    $(D startPath) is listed in $(D ceilingDirs).
+ */
+string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
 {
-    /// Stop searching on file system change.
-    no,
+    char[MaxGitPathLen] buffer;
+    const c_ceilDirs = ceilingDirs.join(GitPathSep).gitStr;
 
-    /// Continue searching on file system change.
-    yes
+    version(assert)
+    {
+        foreach (path; ceilingDirs)
+            assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
+    }
+
+    require(git_repository_discover(buffer.ptr, buffer.length, startPath.gitStr, cast(bool)acrossFS, c_ceilDirs) == 0);
+
+    return to!string(buffer.ptr);
 }
 
-/** A single item in the list of the $(B FETCH_HEAD) file. */
-struct FetchHeadItem
+///
+unittest
 {
-    ///
-    const(char)[] refName;
+    /**
+        look for the .git repo in "../test/repo/a/".
+        The .git directory will be found one dir up, and will
+        contain the line 'gitdir: ../../.git/modules/test/repo'.
+        The function will expand this line and return the true
+        repository location.
+    */
+    string path = buildPath(_testRepo.dirName, "a");
+    string repoPath = discoverRepo(path);
+    assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
 
-    ///
-    const(char)[] remoteURL;
-
-    ///
-    GitOid oid;
-
-    ///
-    bool isMerge;
+    // verify the repo can be opened
+    auto repo = GitRepo(repoPath);
 }
 
-/// The function or delegate type that $(D walkFetchHead) can take as the callback.
-alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
-
-/// ditto
-alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
-
-/// ditto
-alias FetchHeadOpApply = int delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
-
-/** A single item in the list of the $(B MERGE_HEAD) file. */
-struct MergeHeadItem
+///
+unittest
 {
-    GitOid oid;
+    // ceiling dir is found before any git repository
+    string path = buildPath(_testRepo.dirName, "a");
+    string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
+    assertThrown!GitException(discoverRepo(path, ceils));
 }
 
-/// The function or delegate type that $(D walkMergeHead) can take as the callback.
-alias MergeHeadFunction = ContinueWalk function(GitOid oid);
-
-/// ditto
-alias MergeHeadDelegate = ContinueWalk delegate(GitOid oid);
-
-/// ditto
-alias MergeHeadOpApply = int delegate(GitOid oid);
-
-/// The various states a repository can be in.
-enum RepoState
+///
+unittest
 {
-    none, ///
-    merge, ///
-    revert, ///
-    cherry_pick, ///
-    bisect, ///
-    rebase, ///
-    rebase_interactive, ///
-    rebase_merge, ///
-    apply_mailbox, ///
-    apply_mailbox_or_rebase, ///
+    // all ceiling paths must be absolute
+    string[] ceils = ["../.."];
+    assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
 }
 
 
@@ -1371,6 +1382,107 @@ struct GitRepo
     mixin RefCountedGitObject!(git_repository, git_repository_free);
 }
 
+
+enum GitRepositoryOpenFlags {
+    none = 0,
+    noSearch = GIT_REPOSITORY_OPEN_NO_SEARCH,
+    crossFS = GIT_REPOSITORY_OPEN_CROSS_FS,
+    bare = GIT_REPOSITORY_OPEN_BARE
+}
+
+enum GitRepositoryInitMode {
+    sharedUmask = GIT_REPOSITORY_INIT_SHARED_UMASK,
+    sharedGroup = GIT_REPOSITORY_INIT_SHARED_GROUP,
+    sharedAll = GIT_REPOSITORY_INIT_SHARED_ALL,
+}
+
+enum GitRepositoryInitFlags {
+    none = 0,
+    bare = GIT_REPOSITORY_INIT_BARE,
+    reinit = GIT_REPOSITORY_INIT_NO_REINIT,
+    noDotGitDir = GIT_REPOSITORY_INIT_NO_DOTGIT_DIR,
+    makeDir = GIT_REPOSITORY_INIT_MKDIR,
+    makePath = GIT_REPOSITORY_INIT_MKPATH,
+    externalTemplate = GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE
+}
+
+struct GitRepositoryInitOptions {
+    GitRepositoryInitFlags flags;
+    GitRepositoryInitMode mode;
+    string workdirPath;
+    string description;
+    string templatePath;
+    string initialHead;
+    string originURL;
+}
+
+
+/// Used to specify whether to continue search on a file system change.
+enum UpdateGitlink
+{
+    /// Stop searching on file system change.
+    no,
+
+    /// Continue searching on file system change.
+    yes
+}
+
+/** A single item in the list of the $(B FETCH_HEAD) file. */
+struct FetchHeadItem
+{
+    ///
+    const(char)[] refName;
+
+    ///
+    const(char)[] remoteURL;
+
+    ///
+    GitOid oid;
+
+    ///
+    bool isMerge;
+}
+
+/// The function or delegate type that $(D walkFetchHead) can take as the callback.
+alias FetchHeadFunction = ContinueWalk function(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
+/// ditto
+alias FetchHeadDelegate = ContinueWalk delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
+/// ditto
+alias FetchHeadOpApply = int delegate(in char[] refName, in char[] remoteURL, GitOid oid, bool isMerge);
+
+/** A single item in the list of the $(B MERGE_HEAD) file. */
+struct MergeHeadItem
+{
+    GitOid oid;
+}
+
+/// The function or delegate type that $(D walkMergeHead) can take as the callback.
+alias MergeHeadFunction = ContinueWalk function(GitOid oid);
+
+/// ditto
+alias MergeHeadDelegate = ContinueWalk delegate(GitOid oid);
+
+/// ditto
+alias MergeHeadOpApply = int delegate(GitOid oid);
+
+/// The various states a repository can be in.
+enum RepoState
+{
+    none, ///
+    merge, ///
+    revert, ///
+    cherry_pick, ///
+    bisect, ///
+    rebase, ///
+    rebase_interactive, ///
+    rebase_merge, ///
+    apply_mailbox, ///
+    apply_mailbox_or_rebase, ///
+}
+
+
 /// Used to specify whether to continue search on a file system change.
 enum AcrossFS
 {
@@ -1381,81 +1493,6 @@ enum AcrossFS
     yes
 }
 
-/**
-    Discover a git repository and return its path if found.
-
-    The lookup starts from $(D startPath) and continues searching across
-    parent directories. The lookup stops when one of the following
-    becomes true:
-
-    $(LI a git repository is found.)
-    $(LI a directory referenced in $(D ceilingDirs) has been reached.)
-    $(LI the filesystem changed (if acrossFS is equal to $(D AcrossFS.no).))
-
-    Parameters:
-
-    $(D startPath): The base path where the lookup starts.
-
-    $(D ceilingDirs): An array of absolute paths which are symbolic-link-free.
-    If any of these paths are reached a $(D GitException) will be thrown.
-
-    $(D acrossFS): If equal to $(D AcrossFS.yes) the lookup will
-    continue when a filesystem device change is detected while exploring
-    parent directories, otherwise $(D GitException) is thrown.
-
-    $(B Note:) The lookup always performs on $(D startPath) even if
-    $(D startPath) is listed in $(D ceilingDirs).
- */
-string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
-{
-    char[MaxGitPathLen] buffer;
-    const c_ceilDirs = ceilingDirs.join(GitPathSep).gitStr;
-
-    version(assert)
-    {
-        foreach (path; ceilingDirs)
-            assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
-    }
-
-    require(git_repository_discover(buffer.ptr, buffer.length, startPath.gitStr, cast(bool)acrossFS, c_ceilDirs) == 0);
-
-    return to!string(buffer.ptr);
-}
-
-///
-unittest
-{
-    /**
-        look for the .git repo in "../test/repo/a/".
-        The .git directory will be found one dir up, and will
-        contain the line 'gitdir: ../../.git/modules/test/repo'.
-        The function will expand this line and return the true
-        repository location.
-    */
-    string path = buildPath(_testRepo.dirName, "a");
-    string repoPath = discoverRepo(path);
-    assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
-
-    // verify the repo can be opened
-    auto repo = GitRepo(repoPath);
-}
-
-///
-unittest
-{
-    // ceiling dir is found before any git repository
-    string path = buildPath(_testRepo.dirName, "a");
-    string[] ceils = [_testRepo.dirName.absolutePath.buildNormalizedPath];
-    assertThrown!GitException(discoverRepo(path, ceils));
-}
-
-///
-unittest
-{
-    // all ceiling paths must be absolute
-    string[] ceils = ["../.."];
-    assertThrown!AssertError(discoverRepo(_testRepo.dirName, ceils));
-}
 
 /// Used to specify whether to open a bare repository
 enum OpenBare
@@ -1467,45 +1504,6 @@ enum OpenBare
     yes
 }
 
-/**
-    Create a new Git repository in the given folder.
-
-    Parameters:
-
-    $(D path): the path to the git repository.
-
-    $(D openBare): if equal to $(D OpenBare.yes), a Git
-    repository without a working directory is created at the
-    pointed path.
-
-    If equal to $(D OpenBare.no), the provided path will be
-    considered as the working directory into which the .git
-    directory will be created.
-*/
-GitRepo initRepo(in char[] path, OpenBare openBare)
-{
-    git_repository* repo;
-    require(git_repository_init(&repo, path.gitStr, cast(bool)openBare) == 0);
-    return GitRepo(repo);
-}
-
-///
-unittest
-{
-    // create a bare test repository and ensure the HEAD file exists
-    auto repo = initRepo(_userRepo, OpenBare.yes);
-    scope(exit) rmdirRecurse(_userRepo);
-    assert(buildPath(_userRepo, "HEAD").exists);
-}
-
-///
-unittest
-{
-    // create a non-bare test repository and ensure the .git/HEAD file exists
-    auto repo = initRepo(_userRepo, OpenBare.no);
-    scope(exit) rmdirRecurse(_userRepo);
-    assert(buildPath(_userRepo, ".git/HEAD").exists);
-}
 
 extern (C):
 
