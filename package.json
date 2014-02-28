@@ -1,9 +1,9 @@
 {
 	"name": "dlibgit",
-	"description": "D wrapper library for libgit2.",
-	"copyright": "Copyright © 2013 Andrej Mitrovic, 2014 David Nadlinger, 2014 Sönke Ludwig",
+	"description": "Library for operating on GIT repositories based on libgit2",
+	"copyright": "Copyright © 2013 Andrej Mitrovic, 2014 © David Nadlinger, 2014 © Sönke Ludwig",
 	"license": "LGPL 2",
-	"authors": ["Andrej Mitrovic", "David Nadlinger"],
+	"authors": ["Andrej Mitrovic", "David Nadlinger", "Sönke Ludwig"],
 	"dependencies": {
 		"libgit2": ">=0.19.2 <0.21.0"
 	},
