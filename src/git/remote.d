@@ -195,14 +195,29 @@ struct GitRemote
 
     immutable(GitRemoteHead)[] ls()
     {
-        const(git_remote_head)** heads;
-        size_t head_count;
-        require(git_remote_ls(&heads, &head_count, _data._payload) == 0);
-        auto ret = new GitRemoteHead[head_count];
-        foreach (i, ref rh; ret)
-            ret[i] = GitRemoteHead(heads[i]);
-        return cast(immutable)ret;
+        static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+            static struct CTX { immutable(GitRemoteHead)[] heads; }
+
+            static extern(C) int callback(git_remote_head* rhead, void* payload) {
+                auto ctx = cast(CTX*)payload;
+                ctx.heads ~= GitRemoteHead(rhead);
+                return 0;
+            }
+
+            CTX ctx;
+            require(git_remote_ls(this.cHandle, &callback, &ctx) == 0);
+            return ctx.heads;
+        } else {
+            const(git_remote_head)** heads;
+            size_t head_count;
+            require(git_remote_ls(&heads, &head_count, _data._payload) == 0);
+            auto ret = new GitRemoteHead[head_count];
+            foreach (i, ref rh; ret) ret[i] = GitRemoteHead(heads[i]);
+            return cast(immutable)ret;
+        }
     }
+
+    package inout(git_remote)* cHandle() inout { return _data._payload; }
 
 private:
     struct Payload
@@ -264,21 +279,32 @@ GitRemote loadRemote(GitRepo repo, in char[] name)
 
 
 private extern(C) nothrow {
-    int progress_cb(const(char)* str, int len, void* payload)
-    {
-        auto cbs = cast(GitRemoteCallbacks*)payload;
-        if (cbs.progress) {
-            try cbs.progress(str[0 .. len].idup);
-            catch (Exception e) return -1;
+    static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
+        void progress_cb(const(char)* str, int len, void* payload)
+        {
+            auto cbs = cast(GitRemoteCallbacks*)payload;
+            if (cbs.progress) {
+                try cbs.progress(str[0 .. len].idup);
+                catch (Exception e) {} // FIXME: store exception and skip calling the callback during the next iterations
+            }
         }
-        return 0;
+    } else {
+        int progress_cb(const(char)* str, int len, void* payload)
+        {
+            auto cbs = cast(GitRemoteCallbacks*)payload;
+            if (cbs.progress) {
+                try cbs.progress(str[0 .. len].idup);
+                catch (Exception e) return -1; // FIXME: store and rethrow exception 
+            }
+            return 0;
+        }
     }
 
     /*int cred_acquire_cb(git_cred** dst, const(char)* url, const(char)* username_from_url, uint allowed_types, void* payload)
     {
         auto cbs = cast(GitRemoteCallbacks)payload;
         try cbs.credentials(...);
-        catch (Exception e) return -1;
+        catch (Exception e) return -1; // FIXME: store and rethrow exception 
         return 0;
     }*/
 
@@ -287,7 +313,7 @@ private extern(C) nothrow {
         auto cbs = cast(GitRemoteCallbacks*)payload;
         if (cbs.completion) {
             try cbs.completion(cast(GitRemoteCompletionType)type);
-            catch (Exception e) return -1;
+            catch (Exception e) return -1; // FIXME: store and rethrow exception 
         }
         return 0;
     }
@@ -299,7 +325,7 @@ private extern(C) nothrow {
             try {
                 auto tp = GitTransferProgress(stats);
                 cbs.transferProgress(tp);
-            } catch (Exception e) return -1;
+            } catch (Exception e) return -1; // FIXME: store and rethrow exception 
         }
         return 0;
     }

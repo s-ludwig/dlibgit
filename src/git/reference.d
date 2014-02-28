@@ -154,7 +154,7 @@ int git_reference_peel(
 int git_reference_is_valid_name(const(char)* refname);
 const(char)*  git_reference_shorthand(git_reference *ref_);*/
 
-	package git_reference* cHandle() { return _data._payload; }
+	package inout(git_reference)* cHandle() inout { return _data._payload; }
 
 private:
 	struct Payload

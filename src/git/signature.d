@@ -11,6 +11,7 @@ import git.oid;
 import git.repository;
 import git.types;
 import git.util;
+import git.version_;
 
 import deimos.git2.signature;
 import deimos.git2.types;
@@ -18,11 +19,13 @@ import deimos.git2.types;
 import std.conv : to;
 import std.string : toStringz;
 
-GitSignature createDefaultSignature(GitRepo repo)
-{
-	git_signature* ret;
-	require(git_signature_default(&ret, repo.cHandle) == 0);
-	return GitSignature(ret);
+static if (targetLibGitVersion >= VersionInfo(0, 20, 0)) {
+	GitSignature createDefaultSignature(GitRepo repo)
+	{
+		git_signature* ret;
+		require(git_signature_default(&ret, repo.cHandle) == 0);
+		return GitSignature(ret);
+	}
 }
 
 /*GitSignature createSignature(string name, string email, SysTime time)

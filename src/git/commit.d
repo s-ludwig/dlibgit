@@ -12,6 +12,7 @@ import git.signature;
 import git.tree;
 import git.types;
 import git.util;
+import git.version_;
 
 import deimos.git2.commit;
 import deimos.git2.types;
@@ -58,7 +59,8 @@ struct GitCommit {
 	@property GitRepo owner() { return _repo; }
 	@property string messageEncoding() { return git_commit_message_encoding(this.cHandle).to!string; }
 	@property string message() { return git_commit_message(this.cHandle).to!string; }
-	@property string rawMessage() { return git_commit_message_raw(this.cHandle).to!string; }
+	static if (targetLibGitVersion >= VersionInfo(0, 20, 0))
+		@property string rawMessage() { return git_commit_message_raw(this.cHandle).to!string; }
 
 	// TODO: use SysTime instead
 	@property git_time_t commitTime() { return git_commit_time(this.cHandle); }
@@ -66,7 +68,8 @@ struct GitCommit {
 
 	@property GitSignature committer() { return GitSignature(this, git_commit_committer(this.cHandle)); }
 	@property GitSignature author() { return GitSignature(this, git_commit_author(this.cHandle)); }
-	@property string rawHeader() { return git_commit_raw_header(this.cHandle).to!string; }
+	static if (targetLibGitVersion >= VersionInfo(0, 20, 0))
+		@property string rawHeader() { return git_commit_raw_header(this.cHandle).to!string; }
 
 	@property GitTree tree()
 	{

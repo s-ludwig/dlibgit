@@ -49,21 +49,20 @@ struct GitCloneOptions
 
 
 static if (targetLibGitVersion == VersionInfo(0, 19, 0))  {
-    extern(C) int cFetchProgessCallback(
+    extern(C) nothrow int cFetchProgessCallback(
         const(git_transfer_progress)* stats,
         void* payload)
     {
         auto dg = (cast(GitCloneOptions*)payload).fetchProgessCallback;
-        if (dg)
-        {
-            GitTransferProgress tp;
-            tp.tupleof = stats.tupleof;
-            return dg(tp);
+        if (dg) {
+            try {
+                auto tp = GitTransferProgress(stats);
+                dg(tp);
+            } catch (Exception e) {
+                return -1;
+            }
         }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 
     extern(C) int cCredAcquireCallback(

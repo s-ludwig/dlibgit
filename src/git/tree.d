@@ -11,6 +11,7 @@ import git.oid;
 import git.repository;
 import git.types;
 import git.util;
+import git.version_;
 
 import deimos.git2.tree;
 import deimos.git2.types;
@@ -280,7 +281,9 @@ struct GitTreeEntry {
 	@property GitOid id() { return GitOid(*git_tree_entry_id(cHandle())); }
 	@property GitType type() { return cast(GitType)git_tree_entry_type(cHandle()); }
 	@property GitFileModeType fileMode() { return cast(GitFileModeType)git_tree_entry_filemode(cHandle()); }
-	@property GitFileModeType fileModeRaw() { return cast(GitFileModeType)git_tree_entry_filemode_raw(cHandle()); }
+
+	static if (targetLibGitVersion >= VersionInfo(0, 20, 0))
+		@property GitFileModeType fileModeRaw() { return cast(GitFileModeType)git_tree_entry_filemode_raw(cHandle()); }
 
 	@property GitTreeEntry dup() { return GitTreeEntry(git_tree_entry_dup(cHandle())); }
 
