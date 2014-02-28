@@ -90,6 +90,9 @@ const(char)* gitStr(const(char)[] s)
 
 mixin template RefCountedGitObject(T, alias free_function, bool define_chandle = true)
 {
+public:
+    bool opCast(T)() const if (is(T == bool)) { return cHandle !is null; }
+
 package:
     static if (define_chandle) {
         @property inout(T)* cHandle() inout { return _data._payload; }

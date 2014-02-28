@@ -43,6 +43,82 @@ version(unittest)
     string _userRepo = buildPath(_baseTestDir, "_myTestRepo");
 }
 
+
+GitRepo openRepository(string path)
+{
+    return GitRepo(path);
+}
+
+GitRepo openRepositoryExt(string path, GitRepositoryOpenFlags flags, string ceiling_dirs)
+{
+    git_repository* dst;
+    require(git_repository_open_ext(&dst, path.gitStr, flags, ceiling_dirs.gitStr) == 0);
+    return GitRepo(dst);
+}
+
+GitRepo openBareRepository(string bare_path)
+{
+    git_repository* dst;
+    require(git_repository_open_bare(&dst, bare_path.toStringz()) == 0);
+    return GitRepo(dst);
+}
+
+GitRepo initRepository(string path, bool bare)
+{
+    git_repository* ret;
+    require(git_repository_init(&ret, path.toStringz(), bare) == 0);
+    return GitRepo(ret);
+}
+
+GitRepo initRepository(string path, GitRepositoryInitOptions options)
+{
+    git_repository* ret;
+    git_repository_init_options copts;
+    copts.flags = cast(git_repository_init_flag_t)options.flags;
+    copts.mode = cast(git_repository_init_mode_t)options.mode;
+    copts.workdir_path = options.workdirPath.gitStr;
+    copts.description = options.description.gitStr;
+    copts.template_path = options.templatePath.gitStr;
+    copts.initial_head = options.initialHead.gitStr;
+    copts.origin_url = options.originURL.gitStr;
+    require(git_repository_init_ext(&ret, path.toStringz(), &copts) == 0);
+    return GitRepo(ret);
+}
+
+enum GitRepositoryOpenFlags {
+    none = 0,
+    noSearch = GIT_REPOSITORY_OPEN_NO_SEARCH,
+    crossFS = GIT_REPOSITORY_OPEN_CROSS_FS,
+    bare = GIT_REPOSITORY_OPEN_BARE
+}
+
+enum GitRepositoryInitMode {
+    sharedUmask = GIT_REPOSITORY_INIT_SHARED_UMASK,
+    sharedGroup = GIT_REPOSITORY_INIT_SHARED_GROUP,
+    sharedAll = GIT_REPOSITORY_INIT_SHARED_ALL,
+}
+
+enum GitRepositoryInitFlags {
+    none = 0,
+    bare = GIT_REPOSITORY_INIT_BARE,
+    reinit = GIT_REPOSITORY_INIT_NO_REINIT,
+    noDotGitDir = GIT_REPOSITORY_INIT_NO_DOTGIT_DIR,
+    makeDir = GIT_REPOSITORY_INIT_MKDIR,
+    makePath = GIT_REPOSITORY_INIT_MKPATH,
+    externalTemplate = GIT_REPOSITORY_INIT_EXTERNAL_TEMPLATE
+}
+
+struct GitRepositoryInitOptions {
+    GitRepositoryInitFlags flags;
+    GitRepositoryInitMode mode;
+    string workdirPath;
+    string description;
+    string templatePath;
+    string initialHead;
+    string originURL;
+}
+
+
 /// Used to specify whether to continue search on a file system change.
 enum UpdateGitlink
 {

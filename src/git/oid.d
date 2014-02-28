@@ -103,6 +103,8 @@ struct GitOid
         GitOid(oid2);
     }
 
+    @property ref inout(ubyte[20]) bytes() inout { return _oid.id; }
+
     /**
         Convert this GitOid into a hex string.
 

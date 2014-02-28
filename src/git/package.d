@@ -22,6 +22,8 @@ public
     import git.reference;
     import git.remote;
     import git.repository;
+    import git.revparse;
+    import git.revwalk;
     import git.signature;
     import git.trace;
     import git.transport;

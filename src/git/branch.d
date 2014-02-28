@@ -21,6 +21,7 @@ import deimos.git2.types;
 import std.conv : to;
 import std.string : toStringz;
 
+
 GitBranch createBranch(GitRepo repo, string name, GitCommit target, bool force)
 {
 	git_reference* ret;
