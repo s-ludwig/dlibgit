@@ -54,11 +54,14 @@ struct GitIndex {
 	@property GitIndexCaps caps() { return cast(GitIndexCaps)git_index_caps(this.cHandle); }
 	@property void caps(GitIndexCaps caps) { require(git_index_set_caps(this.cHandle, caps) == 0); }
 
-	@property string path() { return git_index_path(this.cHandle).to!string; }
+	static if (targetLibGitVersion >= VersionInfo(0, 20, 0))
+		@property string path() { return git_index_path(this.cHandle).to!string; }
 
 	@property size_t entryCount() { return git_index_entrycount(this.cHandle); }
 
-	void read(bool force) { require(git_index_read(this.cHandle, force) == 0); }
+	static if (targetLibGitVersion >= VersionInfo(0, 20, 0))
+		void read(bool force) { require(git_index_read(this.cHandle, force) == 0); }
+	else void read() { require(git_index_read(this.cHandle) == 0); }
 	void write() { require(git_index_write(this.cHandle) == 0); }
 
 	void readTree(in GitTree tree) { require(git_index_read_tree(this.cHandle, tree.cHandle) == 0); }

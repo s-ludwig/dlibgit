@@ -1397,7 +1397,7 @@ enum GitRepositoryOpenFlags {
     none = 0,
     noSearch = GIT_REPOSITORY_OPEN_NO_SEARCH,
     crossFS = GIT_REPOSITORY_OPEN_CROSS_FS,
-    bare = GIT_REPOSITORY_OPEN_BARE
+    //bare = GIT_REPOSITORY_OPEN_BARE // available in 0.20.0
 }
 
 enum GitRepositoryInitMode {
