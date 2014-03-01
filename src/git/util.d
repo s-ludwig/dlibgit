@@ -79,7 +79,8 @@ alias toSlice = to!(const(char)[]);
 
 SysTime toSysTime(git_time gtime)
 {
-    auto ctime = unixTimeToStdTime(gtime.time);
+    import core.stdc.time;
+    auto ctime = unixTimeToStdTime(cast(time_t)gtime.time);
     auto ctimeoff = gtime.offset.minutes();
     return SysTime(ctime, new immutable SimpleTimeZone(ctimeoff));
 }

@@ -91,7 +91,8 @@ struct GitBlob {
 	{
 		auto ptr = git_blob_rawcontent(this.cHandle);
 		auto length = git_blob_rawsize(this.cHandle);
-		return cast(const(ubyte)[])ptr[0 .. length];
+		enforce(length <= size_t.max, "Blob too large to fit in memory.");
+		return cast(const(ubyte)[])ptr[0 .. cast(size_t)length];
 	}
 
 	@property bool isBinary() { return requireBool(git_blob_is_binary(this.cHandle)); }
