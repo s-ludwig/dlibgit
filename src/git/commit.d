@@ -92,6 +92,20 @@ struct GitCommit {
 
 	@property uint parentCount() { return git_commit_parentcount(this.cHandle); }
 
+	@property GitOid[] parentOids()
+	{
+		auto ret = new GitOid[parentCount];
+		foreach (i; 0 .. cast(uint)ret.length) ret[i] = getParentOid(i);
+		return ret;
+	}
+
+	@property GitCommit[] parents()
+	{
+		auto ret = new GitCommit[parentCount];
+		foreach (i; 0 .. cast(uint)ret.length) ret[i] = getParent(i);
+		return ret;
+	}
+
 	GitCommit getParent(uint index)
 	{
 		git_commit* ret;

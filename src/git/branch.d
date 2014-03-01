@@ -81,12 +81,9 @@ void iterateBranches(GitRepo repo, GitBranchType types, scope BranchIterationDel
 	}
 }
 
-enum GitBranchType {
-	local = GIT_BRANCH_LOCAL,
-	remote = GIT_BRANCH_REMOTE
-}
 
 alias BranchIterationDelegate = ContinueWalk delegate(GitBranch branch, GitBranchType type);
+
 
 struct GitBranch {
 	protected this(GitReference ref_)

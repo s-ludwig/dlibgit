@@ -10,7 +10,8 @@ public
 {
     import git.attribute;
     import git.blob;
-    import git.checkout;
+	import git.branch;
+	import git.checkout;
     import git.clone;
     import git.commit;
     import git.common;

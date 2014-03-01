@@ -17,10 +17,23 @@ import git.version_;
 import deimos.git2.net;
 import deimos.git2.oid;
 import deimos.git2.remote;
+import deimos.git2.strarray;
 import deimos.git2.types;
 
 import std.conv : to;
 import std.string : toStringz;
+
+
+string[] listRemotes(GitRepo repo)
+{
+	git_strarray dst;
+	require(git_remote_list(&dst, repo.cHandle) == 0);
+	scope (exit) git_strarray_free(&dst);
+	auto ret = new string[dst.count];
+	foreach (i; 0 .. dst.count)
+		ret[i] = dst.strings[i].to!string();
+	return ret;
+}
 
 
 ///
@@ -308,8 +321,6 @@ private extern(C) nothrow {
 
 alias git_remote_rename_problem_cb = int function(const(char)* problematic_refspec, void *payload);
 
-int git_remote_add_fetch(git_remote *remote, const(char)* refspec);
-
 int git_remote_get_fetch_refspecs(git_strarray *array, git_remote *remote);
 
 int git_remote_add_push(git_remote *remote, const(char)* refspec);
@@ -324,15 +335,9 @@ const(git_refspec)* git_remote_get_refspec(git_remote *remote, size_t n);
 
 int git_remote_remove_refspec(git_remote *remote, size_t n);
 
-int git_remote_ls(git_remote *remote, git_headlist_cb list_cb, void *payload);
-
-int git_remote_update_tips(git_remote *remote);
-
 int git_remote_valid_url(const(char)* url);
 
 int git_remote_supported_url(const(char)* url);
-
-int git_remote_list(git_strarray *out_, git_repository *repo);
 
 void git_remote_check_cert(git_remote *remote, int check);
 
