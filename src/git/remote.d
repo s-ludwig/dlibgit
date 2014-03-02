@@ -185,17 +185,20 @@ struct GitRemote
 
     void updateTips(scope void delegate(string refname, in ref GitOid a, in ref GitOid b) updateTips)
     {
-        static struct CTX { GitUpdateTipsDelegate updateTips; }
+        static struct CTX { GitUpdateTipsDelegate updateTips; Exception e; }
 
         static extern(C) nothrow int update_cb(const(char)* refname, const(git_oid)* a, const(git_oid)* b, void* payload)
         {
-            auto cbs = cast(CTX*)payload;
-            if (cbs.updateTips) {
+            auto ctx = cast(CTX*)payload;
+            if (ctx.updateTips) {
                 try {
                     auto ac = GitOid(*a);
                     auto bc = GitOid(*b);
-                    cbs.updateTips(refname.to!string, ac, bc);
-                } catch (Exception e) return -1;
+                    ctx.updateTips(refname.to!string, ac, bc);
+                } catch (Exception e) {
+                    ctx.e = e;
+                    return -1;
+                }
             }
             return 0;
         }
@@ -207,7 +210,9 @@ struct GitRemote
         gitcallbacks.update_tips = &update_cb;
         gitcallbacks.payload = &ctx;
         require(git_remote_set_callbacks(_data._payload, &gitcallbacks) == 0);
-        require(git_remote_update_tips(_data._payload) == 0);
+        auto ret = git_remote_update_tips(_data._payload);
+        if (ctx.e) throw ctx.e;
+        require(ret == 0);
     }
 
     immutable(GitRemoteHead)[] ls()

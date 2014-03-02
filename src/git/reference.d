@@ -68,8 +68,18 @@ struct GitReference {
 		_object = GitObject(repo, cast(git_object*)reference);
 	}
 
-	@property GitOid target() { return GitOid(*git_reference_target(this.cHandle)); }
-	@property GitOid peeledTarget() { return GitOid(*git_reference_target_peel(this.cHandle)); }
+	@property GitOid target()
+	{
+		auto ret = git_reference_target(this.cHandle);
+		enforce(ret !is null, "Reference has no target");
+		return GitOid(*ret);
+	}
+	@property GitOid peeledTarget()
+	{
+		auto ret = git_reference_target_peel(this.cHandle);
+		enforce(ret !is null, "Reference has no target");
+		return GitOid(*ret);
+	}
 	@property string symbolicTarget() { return git_reference_symbolic_target(this.cHandle).to!string; }
 	@property git_ref_t type() { return git_reference_type(this.cHandle); }
 	@property string name() { return git_reference_name(this.cHandle).to!string; }
