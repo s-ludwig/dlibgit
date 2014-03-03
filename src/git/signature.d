@@ -30,12 +30,13 @@ static if (targetLibGitVersion >= VersionInfo(0, 20, 0)) {
 	}
 }
 
-/*GitSignature createSignature(string name, string email, SysTime time)
+GitSignature createSignature(string name, string email, SysTime time)
 {
 	git_signature* ret;
-	require(git_signature_new(&ret, name.toStringz, email.toStringz, gtime, gofffset) == 0);
+	auto gittime = toGitTime(time);
+	require(git_signature_new(&ret, name.toStringz, email.toStringz, gittime.time, gittime.offset) == 0);
 	return GitSignature(ret);
-}*/
+}
 
 GitSignature createSignature(string name, string email)
 {
