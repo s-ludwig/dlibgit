@@ -52,32 +52,37 @@ GitTreeBuilder createTreeBuilder(GitTree source)
 struct GitTree {
 	package this(GitRepo repo, git_tree* tree)
 	{
-		_repo = repo;
-		_data = Data(tree);
+		_object = GitObject(repo, cast(git_object*)tree);
 	}
 
-	@property GitOid id() { return GitOid(*git_tree_id(_data._payload)); }
-	@property GitRepo owner() { return _repo; }
+	this(GitObject object)
+	{
+		enforce(object.type == GitType.tree, "GIT object is not a tree.");
+		_object = object;
+	}
 
-	@property size_t entryCount() { return git_tree_entrycount(_data._payload); }
+	@property GitOid id() { return GitOid(*git_tree_id(this.cHandle)); }
+	@property GitRepo owner() { return _object.owner; }
+
+	@property size_t entryCount() { return git_tree_entrycount(this.cHandle); }
 
 	GitTreeEntry getEntryByName(string filename)
 	{
-		auto ret = git_tree_entry_byname(_data._payload, filename.toStringz());
+		auto ret = git_tree_entry_byname(this.cHandle, filename.toStringz());
 		enforce(ret !is null, "Couldn't find tree entry "~filename); // FIXME: use return value
 		return GitTreeEntry(this, ret);
 	}
 
 	GitTreeEntry getEntryByIndex(size_t index)
 	{
-		auto ret = git_tree_entry_byindex(_data._payload, index);
+		auto ret = git_tree_entry_byindex(this.cHandle, index);
 		enforce(ret !is null, "Couldn't find tree entry at "~index.to!string); // FIXME: use return value
 		return GitTreeEntry(this, ret);
 	}
 
 	GitTreeEntry getEntryByOid(GitOid oid)
 	{
-		auto ret = git_tree_entry_byoid(_data._payload, &oid._get_oid());
+		auto ret = git_tree_entry_byoid(this.cHandle, &oid._get_oid());
 		enforce(ret !is null, "Couldn't find tree entry "~oid.toHex()); // FIXME: use return value
 		return GitTreeEntry(this, ret);
 	}
@@ -85,7 +90,7 @@ struct GitTree {
 	GitTreeEntry getEntryByPath(string path)
 	{
 		git_tree_entry* ret;
-		require(git_tree_entry_bypath(&ret, _data._payload, path.toStringz()) == 0);
+		require(git_tree_entry_bypath(&ret, this.cHandle, path.toStringz()) == 0);
 		return GitTreeEntry(ret);
 	}
 
@@ -106,12 +111,12 @@ struct GitTree {
 		}
 
 		auto ctx = CTX(del, this);
-		require(git_tree_walk(_data._payload, cast(git_treewalk_mode)mode, &callback, cast(void*)&ctx) == 0);
+		require(git_tree_walk(this.cHandle, cast(git_treewalk_mode)mode, &callback, cast(void*)&ctx) == 0);
 	}
 
-    mixin RefCountedGitObject!(git_tree, git_tree_free);
-    // Reference to the parent repository to keep it alive.
-    private GitRepo _repo;
+	package @property inout(git_tree)* cHandle() inout { return cast(inout(git_tree)*)_object.cHandle; }
+
+	private GitObject _object;
 }
 
 
@@ -137,29 +142,29 @@ struct GitTreeBuilder {
 	private this(GitTree src)
 	{
 		git_treebuilder* builder;
-		require(git_treebuilder_create(&builder, src._data._payload) == 0);
+		require(git_treebuilder_create(&builder, src.cHandle) == 0);
 		_data = Data(builder);
 	}
 
-	@property size_t entryCount() { return git_treebuilder_entrycount(_data._payload); }
+	@property size_t entryCount() { return git_treebuilder_entrycount(this.cHandle); }
 
-	void clear() { git_treebuilder_clear(_data._payload); }
+	void clear() { git_treebuilder_clear(this.cHandle); }
 
 	GitTreeEntry get(string filename)
 	{
-		return GitTreeEntry(this, git_treebuilder_get(_data._payload, filename.toStringz()));
+		return GitTreeEntry(this, git_treebuilder_get(this.cHandle, filename.toStringz()));
 	}
 
 	GitTreeEntry insert(string filename, GitOid id, GitFileModeType filemode)
 	{
 		const(git_tree_entry)* ret;
-		require(git_treebuilder_insert(&ret, _data._payload, filename.toStringz(), &id._get_oid(), cast(git_filemode_t) filemode) == 0);
+		require(git_treebuilder_insert(&ret, this.cHandle, filename.toStringz(), &id._get_oid(), cast(git_filemode_t) filemode) == 0);
 		return GitTreeEntry(this, ret);
 	}
 
 	void remove(string filename)
 	{
-		require(git_treebuilder_remove(_data._payload, filename.toStringz()) == 0);
+		require(git_treebuilder_remove(this.cHandle, filename.toStringz()) == 0);
 	}
 
 	// return false from the callback to remove the item
@@ -180,13 +185,13 @@ struct GitTreeBuilder {
 		}
 
 		auto ctx = CTX(del, this, false);
-		git_treebuilder_filter(_data._payload, &callback, cast(void*)&ctx);
+		git_treebuilder_filter(this.cHandle, &callback, cast(void*)&ctx);
 	}
 
 	GitOid write(GitRepo repo)
 	{
 		GitOid ret;
-		require(git_treebuilder_write(&ret._get_oid(), repo.cHandle, _data._payload) == 0);
+		require(git_treebuilder_write(&ret._get_oid(), repo.cHandle, this.cHandle) == 0);
 		return ret;
 	}
 
@@ -226,11 +231,11 @@ struct GitTreeEntry {
 
 	@property GitTreeEntry dup() { return GitTreeEntry(git_tree_entry_dup(cHandle())); }
 
-	GitObject toObject(GitRepo repo)
+	GitObject toObject()
 	{
 		git_object* ret;
-		require(git_tree_entry_to_object(&ret, repo.cHandle, cHandle()) == 0);
-		return GitObject(repo, ret);
+		require(git_tree_entry_to_object(&ret, _tree.owner.cHandle, cHandle()) == 0);
+		return GitObject(_tree.owner, ret);
 	}
 
 	int opCmp(GitTreeEntry other) { return git_tree_entry_cmp(cHandle(), other.cHandle()); }
