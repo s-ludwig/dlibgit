@@ -128,7 +128,9 @@ struct GitRemote
         return GitTransferProgress(git_remote_stats(_data._payload));
     }
 
-    ///
+	@property GitRemoteAutotag autoTag() { return cast(GitRemoteAutotag)git_remote_autotag(this.cHandle); }
+	@property void autoTag(GitRemoteAutotag value) { git_remote_set_autotag(this.cHandle, cast(git_remote_autotag_option_t)value); }
+
     void connect(GitDirection direction)
     {
         require(git_remote_connect(_data._payload, cast(git_direction)direction) == 0);
@@ -322,6 +324,13 @@ private extern(C) nothrow {
     }
 }
 
+enum GitRemoteAutotag {
+	auto_ = GIT_REMOTE_DOWNLOAD_TAGS_AUTO,
+	none = GIT_REMOTE_DOWNLOAD_TAGS_NONE,
+	all = GIT_REMOTE_DOWNLOAD_TAGS_ALL
+}
+
+
 /+ TODO: Port these.
 
 alias git_remote_rename_problem_cb = int function(const(char)* problematic_refspec, void *payload);
@@ -378,19 +387,7 @@ int git_remote_set_callbacks(git_remote *remote, git_remote_callbacks *callbacks
 
 const(git_transfer_progress)*  git_remote_stats(git_remote *remote);
 
-enum git_remote_autotag_option_t {
-    GIT_REMOTE_DOWNLOAD_TAGS_AUTO = 0,
-    GIT_REMOTE_DOWNLOAD_TAGS_NONE = 1,
-    GIT_REMOTE_DOWNLOAD_TAGS_ALL = 2
-} ;
 
-mixin _ExportEnumMembers!git_remote_autotag_option_t;
-
-git_remote_autotag_option_t git_remote_autotag(git_remote *remote);
-
-void git_remote_set_autotag(
-    git_remote *remote,
-    git_remote_autotag_option_t value);
 
 int git_remote_rename(
     git_remote *remote,
