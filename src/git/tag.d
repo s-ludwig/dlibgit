@@ -122,7 +122,7 @@ string[] listMatchingTags(GitRepo repo, string pattern)
 struct GitTag {
 	this(GitObject obj)
 	{
-		enforce(obj.type == GitType.commit, "GIT object is not a commit.");
+		enforce(obj.type == GitType.tag, "GIT object is not a tag.");
 		_object = obj;
 	}
 
