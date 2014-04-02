@@ -91,7 +91,7 @@ struct GitTree {
 	{
 		git_tree_entry* ret;
 		require(git_tree_entry_bypath(&ret, this.cHandle, path.toStringz()) == 0);
-		return GitTreeEntry(ret);
+		return GitTreeEntry(this.owner, ret);
 	}
 
 	void walk(GitTreewalkMode mode, scope GitTreewalkDelegate del)
@@ -205,6 +205,7 @@ struct GitTreeEntry {
 	package this(GitTree owner, const(git_tree_entry)* entry)
 	{
 		_tree = owner;
+		_repo = _tree.owner;
 		_entry = entry;
 	}
 
@@ -212,12 +213,14 @@ struct GitTreeEntry {
 	{
 		_builder = owner;
 		_tree = GitTree.init;
+		_repo = GitRepo.init;
 		_entry = entry;
 	}
 
-	package this(git_tree_entry* entry)
+	package this(GitRepo owner, git_tree_entry* entry)
 	{
 		_tree = GitTree.init;
+		_repo = owner;
 		_data = Data(entry);
 	}
 
@@ -229,13 +232,13 @@ struct GitTreeEntry {
 	static if (targetLibGitVersion >= VersionInfo(0, 20, 0))
 		@property GitFileModeType fileModeRaw() { return cast(GitFileModeType)git_tree_entry_filemode_raw(cHandle()); }
 
-	@property GitTreeEntry dup() { return GitTreeEntry(git_tree_entry_dup(cHandle())); }
+	@property GitTreeEntry dup() { return GitTreeEntry(_repo, git_tree_entry_dup(cHandle())); }
 
 	GitObject toObject()
 	{
 		git_object* ret;
-		require(git_tree_entry_to_object(&ret, _tree.owner.cHandle, cHandle()) == 0);
-		return GitObject(_tree.owner, ret);
+		require(git_tree_entry_to_object(&ret, _repo.cHandle, cHandle()) == 0);
+		return GitObject(_repo, ret);
 	}
 
 	int opCmp(GitTreeEntry other) { return git_tree_entry_cmp(cHandle(), other.cHandle()); }
@@ -250,5 +253,6 @@ private:
 	// foreign ownership
 	GitTreeBuilder _builder;
 	GitTree _tree;
+	GitRepo _repo;
 	const(git_tree_entry)* _entry;
 }
