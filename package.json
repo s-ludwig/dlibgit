@@ -7,5 +7,5 @@
 	"dependencies": {
 		"libgit2": ">=0.19.2 <0.21.0"
 	},
-	"excludedSourceFiles": ["src/git/c/package.d"]
+	"excludedSourceFiles": ["src/git/c/*"]
 }

@@ -1,5 +1,7 @@
 module git.c;
 
+pragma(msg, "Deprecated import git.c used. Please import deimos.git2 instead.");
+
 public
 {
     import git.c.attr;
