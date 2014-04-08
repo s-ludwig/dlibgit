@@ -4,33 +4,33 @@ This library provides an idiomatic D interface to the [libgit2](https://github.c
 
 This project was originally started by Andrej Mitrovic as a set of bindings to libgit2. He since started to implement a D wrapper interface, which was taken up by David Nadlinger. Since some time, Sönke Ludwig has continued the maintainership and completed most of the D API, moving the C bindings to a separate package to make the D API independent of libgit2's development.
 
-## v0.50.1 Changes
+## Changes
+
+### v0.50.2 - v0.50.4
+
+- Added `listRemotes`, `GitCommit.parents`, `GitCommit.parentOids`, `GitRemote.autoTag`, and a `SysTime` based overload of `createSignature`
+- `GitObject` can now be converted to `GitTree` and to `GitTag`
+- Various small fixes and improvements to exception handling in callbacks
+
+### v0.50.1
 
 - Added support for indexes, submodules and tags
-
 - Time values are handled as `SysTime` objects now
-
 - "Upcasts" from `GitObject` to specialized types, such as `GitCommit` are supported now
-
 - `GitSignature` now has getter properties for all fields
 
-## v0.50.0 Changes
+### v0.50.0
 
 - The version number has been incremented to be independent of the underlying libgit2 version - dlibgit aims to always support the latest versions of libgit2 under a unified API
-
 - The D interface is about 70% finished
-
 - All C bindings have been removed in favor of the separate Deimos package
 
-## v0.19.0 Changes
+### v0.19.0
 
 - The new C-based bindings are now part of the `git.c` package.
-
 - The `_object.d` and `_version.d` files have been renamed to `object_.d` and `version_.d`,
     as this is the usual D convention of naming modules that use D keywords.
-
 - C-based documentation in the header files is now included with the .d files.
-
 - Enums members can now be accessed both with their fully qualified name (e.g. `auto x = git_otype.GIT_OBJ_ANY`),
     and as if they were defined in module scope (e.g. `auto x = GIT_OBJ_ANY`).
 
