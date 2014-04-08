@@ -178,7 +178,7 @@ unittest
     assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
 
     // verify the repo can be opened
-    auto repo = GitRepo(repoPath);
+    auto repo = openRepository(repoPath);
 }
 
 ///
@@ -210,7 +210,7 @@ struct GitRepo
     ///
     unittest
     {
-        static assert(!__traits(compiles, GitRepo()));
+        //static assert(!__traits(compiles, GitRepo()));
     }
 
     // internal
@@ -241,13 +241,13 @@ struct GitRepo
     unittest
     {
         // throw when path does not exist
-        assertThrown!GitException(GitRepo(r".\invalid\path\.git"));
+        assertThrown!GitException(openRepository(r".\invalid\path\.git"));
 
         // open using the path of the .git directory
-        auto repo1 = GitRepo(_testRepo);
+        auto repo1 = openRepository(_testRepo);
 
         // open using the base path of the .git directory
-        auto repo2 = GitRepo(_testRepo.dirName);
+        auto repo2 = openRepository(_testRepo.dirName);
     }
 
     @property GitReference head()
@@ -272,7 +272,7 @@ struct GitRepo
     unittest
     {
         // by default test repo's HEAD is pointing to a commit
-        auto repo1 = GitRepo(_testRepo);
+        auto repo1 = openRepository(_testRepo);
         assert(repo1.isHeadDetached);
 
         // new repo does not have a detached head
@@ -299,7 +299,7 @@ struct GitRepo
     ///
     unittest
     {
-        auto repo1 = GitRepo(_testRepo);
+        auto repo1 = openRepository(_testRepo);
         assert(!repo1.isHeadOrphan);
 
         // new repo has orphan branch
@@ -323,7 +323,7 @@ struct GitRepo
     unittest
     {
         // existing repo is non-empty
-        auto repo1 = GitRepo(_testRepo);
+        auto repo1 = openRepository(_testRepo);
         assert(!repo1.isEmpty);
 
         // new repo is empty
@@ -344,7 +344,7 @@ struct GitRepo
     unittest
     {
         // existing repo is not bare
-        auto repo = GitRepo(_testRepo);
+        auto repo = openRepository(_testRepo);
         assert(!repo.isBare);
     }
 
@@ -384,7 +384,7 @@ struct GitRepo
     unittest
     {
         // existing repo path
-        auto repo = GitRepo(_testRepo);
+        auto repo = openRepository(_testRepo);
         assert(repo.path.relativePath.toPosixPath == "../.git/modules/test/repo");
     }
 
@@ -424,7 +424,7 @@ struct GitRepo
     {
         // existing repo work path is different to the path of the .git directory,
         // since this repo is a submodule
-        auto repo = GitRepo(_testRepo);
+        auto repo = openRepository(_testRepo);
         assert(repo.workPath.relativePath.toPosixPath == "../test/repo");
     }
 
