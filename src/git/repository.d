@@ -1392,6 +1392,36 @@ struct GitRepo
         assert(!repo.isPathIgnored("/bar"));
     }
 
+    /* Get the array of current local branches from reposiory */
+    @property GitReference[] branches()
+    {
+        GitReference[] result;
+        git_branch_iterator* it;
+        require(git_branch_iterator_new(&it, this.cHandle, GitBranchType.local) == 0);
+        scope (exit) git_branch_iterator_free(it);
+        for (int i;; i++) {
+            git_reference* br;
+            git_branch_t brtp;
+            auto ret = git_branch_next(&br, &brtp, it);
+            if (ret == GIT_ITEROVER) break;
+            require(ret == 0);
+            result.length = i+1;
+            result[i] = GitReference(this, br);
+        }
+        return result;
+    }
+
+    ///
+    unittest
+    {
+        auto repo_new = initRepo(_userRepo, OpenBare.no);
+        scope(exit) rmdirRecurse(_userRepo);
+        assert(!repo_new.branches);
+
+        auto repo_exist = openRepository(_testRepo);
+        assert(repo_exist.branches[0].name == "refs/heads/master");
+    }
+
     mixin RefCountedGitObject!(git_repository, git_repository_free);
 }
 
