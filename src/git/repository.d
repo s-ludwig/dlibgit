@@ -27,6 +27,7 @@ import deimos.git2.ignore;
 import deimos.git2.oid;
 import deimos.git2.repository;
 import deimos.git2.types;
+import deimos.git2.branch;
 
 import git.common;
 import git.exception;
@@ -36,11 +37,13 @@ import git.reference;
 import git.types;
 import git.util;
 import git.version_;
+import deimos.git2.refs;
+import deimos.git2.strarray;
 
 version(unittest)
 {
-    enum _baseTestDir = "../test";
-    enum _testRepo = "../test/repo/.git";
+    enum _baseTestDir = "test";
+    enum _testRepo = "test/repo/.git";
     string _userRepo = buildPath(_baseTestDir, "_myTestRepo");
 }
 
@@ -167,7 +170,7 @@ string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS a
 unittest
 {
     /**
-        look for the .git repo in "../test/repo/a/".
+        look for the .git repo in "test/repo/a/".
         The .git directory will be found one dir up, and will
         contain the line 'gitdir: ../../.git/modules/test/repo'.
         The function will expand this line and return the true
@@ -175,7 +178,7 @@ unittest
     */
     string path = buildPath(_testRepo.dirName, "a");
     string repoPath = discoverRepo(path);
-    assert(repoPath.relativePath.toPosixPath == "../.git/modules/test/repo");
+    assert(repoPath.relativePath.toPosixPath == ".git/modules/test/repo");
 
     // verify the repo can be opened
     auto repo = openRepository(repoPath);
@@ -385,7 +388,7 @@ struct GitRepo
     {
         // existing repo path
         auto repo = openRepository(_testRepo);
-        assert(repo.path.relativePath.toPosixPath == "../.git/modules/test/repo");
+        assert(repo.path.relativePath.toPosixPath == ".git/modules/test/repo");
     }
 
     ///
@@ -394,7 +397,7 @@ struct GitRepo
         // new bare repo path is the path of the repo itself
         auto repo = initRepo(_userRepo, OpenBare.yes);
         scope(exit) rmdirRecurse(_userRepo);
-        assert(repo.path.relativePath.toPosixPath == "../test/_myTestRepo");
+        assert(repo.path.relativePath.toPosixPath == "test/_myTestRepo");
     }
 
     ///
@@ -403,7 +406,7 @@ struct GitRepo
         // new non-bare repo path is the path of the .git directory
         auto repo = initRepo(_userRepo, OpenBare.no);
         scope(exit) rmdirRecurse(_userRepo);
-        assert(repo.path.relativePath.toPosixPath == "../test/_myTestRepo/.git");
+        assert(repo.path.relativePath.toPosixPath == "test/_myTestRepo/.git");
     }
 
     /**
@@ -425,7 +428,7 @@ struct GitRepo
         // existing repo work path is different to the path of the .git directory,
         // since this repo is a submodule
         auto repo = openRepository(_testRepo);
-        assert(repo.workPath.relativePath.toPosixPath == "../test/repo");
+        assert(repo.workPath.relativePath.toPosixPath == "test/repo");
     }
 
     ///
@@ -443,7 +446,7 @@ struct GitRepo
         // new non-bare repo work path is by default the directory path of the .git directory
         auto repo = initRepo(_userRepo, OpenBare.no);
         scope(exit) rmdirRecurse(_userRepo);
-        assert(repo.workPath.relativePath.toPosixPath == "../test/_myTestRepo");
+        assert(repo.workPath.relativePath.toPosixPath == "test/_myTestRepo");
     }
 
     /**
@@ -1394,7 +1397,7 @@ struct GitRepo
 
 
 enum GitRepositoryOpenFlags {
-    none = 0,
+	none = 0,
     noSearch = GIT_REPOSITORY_OPEN_NO_SEARCH,
     crossFS = GIT_REPOSITORY_OPEN_CROSS_FS,
     //bare = GIT_REPOSITORY_OPEN_BARE // available in 0.20.0
