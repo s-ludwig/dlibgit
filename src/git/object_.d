@@ -89,8 +89,8 @@ GitObject lookupObject(GitRepo repo, in char[] hexString, GitType type = GitType
     }
 }
 
-deprecated alias lookup = lookupObject;
-deprecated alias lookupByPrefix = lookupObjectPrefix;
+deprecated("Please use lookupObject instead.") alias lookup = lookupObject;
+deprecated("Please use lookupObjectPrefix instead.") alias lookupByPrefix = lookupObjectPrefix;
 
 ///
 const(char)[] toString(GitType type)
