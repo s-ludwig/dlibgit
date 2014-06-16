@@ -233,7 +233,7 @@ struct GitRepo
         If $(D path) does not exist or if the .git directory is not
         found in $(D path), a $(D GitException) is thrown.
      */
-    deprecated this(in char[] path)
+    deprecated("Please use openRepository instead.") this(in char[] path)
     {
         git_repository* repo;
         require(git_repository_open(&repo, path.gitStr) == 0);
