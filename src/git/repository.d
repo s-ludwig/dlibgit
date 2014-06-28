@@ -1274,24 +1274,16 @@ struct GitRepo
     }
 
     /**
-     * Make the repository HEAD directly point to the Commit.
+     * Sets the repository's HEAD to the given commit object id.
      *
-     * If the provided commit_oid cannot be found in the repository, the HEAD
-     * is unaltered and GIT_ENOTFOUND is returned.
+     * When successful, the HEAD will be in a detached state.
      *
-     * If the provided commit_oid cannot be peeled into a commit, the HEAD
-     * is unaltered and -1 is returned.
-     *
-     * Otherwise, the HEAD will eventually be detached and will directly point to
-     * the peeled Commit.
-     *
-     * @param repo Repository pointer
-     * @param commit_oid Object id of the Commit the HEAD should point to
-     * @return 0 on success, or an error code
+     * If the provided oid is not found or cannot be resolved to a commit,
+     * the repository is left unaltered and an exception is thrown.
      */
-    //~ int git_repository_set_head_detached(
-            //~ git_repository* repo,
-            //~ const(git_oid)* commit_oid);
+    void setHeadDetached(const(GitOid) oid) {
+        require(git_repository_set_head_detached(_data._payload, &oid._get_oid()) == 0);
+    }
 
     /**
      * Detach the HEAD.
