@@ -4,6 +4,8 @@ This library provides an idiomatic D interface to the [libgit2](https://github.c
 
 This project was originally started by Andrej Mitrovic as a set of bindings to libgit2. He since started to implement a D wrapper interface, which was taken up by David Nadlinger. Since some time, Sönke Ludwig has continued the maintainership and completed most of the D API, moving the C bindings to a separate package to make the D API independent of libgit2's development.
 
+![Build status](https://travis-ci.org/s-ludwig/dlibgit.svg)
+
 ## Changes
 
 ### v0.50.2 - v0.50.4
