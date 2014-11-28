@@ -105,7 +105,7 @@ git_time toGitTime(SysTime time)
 */
 const(char)* gitStr(const(char)[] s)
 {
-    import std.conv : toStringz;
+    import std.string : toStringz;
     return s.length ? s.toStringz : null;
 }
 
