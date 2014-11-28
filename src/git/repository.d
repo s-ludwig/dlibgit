@@ -481,8 +481,8 @@ struct GitRepo
 
         // set a new work path for the bare repo, verify it's set, and also
         // verify repo is no longer a bare repo
-        repo.setWorkPath("../test");
-        assert(repo.workPath.relativePath.toPosixPath == "../test");
+        repo.setWorkPath(_testRepo);
+        assert(repo.workPath.relativePath.toPosixPath == _testRepo);
         assert(!repo.isBare);
     }
 
