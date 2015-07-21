@@ -31,39 +31,13 @@ import std.stdio;
 import std.string;
 import std.exception;
 
-import git.c;
-
-// Almost all libgit2 functions return 0 on success or negative on error.
-// This is not production quality error checking, but should be sufficient
-// as an example.
-void check_error(int error_code, const char *action)
-{
-	if (!error_code)
-		return;
-
-	const git_error *error = giterr_last();
-
-	printf("Error %d %s - %s\n", error_code, action,
-		   (error && error.message) ? error.message : "???");
-
-	assert(0);
-}
+import git;
 
 int main(string[] args)
 {
-    // ### Opening the Repository
-
-    // There are a couple of methods for opening a repository, this being the simplest.
-    // There are also [methods][me] for specifying the index file and work tree locations, here
-    // we are assuming they are in the normal places.
-    //
-    // [me]: http://libgit2.github.com/libgit2/#HEAD/group/repository
-    git_repository* repo;
-
 	enforce(args.length > 1, "Repository .git path must be passed as a runtime argument.");
 
-	auto error = git_repository_open(&repo, args[1].toStringz);
-    check_error(error, "opening repository");
+    auto repo = openRepository(args[1]);
     // ### SHA-1 Value Conversions
 
     // For our first example, we will convert a 40 character hex value to the 20 byte raw SHA1 value.
@@ -72,20 +46,16 @@ int main(string[] args)
 
     // The `git_oid` is the structure that keeps the SHA value. We will use this throughout the example
     // for storing the value of the current SHA key we're working with.
-    git_oid oid;
-    git_oid_fromstr(&oid, hex.ptr);
+    auto oid = GitOid(hex);
 
     // Once we've converted the string into the oid value, we can get the raw value of the SHA.
-    writefln("Raw 20 bytes: [%.20s]\n", oid.id);
+    writefln("Raw 20 bytes: [%.20s]\n", cast(string)oid.bytes);
 
     // Next we will convert the 20 byte raw SHA1 value to a human readable 40 char hex value.
     writeln("\n*Raw to Hex*");
-    char _out[41];
-    _out[40] = '\0';
 
     // If you have a oid, you can easily get the hex value of the SHA as well.
-    git_oid_fmt(_out.ptr, &oid);
-    writefln("SHA hex string: %s\n", to!string(_out.ptr));
+    writefln("SHA hex string: %s\n", oid.toHex());
 
     // ### Working with the Object Database
     // **libgit2** provides [direct access][odb] to the object database.

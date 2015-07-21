@@ -1,0 +1,8 @@
+{
+	"name": "diff",
+	"dependencies": {
+		"dlibgit": {"version": "~master", "path": "../../"}
+	},
+	"sourcePaths": ["."],
+	"importPaths": ["."]
+}

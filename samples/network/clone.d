@@ -1,6 +1,6 @@
 module clone;
 
-import git.c;
+import git;
 
 import core.thread;
 import std.concurrency;
@@ -11,17 +11,8 @@ import common;
 
 void clone_thread()
 {
-    git_repository* repo = null;
-
     // Kick off the clone
-    clone_data.ret = git_clone(&repo, toStringz(clone_data.url), toStringz(clone_data.path),
-                         &clone_data.fetch_stats, &clone_data.checkout_stats,
-                         &clone_data.opts);
-
-    if (repo)
-        git_repository_free(repo);
-
-    clone_data.finished = 1;
+    clone(clone_data.url, clone_data.path, clone_data.fetch_stats, clone_data.checkout_stats, clone_data.opts);
 }
 
 int do_clone(git_repository* repo, int argc, string[] args)

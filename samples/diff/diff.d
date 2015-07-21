@@ -2,7 +2,7 @@ module diff;
 
 /** Note: Colors were hardcoded to Posix, they're disabled in the D samples. */
 
-import git.c.all;
+import git;
 
 import std.array;
 import std.conv;
@@ -11,36 +11,17 @@ import std.string;
 import std.range;
 import std.exception;
 
-void check(int error, const char* message)
+
+GitTree resolve_to_tree(GitRepo repo, string identifier)
 {
-    enforce(!error, format("%s (%s)\n", to!string(message), error));
-}
+    auto obj = repo.revparseSingle(identifier);
 
-int resolve_to_tree(git_repository* repo, string identifier, git_tree** tree)
-{
-	int err = 0;
-	git_object *obj = null;
-
-    err = git_revparse_single(&obj, repo, identifier.toStringz);
-	if (err < 0)
-		return err;
-
-	switch (git_object_type(obj)) with (git_otype)
+	switch (obj.type)
     {
-        case GIT_OBJ_TREE:
-            *tree = cast(git_tree *)obj;
-            break;
-
-        case GIT_OBJ_COMMIT:
-            err = git_commit_tree(tree, cast(git_commit *)obj);
-            git_object_free(obj);
-            break;
-
-        default:
-            err = git_error_code.GIT_ENOTFOUND;
+        default: throw Exception("Tree not found: "~identifier);
+        case GitType.tree: return obj.toTree();
+        case GitType.commit: return obj.toCommit().tree;
 	}
-
-	return err;
 }
 
 extern(C) int printer(
@@ -116,11 +97,8 @@ int main(string[] args)
     }
 
     string path = args.front;
-    git_repository* repo;
-    git_tree* t1, t2;
     git_diff_options opts = GIT_DIFF_OPTIONS_INIT;
     git_diff_find_options findopts = GIT_DIFF_FIND_OPTIONS_INIT;
-    git_diff_list* diff;
     int format = FORMAT_PATCH;
 
     int i;
@@ -177,13 +155,11 @@ int main(string[] args)
     }
 
     /* open repo */
-    check(git_repository_open_ext(&repo, toStringz(dir), 0, null), "Could not open repository");
+    GitRepo repo = openRepositoryExt(dir, GitRepositoryOpenFlags.none, null);
 
-    if (!treeish1.empty)
-        check(resolve_to_tree(repo, treeish1, &t1), "Looking up first tree");
-
-    if (!treeish2.empty)
-        check(resolve_to_tree(repo, treeish2, &t2), "Looking up second tree");
+    GitTree t1, t2;
+    if (!treeish1.empty) t1 = repo.resolteToTree(treeish1);
+    if (!treeish2.empty) t2 = repo.resolteToTree(treeish2);
 
     /* <sha1> <sha2> */
     /* <sha1> --cached */
@@ -191,23 +167,18 @@ int main(string[] args)
     /* --cached */
     /* nothing */
 
-	if (t1 && t2)
-		check(git_diff_tree_to_tree(&diff, repo, t1, t2, &opts), "Diff");
-	else if (t1 && cached)
-		check(git_diff_tree_to_index(&diff, repo, t1, null, &opts), "Diff");
+    GitDiffList diff;
+	if (t1 && t2) diff = repo.diffTreeToTree(t1, t2, &opts);
+	else if (t1 && cached) diff = repo.diffTreeToIndex(t1, null, &opts);
 	else if (t1) {
-		git_diff_list *diff2;
-		check(git_diff_tree_to_index(&diff, repo, t1, null, &opts), "Diff");
-		check(git_diff_index_to_workdir(&diff2, repo, null, &opts), "Diff");
-		check(git_diff_merge(diff, diff2), "Merge diffs");
-		git_diff_list_free(diff2);
-	}
-	else if (cached) {
-		check(resolve_to_tree(repo, "HEAD", &t1), "looking up HEAD");
-		check(git_diff_tree_to_index(&diff, repo, t1, null, &opts), "Diff");
-	}
-	else
-		check(git_diff_index_to_workdir(&diff, repo, null, &opts), "Diff");
+		GitTreeList diff2;
+        diff = repo.diffTreeToIndex(t1, null, &opts);
+        diff2 = repo.diffIndexToWorkDir(null, &opts);
+        diff.merge(diff2);
+	} else if (cached) {
+        t1 = repo.resolteToTree("HEAD");
+        diff = repo.diffTreeToIndex(t1, null, &opts);
+	} else diff = repo.diffIndexToWorkDir(null, &opts);
 
 	if ((findopts.flags & git_diff_find_t.GIT_DIFF_FIND_ALL) != 0)
 		check(git_diff_find_similar(diff, &findopts),

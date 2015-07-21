@@ -1,0 +1,8 @@
+{
+	"name": "general",
+	"dependencies": {
+		"dlibgit": {"version": "~master", "path": "../../"}
+	},
+	"sourcePaths": ["."],
+	"importPaths": ["."]
+}
