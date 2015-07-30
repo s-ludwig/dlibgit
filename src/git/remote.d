@@ -166,6 +166,9 @@ struct GitRemote
     {
         assert(connected, "Must connect(GitDirection.push) before invoking download().");
 
+        GitRemoteCallbackCTX ctx;
+        ctx.cb = callbacks;
+
         git_remote_callbacks gitcallbacks;
         gitcallbacks.progress = &progress_cb;
         gitcallbacks.completion = &completion_cb;
@@ -173,14 +176,15 @@ struct GitRemote
             //gitcallbacks.credentials = &cred_acquire_cb;
             gitcallbacks.transfer_progress = &transfer_progress_cb;
         }
-        gitcallbacks.payload = cast(void*)callbacks;
+        gitcallbacks.payload = cast(void*)&ctx;
         require(git_remote_set_callbacks(_data._payload, &gitcallbacks) == 0);
 
         static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
-            require(git_remote_download(_data._payload, &transfer_progress_cb, cast(void*)callbacks) == 0);
+            require(git_remote_download(_data._payload, &transfer_progress_cb, cast(void*)&ctx) == 0, ctx.ex);
         } else {
-            require(git_remote_download(_data._payload) == 0);
+            require(git_remote_download(_data._payload) == 0, ctx.ex);
         }
+        if (ctx.ex) throw ctx.ex;
     }
 
     void addFetch(string refspec) { require(git_remote_add_fetch(this.cHandle, refspec.toStringz) == 0); }
@@ -275,19 +279,24 @@ private extern(C) nothrow {
     static if (targetLibGitVersion == VersionInfo(0, 19, 0)) {
         void progress_cb(const(char)* str, int len, void* payload)
         {
-            auto cbs = cast(GitRemoteCallbacks*)payload;
-            if (cbs && cbs.progress) {
-                try cbs.progress(str[0 .. len].idup);
-                catch (Exception e) {} // FIXME: store exception and skip calling the callback during the next iterations
+            auto ctx = cast(GitRemoteCallbackCTX*)payload;
+            if (ctx.cb && ctx.cb.progress) {
+                try ctx.cb.progress(str[0 .. len].idup);
+                catch (Exception e) {
+                    ctx.ex = e;
+                }
             }
         }
     } else {
         int progress_cb(const(char)* str, int len, void* payload)
         {
-            auto cbs = cast(GitRemoteCallbacks*)payload;
-            if (cbs && cbs.progress) {
-                try cbs.progress(str[0 .. len].idup);
-                catch (Exception e) return -1; // FIXME: store and rethrow exception 
+            auto ctx = cast(GitRemoteCallbackCTX*)payload;
+            if (ctx.cb && ctx.cb.progress) {
+                try ctx.cb.progress(str[0 .. len].idup);
+                catch (Exception e) {
+                    ctx.ex = e;
+                    return -1;
+                }
             }
             return 0;
         }
@@ -295,30 +304,39 @@ private extern(C) nothrow {
 
     /*int cred_acquire_cb(git_cred** dst, const(char)* url, const(char)* username_from_url, uint allowed_types, void* payload)
     {
-        auto cbs = cast(GitRemoteCallbacks)payload;
-        try cbs.credentials(...);
-        catch (Exception e) return -1; // FIXME: store and rethrow exception 
+        auto ctx = cast(GitRemoteCallbackCTX)payload;
+        try ctx.cb.credentials(...);
+        catch (Exception e) {
+            ctx.ex = e;
+            return -1;
+        }
         return 0;
     }*/
 
     int completion_cb(git_remote_completion_type type, void* payload)
     {
-        auto cbs = cast(GitRemoteCallbacks*)payload;
-        if (cbs && cbs.completion) {
-            try cbs.completion(cast(GitRemoteCompletionType)type);
-            catch (Exception e) return -1; // FIXME: store and rethrow exception 
+        auto ctx = cast(GitRemoteCallbackCTX*)payload;
+        if (ctx.cb && ctx.cb.completion) {
+            try ctx.cb.completion(cast(GitRemoteCompletionType)type);
+            catch (Exception e) {
+                ctx.ex = e;
+                return -1;
+            }
         }
         return 0;
     }
 
     int transfer_progress_cb(const(git_transfer_progress)* stats, void* payload)
     {
-        auto cbs = cast(GitRemoteCallbacks*)payload;
-        if (cbs && cbs.transferProgress) {
+        auto ctx = cast(GitRemoteCallbackCTX*)payload;
+        if (ctx.cb && ctx.cb.transferProgress) {
             try {
                 auto tp = GitTransferProgress(stats);
-                cbs.transferProgress(tp);
-            } catch (Exception e) return -1; // FIXME: store and rethrow exception 
+                ctx.cb.transferProgress(tp);
+            } catch (Exception e) {
+                ctx.ex = e;
+                return -1;
+            }
         }
         return 0;
     }
@@ -330,6 +348,10 @@ enum GitRemoteAutotag {
 	all = GIT_REMOTE_DOWNLOAD_TAGS_ALL
 }
 
+private struct GitRemoteCallbackCTX {
+    GitRemoteCallbacks* cb;
+    Exception ex;
+}
 
 /+ TODO: Port these.
 

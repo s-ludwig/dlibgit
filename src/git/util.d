@@ -39,7 +39,7 @@ package bool requireBool(int result, string file = __FILE__, size_t line = __LIN
     before calling Git functions since Git itself does not check pointers for null.
     Passing null pointers to Git functions usually results in access violations.
 */
-package void require(bool state, string file = __FILE__, size_t line = __LINE__)
+package void require(bool state, Exception next = null, string file = __FILE__, size_t line = __LINE__)
 {
     if (state)
         return;
@@ -52,7 +52,7 @@ package void require(bool state, string file = __FILE__, size_t line = __LINE__)
     const msg = format("Git error (%s): %s.", cast(git_error_t)gitError.klass, to!string(gitError.message));
 
     giterr_clear();
-    throw new GitException(msg, file, line);
+    throw new GitException(msg, file, line, next);
 }
 
 ///
