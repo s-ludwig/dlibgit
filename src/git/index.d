@@ -120,7 +120,31 @@ int git_index_conflict_get(
 	const(char)* path);
 int git_index_conflict_remove(git_index *index, const(char)* path);
 void git_index_conflict_cleanup(git_index *index);
-int git_index_has_conflicts(const(git_index)* index);
+*/
+
+	bool hasConflicts()
+	{
+		return git_index_has_conflicts(this.cHandle) != 0;
+	}
+
+	int conflictIterator(int delegate(GitIndexEntry ancestor, GitIndexEntry our, GitIndexEntry their) dg)
+	{
+		git_index_conflict_iterator* it;
+		require(git_index_conflict_iterator_new(&it, this.cHandle) == 0);
+		scope (exit) git_index_conflict_iterator_free(it);
+		while (true) {
+			const(git_index_entry)* ancestor, our, their;
+			auto ret = git_index_conflict_next(&ancestor, &our, &their, it);
+			if (ret == GIT_ITEROVER) break;
+			require(ret == 0);
+			ret = dg(GitIndexEntry(this, ancestor), GitIndexEntry(this, our), GitIndexEntry(this, their));
+			if (ret)
+				return ret;
+		}
+		return 0;
+	}
+
+/*
 int git_index_conflict_iterator_new(
 	git_index_conflict_iterator **iterator_out,
 	git_index *index);
@@ -136,6 +160,7 @@ int git_index_entry_stage(const(git_index_entry)* entry);*/
 	mixin RefCountedGitObject!(git_index, git_index_free);
 	private GitRepo _repo;
 }
+
 
 struct GitIndexEntry {
 	package this(GitIndex index, const(git_index_entry)* entry)
