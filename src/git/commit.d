@@ -53,6 +53,8 @@ GitOid createCommit(GitRepo repo, string update_ref, GitSignature author, GitSig
 struct GitCommit {
 	this(GitObject obj)
 	{
+		import std.exception : enforce;
+		
 		enforce(obj.type == GitType.commit, "GIT object is not a commit.");
 		_object = obj;
 	}
