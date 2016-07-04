@@ -13,3 +13,4 @@ bin/*.dll
 bin/*.lib
 docs/*.html
 __test__library__
+dub.selections.json
