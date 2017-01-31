@@ -21,6 +21,7 @@ import std.traits;
 import std.typecons;
 import std.typetuple;
 
+import deimos.git2.buffer;
 import deimos.git2.common;
 import deimos.git2.errors;
 import deimos.git2.ignore;
@@ -152,7 +153,6 @@ GitRepo initRepository(string path, GitRepositoryInitOptions options)
  */
 string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS acrossFS = AcrossFS.yes)
 {
-    char[MaxGitPathLen] buffer;
     const c_ceilDirs = ceilingDirs.join(GitPathSep).gitStr;
 
     version(assert)
@@ -160,9 +160,10 @@ string discoverRepo(in char[] startPath, string[] ceilingDirs = null, AcrossFS a
         foreach (path; ceilingDirs)
             assert(path.isAbsolute, format("Error: Path in ceilingDirs is not absolute: '%s'", path));
     }
+    git_buf buffer;
+    scope(exit) git_buf_free(&buffer);
 
-    require(git_repository_discover(buffer.ptr, buffer.length, startPath.gitStr, cast(bool)acrossFS, c_ceilDirs) == 0);
-
+    require(git_repository_discover(&buffer, startPath.gitStr, cast(bool)acrossFS, c_ceilDirs) == 0);
     return to!string(buffer.ptr);
 }
 
@@ -1151,7 +1152,7 @@ struct GitRepo
     */
     void cleanupMerge()
     {
-        require(git_repository_merge_cleanup(_data._payload) == 0);
+        require(git_repository_state_cleanup(_data._payload) == 0);
     }
 
     ///

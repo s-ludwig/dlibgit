@@ -126,7 +126,7 @@ struct GitTransferProgress
     uint totalObjects;
     uint indexedObjects;
     uint receivedObjects;
-    static if (targetLibGitVersion == VersionInfo(0, 20, 0)) {
+    static if (targetLibGitVersion == VersionInfo(0, 25, 1)) {
         uint local_objects;
         uint total_deltas;
         uint indexed_deltas;
