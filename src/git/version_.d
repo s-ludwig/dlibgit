@@ -74,7 +74,7 @@ enum targetLibGitVersion = VersionInfo(LIBGIT2_VER_MAJOR, LIBGIT2_VER_MINOR, LIB
 enum dlibgitVersion = VersionInfo(0, 50, 0);
 
 
-static assert(targetLibGitVersion == VersionInfo(0, 19, 0) || targetLibGitVersion == VersionInfo(0, 20, 0));
+static assert(targetLibGitVersion == VersionInfo(0, 25, 1));
 
 /**
     Return the runtime version of the libgit2 library

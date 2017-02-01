@@ -67,12 +67,12 @@ GitFeatures getLibGitFeatures()
 {
     typeof(return) result;
 
-    int flags = git_libgit2_capabilities();
+    int flags = git_libgit2_features();
 
-    if (flags | GIT_CAP_THREADS)
+    if (flags | GIT_FEATURE_THREADS)
         result.usesThreads = true;
 
-    if (flags | GIT_CAP_HTTPS)
+    if (flags | GIT_FEATURE_HTTPS)
         result.usesSSL = true;
 
     return result;

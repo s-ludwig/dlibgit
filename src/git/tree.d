@@ -80,9 +80,9 @@ struct GitTree {
 		return GitTreeEntry(this, ret);
 	}
 
-	GitTreeEntry getEntryByOid(GitOid oid)
+	GitTreeEntry getEntryById(GitOid oid)
 	{
-		auto ret = git_tree_entry_byoid(this.cHandle, &oid._get_oid());
+		auto ret = git_tree_entry_byid(this.cHandle, &oid._get_oid());
 		enforce(ret !is null, "Couldn't find tree entry "~oid.toHex()); // FIXME: use return value
 		return GitTreeEntry(this, ret);
 	}
@@ -135,14 +135,14 @@ struct GitTreeBuilder {
 	private this(bool dummy)
 	{
 		git_treebuilder* builder;
-		require(git_treebuilder_create(&builder, null) == 0);
+		require(git_treebuilder_new(&builder, null, null) == 0);
 		_data = Data(builder);
 	}
 
 	private this(GitTree src)
 	{
 		git_treebuilder* builder;
-		require(git_treebuilder_create(&builder, src.cHandle) == 0);
+        require(git_treebuilder_new(&builder, null, src.cHandle) == 0);
 		_data = Data(builder);
 	}
 
